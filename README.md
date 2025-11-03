@@ -88,14 +88,23 @@ The backend and frontend are started manually.
 5. **Create a local environment file**:
 
     Copy the example file and rename it to dev.env:
+
+   🧠 Linux / macOS
     
     ```bash
-   cp app/.env.example app/dev.env
+   cp .env.example dev.env
    ```
+    
+   🪟 Windows (PowerShell)
+
+   ```bash
+   copy .env.example dev.env
+   ```
+    
    Then adjust the values if needed (e.g., database port, credentials).
 
 
-6. **Start the FastAPI server**:
+7. **Start the FastAPI server**:
 
    ```bash
    uvicorn app.main:app --reload
