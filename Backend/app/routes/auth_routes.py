@@ -15,7 +15,6 @@ from app.schemas.user_dto import UserResponse
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-
 @router.post(
     "/login",
     status_code=status.HTTP_200_OK,
@@ -49,7 +48,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)) -> LoginResponse
     response_model=RefreshResponse,
     summary="Generate a new access token using a refresh token",
 )
-def refresh_token(request: RefreshRequest) -> RefreshResponse:
+def refresh_access_token(request: RefreshRequest) -> RefreshResponse:
     payload = verify_token(request.refresh_token)
     if not payload or payload.get("type") != "refresh":
         raise HTTPException(

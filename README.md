@@ -103,3 +103,33 @@ The backend and frontend are started manually.
 
    The API will be available at [http://localhost:8000](http://localhost:8000)
    API docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+---
+
+## 🧪 API Testing with Bruno
+
+The *Inquiro* project includes a [**Bruno**](https://www.usebruno.com) collection under `/bruno` for testing and exploring the backend API.
+Bruno is a lightweight, file-based API client that stores requests in plain text, making it well-suited for collaborative development and version control.
+
+### ⚙️ Setup
+
+1. **Install Bruno**
+
+   Download and install Bruno from [usebruno.com/downloads](https://www.usebruno.com/downloads).
+
+2. **Open the collection**
+
+   * Launch Bruno.
+   * Click **“Open Collection”** and select the `/bruno` folder from the project root.
+
+3. **Select or configure an environment**
+
+   The `/bruno/environments` directory contains predefined environment files. For local development select the **_Development_** environment.
+
+
+### 🚀 Basic Usage
+
+Before authenticating, a user must be created:
+
+1. Run the **Users → Create User** request and provide only a `username` in the request body.
+2. Next, use the **Authentication → Login** request with the same `username` to obtain an access and refresh token.

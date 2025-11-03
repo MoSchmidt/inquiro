@@ -16,7 +16,7 @@ body:json {
   }
 }
 
-tests {
+script:post-response {
   let data = res.body;
   bru.setEnvVar("access_token", data.access_token);
 }
