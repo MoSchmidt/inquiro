@@ -9,7 +9,7 @@ class UserResponse(BaseModel):
     id: int
     username: str
 
-    class Config:
+    class Config:  # pylint: disable=too-few-public-methods
         """Pydantic configuration options."""
 
         from_attributes = True  # For Pydantic v2
