@@ -1,3 +1,5 @@
+"""Application entry point for the Inquiro FastAPI service."""
+
 import logging
 from contextlib import asynccontextmanager
 
@@ -5,7 +7,7 @@ from fastapi import FastAPI
 
 from app.core.config import settings
 from app.core.database import init_db
-from app.routes import user_routes, auth_routes
+from app.routes import auth_routes, user_routes
 
 # ---------------------------------------------------------
 # Configure Logging
@@ -21,8 +23,10 @@ logger = logging.getLogger("inquiro")
 # Lifespan Event Handlers (Modern FastAPI)
 # ---------------------------------------------------------
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    logger.info(f"🚀 Starting Inquiro API in '{settings.ENVIRONMENT}' mode...")
+async def lifespan(_app: FastAPI):
+    """Initialize and tear down application resources."""
+
+    logger.info("🚀 Starting Inquiro API in '%s' mode...", settings.ENVIRONMENT)
     if settings.ENVIRONMENT == "dev":
         init_db()  # Auto-create tables only in dev
     logger.info("✅ Startup complete.")
@@ -40,7 +44,7 @@ app = FastAPI(
     title="Inquiro API",
     description="AI-powered research discovery backend for Inquiro.",
     version="0.1.0",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 
