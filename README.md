@@ -124,7 +124,7 @@ Bruno is a lightweight, file-based API client that stores requests in plain text
 
 3. **Select or configure an environment**
 
-   The `/bruno/environments` directory contains predefined environment files. For local development select the **_Development_** environment.
+   The `/bruno/Inquiro Bruno/environments` directory contains predefined environment files. For local development select the **_Development_** environment.
 
 
 ### 🚀 Basic Usage
