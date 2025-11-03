@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:18
+    container_name: inquiro_db
+    environment:
+      POSTGRES_USER: inquiro
+      POSTGRES_PASSWORD: inquiro
+      POSTGRES_DB: inquiro_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
