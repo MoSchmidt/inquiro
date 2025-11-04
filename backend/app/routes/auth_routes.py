@@ -1,3 +1,5 @@
+"""Routes related to authentication and JWT management."""
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
@@ -22,6 +24,8 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
     summary="Authenticate a user and return JWT tokens",
 )
 def login(request: LoginRequest, db: Session = Depends(get_db)) -> LoginResponse:
+    """Authenticate a user and return access plus refresh tokens."""
+
     user = db.query(User).filter(User.username == request.username).first()
     if not user:
         raise HTTPException(
@@ -49,6 +53,8 @@ def login(request: LoginRequest, db: Session = Depends(get_db)) -> LoginResponse
     summary="Generate a new access token using a refresh token",
 )
 def refresh_access_token(request: RefreshRequest) -> RefreshResponse:
+    """Validate a refresh token and return a new access token."""
+
     payload = verify_token(request.refresh_token)
     if not payload or payload.get("type") != "refresh":
         raise HTTPException(
