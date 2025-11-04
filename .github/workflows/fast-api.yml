@@ -38,6 +38,14 @@ jobs:
 
       - name: Start FastAPI to verify it boots
         working-directory: backend
+        env:
+          POSTGRES_USER: inquiro
+          POSTGRES_PASSWORD: inquiro
+          POSTGRES_DB: inquiro_db
+          POSTGRES_HOST: localhost
+          POSTGRES_PORT: "5433"
+          JWT_SECRET_KEY: "3e3cc0b2f8b54b3d6aa597faccb2f9c41b19b1c24befe29661bafbd42e3afe3e"
+          DATABASE_URL: "postgresql://inquiro:inquiro@localhost:5433/inquiro_db"
         run: |
           uvicorn app.main:app --host 0.0.0.0 --port 8000 &
           PID=$!
