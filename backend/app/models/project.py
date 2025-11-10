@@ -5,8 +5,9 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, List
 
-from sqlalchemy import BigInteger, DateTime, ForeignKey, String, func
+from sqlalchemy import BigInteger, DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.sql import func
 
 from app.core.database import Base
 
@@ -32,6 +33,7 @@ class Project(Base):
     papers: Mapped[List["Paper"]] = relationship(
         "Paper", secondary="project_paper", back_populates="projects"
     )
+
 
 if TYPE_CHECKING:
     from .paper import Paper

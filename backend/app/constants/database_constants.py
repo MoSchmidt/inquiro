@@ -1,9 +1,17 @@
+"""Enumerations shared across database models."""
+
 from enum import Enum
 
+
 class PaperSource(Enum):
+    """Supported sources for fetching papers."""
+
     ARXIV = "ARXIV"
 
+
 class PaperType(Enum):
+    """High-level classifications for scholarly papers."""
+
     JOURNAL = "JOURNAL"
     CONFERENCE = "CONFERENCE"
     PREPRINT = "PREPRINT"

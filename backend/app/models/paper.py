@@ -5,11 +5,12 @@
 from datetime import datetime, date
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import BigInteger, Date, DateTime, Enum as SqlEnum, JSON, String, Text, func
+from sqlalchemy import BigInteger, Date, DateTime, Enum as SqlEnum, JSON, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.sql import func
 
 from app.core.database import Base
-from app.constants.DatabaseConstants import PaperSource, PaperType
+from app.constants.database_constants import PaperSource, PaperType
 
 
 class Paper(Base):
@@ -44,6 +45,7 @@ class Paper(Base):
     projects: Mapped[List["Project"]] = relationship(
         "Project", secondary="project_paper", back_populates="papers"
     )
+
 
 if TYPE_CHECKING:
     from .project import Project

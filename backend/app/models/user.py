@@ -5,8 +5,9 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, List
 
-from sqlalchemy import BigInteger, DateTime, String, func
+from sqlalchemy import BigInteger, DateTime, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.sql import func
 
 from app.core.database import Base
 
@@ -25,6 +26,7 @@ class User(Base):
     projects: Mapped[List["Project"]] = relationship(
         "Project", back_populates="creator", cascade="all, delete-orphan"
     )
+
 
 if TYPE_CHECKING:  # pragma: no cover
     from .project import Project
