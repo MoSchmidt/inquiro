@@ -8,7 +8,12 @@ from app.services.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
-@router.post("/login", response_model=LoginResponse, status_code=status.HTTP_200_OK, summary="Authenticate a user and return JWT tokens")
+@router.post(
+    "/login",
+    response_model=LoginResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Authenticate a user and return JWT tokens"
+)
 def login(request: LoginRequest, db: Session = Depends(get_db)):
     """Authenticate a user and return access plus refresh tokens."""
 
@@ -21,7 +26,12 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
         user=UserResponse.model_validate(user)
     )
 
-@router.post("/refresh", response_model=RefreshResponse, status_code=status.HTTP_200_OK, summary="Generate a new access token using a refresh token")
+@router.post(
+    "/refresh",
+    response_model=RefreshResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Generate a new access token using a refresh token"
+)
 def refresh_access_token(request: RefreshRequest):
     """Validate a refresh token and return a new access token."""
 

@@ -2,6 +2,8 @@ from pydantic import BaseModel
 
 
 class UserCreate(BaseModel):
+    """Request to create a new user."""
+
     username: str
 
 class UserResponse(BaseModel):

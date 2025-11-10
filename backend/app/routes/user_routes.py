@@ -9,7 +9,12 @@ from app.services.user_service import UserService
 router = APIRouter(prefix="/users", tags=["Users"])
 
 
-@router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED, summary="Create a new user")
+@router.post(
+    "/",
+    response_model=UserResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create a new user"
+)
 def create_user(request: UserCreate, db: Session = Depends(get_db)):
     """Create a new user."""
 
@@ -17,7 +22,12 @@ def create_user(request: UserCreate, db: Session = Depends(get_db)):
     return UserResponse.model_validate(user)
 
 
-@router.get("/me", response_model=UserResponse, status_code=status.HTTP_200_OK, summary="Get the current user's profile")
+@router.get(
+    "/me",
+    response_model=UserResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get the current user's profile"
+)
 def get_current_user_profile(
         current_username: str = Depends(get_current_user),
         db: Session = Depends(get_db),
