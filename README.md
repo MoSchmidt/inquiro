@@ -129,7 +129,7 @@ Bruno is a lightweight, file-based API client that stores requests in plain text
 2. **Open the collection**
 
    * Launch Bruno.
-   * Click **“Open Collection”** and select the `/bruno` folder from the project root.
+   * Click **“Open Collection”** and select the `/bruno/Inquiro Bruno` folder from the project root.
 
 3. **Select or configure an environment**
 
