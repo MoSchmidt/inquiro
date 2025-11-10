@@ -9,7 +9,7 @@ class UserResponse(BaseModel):
     """Representation of a user returned by the API."""
 
     user_id: int
-    user_name: str
+    username: str
     created_at: datetime
 
     class Config:  # pylint: disable=too-few-public-methods

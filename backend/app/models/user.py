@@ -17,7 +17,7 @@ class User(Base):
     __tablename__ = "user"
 
     user_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, index=True)
-    user_name: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
+    username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
