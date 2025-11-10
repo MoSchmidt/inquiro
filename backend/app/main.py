@@ -1,5 +1,3 @@
-"""Application entry point for the Inquiro FastAPI service."""
-
 import logging
 from contextlib import asynccontextmanager
 
@@ -48,7 +46,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-
 # ---------------------------------------------------------
 # Development-only CORS configuration
 # ---------------------------------------------------------
@@ -64,7 +61,6 @@ if settings.ENVIRONMENT == "dev":
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
 
 # ---------------------------------------------------------
 # Register Routers

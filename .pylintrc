@@ -4,7 +4,9 @@ ignore=inquiro-env, __pycache__, build, dist
 [MESSAGES CONTROL]
 disable =
     too-few-public-methods,
-    not-callable
+    not-callable,
+    missing-module-docstring,
+
 
 [TYPECHECK]
 ignored-modules =

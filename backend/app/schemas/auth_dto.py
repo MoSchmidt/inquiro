@@ -1,8 +1,6 @@
-"""Pydantic models for authentication requests and responses."""
-
-from typing import Any, Dict
-
 from pydantic import BaseModel
+
+from app.schemas.user_dto import UserResponse
 
 
 class LoginRequest(BaseModel):
@@ -17,7 +15,7 @@ class LoginResponse(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str
-    user: Dict[str, Any]
+    user: UserResponse
 
 
 class RefreshRequest(BaseModel):

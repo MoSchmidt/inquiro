@@ -69,10 +69,10 @@ def init_db() -> None:
     _migrate_legacy_users_table()
 
     for module in (
-        "app.models.user",
-        "app.models.project",
-        "app.models.paper",
-        "app.models.project_paper",
+            "app.models.user",
+            "app.models.project",
+            "app.models.paper",
+            "app.models.project_paper",
     ):
         import_module(module)
     logger.info("🔄 Creating / updating database schema...")
