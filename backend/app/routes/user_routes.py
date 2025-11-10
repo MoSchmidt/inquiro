@@ -16,19 +16,19 @@ router = APIRouter(prefix="/users", tags=["Users"])
 class UserCreate(BaseModel):
     """Payload used when creating a new user."""
 
-    username: str
+    user_name: str
 
 
 @router.post("/", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def create_user(request: UserCreate, db: Session = Depends(get_db)) -> User:
-    """Create a new user record if the username is available."""
+    """Create a new user record if the user name is available."""
 
-    if db.query(User).filter(User.username == request.username).first():
+    if db.query(User).filter(User.user_name == request.user_name).first():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Username already exists",
+            detail="User name already exists",
         )
-    user = User(username=request.username)
+    user = User(user_name=request.user_name)
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -37,12 +37,12 @@ def create_user(request: UserCreate, db: Session = Depends(get_db)) -> User:
 
 @router.get("/me", response_model=UserResponse, status_code=status.HTTP_200_OK)
 def get_current_user_profile(
-    current_username: str = Depends(get_current_user),
+    current_user_name: str = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> User:
     """Return the user information for the authenticated principal."""
 
-    user = db.query(User).filter(User.username == current_username).first()
+    user = db.query(User).filter(User.user_name == current_user_name).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found.")
 

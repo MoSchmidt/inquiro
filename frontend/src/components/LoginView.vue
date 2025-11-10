@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 
-const username = ref('michael');
+const userName = ref('michael');
 const errorMessage = ref(null);
 const isLoading = ref(false);
 
@@ -18,7 +18,7 @@ const handleLogin = async () => {
   try {
     console.log("Trying to login")
     const response = await axios.post('http://localhost:8000/auth/login', {
-      username: username.value,
+      user_name: userName.value,
     });
     console.log(response)
 

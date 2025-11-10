@@ -26,15 +26,15 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 def login(request: LoginRequest, db: Session = Depends(get_db)) -> LoginResponse:
     """Authenticate a user and return access plus refresh tokens."""
 
-    user = db.query(User).filter(User.username == request.username).first()
+    user = db.query(User).filter(User.user_name == request.user_name).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username.",
+            detail="Invalid user name.",
         )
 
-    access_token = create_access_token({"sub": user.username})
-    refresh_token = create_refresh_token({"sub": user.username})
+    access_token = create_access_token({"sub": user.user_name})
+    refresh_token = create_refresh_token({"sub": user.user_name})
 
     user_dto = UserResponse.model_validate(user)
 
@@ -62,7 +62,7 @@ def refresh_access_token(request: RefreshRequest) -> RefreshResponse:
             detail="Invalid or expired refresh token",
         )
 
-    username = payload.get("sub")
-    new_access_token = create_access_token({"sub": username})
+    user_name = payload.get("sub")
+    new_access_token = create_access_token({"sub": user_name})
 
     return RefreshResponse(access_token=new_access_token, token_type="bearer")

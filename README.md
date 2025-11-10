@@ -140,5 +140,5 @@ Bruno is a lightweight, file-based API client that stores requests in plain text
 
 Before authenticating, a user must be created:
 
-1. Run the **Users → Create User** request and provide only a `username` in the request body.
-2. Next, use the **Authentication → Login** request with the same `username` to obtain an access and refresh token.
+1. Run the **Users → Create User** request and provide only a `user_name` in the request body.
+2. Next, use the **Authentication → Login** request with the same `user_name` to obtain an access and refresh token.

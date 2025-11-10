@@ -8,7 +8,7 @@ from pydantic import BaseModel
 class LoginRequest(BaseModel):
     """Payload for authenticating a user."""
 
-    username: str
+    user_name: str
 
 
 class LoginResponse(BaseModel):
