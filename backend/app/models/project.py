@@ -20,7 +20,7 @@ class Project(Base):
     created_by: Mapped[int] = mapped_column(
         BigInteger, ForeignKey("user.user_id"), nullable=False, index=True
     )
-    project_name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    project_name: Mapped[str] = mapped_column(String(255), nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
@@ -33,7 +33,7 @@ class Project(Base):
         "Paper", secondary="project_paper", back_populates="projects"
     )
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from .paper import Paper
     from .project_paper import ProjectPaper
     from .user import User

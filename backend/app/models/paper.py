@@ -3,30 +3,13 @@
 # pylint: disable=too-few-public-methods
 
 from datetime import datetime, date
-from enum import Enum
 from typing import TYPE_CHECKING, List, Optional
 
 from sqlalchemy import BigInteger, Date, DateTime, Enum as SqlEnum, JSON, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
-
-
-class PaperSource(str, Enum):
-    """Enumeration of supported paper sources."""
-
-    ARXIV = "Arxiv"
-
-
-class PaperType(str, Enum):
-    """Enumeration of supported paper types."""
-
-    JOURNAL = "Journal"
-    CONFERENCE = "Conference"
-    PREPRINT = "Preprint"
-    WORKSHOP = "Workshop"
-    THESIS = "Thesis"
-    OTHER = "Other"
+from app.constants.DatabaseConstants import PaperSource, PaperType
 
 
 class Paper(Base):
@@ -62,6 +45,6 @@ class Paper(Base):
         "Project", secondary="project_paper", back_populates="papers"
     )
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from .project import Project
     from .project_paper import ProjectPaper

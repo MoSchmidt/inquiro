@@ -32,6 +32,6 @@ class ProjectPaper(Base):
     paper: Mapped["Paper"] = relationship("Paper", back_populates="project_links")
 
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from .paper import Paper
     from .project import Project
