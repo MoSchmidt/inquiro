@@ -1,7 +1,5 @@
 """SQLAlchemy model for projects managed in the application."""
 
-# pylint: disable=too-few-public-methods
-
 from datetime import datetime
 from typing import TYPE_CHECKING, List
 

@@ -1,7 +1,5 @@
 """Association table model linking projects and papers."""
 
-# pylint: disable=too-few-public-methods
-
 from datetime import datetime
 from typing import TYPE_CHECKING
 

@@ -1,7 +1,5 @@
 """SQLAlchemy model for application users."""
 
-# pylint: disable=too-few-public-methods
-
 from datetime import datetime
 from typing import TYPE_CHECKING, List
 
@@ -28,5 +26,5 @@ class User(Base):
     )
 
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from .project import Project

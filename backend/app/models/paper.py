@@ -1,7 +1,5 @@
 """SQLAlchemy model and enumerations for scholarly papers."""
 
-# pylint: disable=too-few-public-methods
-
 from datetime import datetime, date
 from typing import TYPE_CHECKING, List, Optional
 
@@ -9,8 +7,8 @@ from sqlalchemy import BigInteger, Date, DateTime, Enum as SqlEnum, JSON, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
-from app.core.database import Base
 from app.constants.database_constants import PaperSource, PaperType
+from app.core.database import Base
 
 
 class Paper(Base):
