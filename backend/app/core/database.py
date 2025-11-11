@@ -2,9 +2,10 @@
 
 import logging
 from importlib import import_module
+from typing import Any, Generator
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import declarative_base, sessionmaker, Session
 
 from app.core.config import settings
 
@@ -22,13 +23,20 @@ SESSION_LOCAL = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 def init_db() -> None:
     """Automatically create or update tables based on SQLAlchemy models."""
-    import_module("app.models.user")
+
+    for module in (
+            "app.models.user",
+            "app.models.project",
+            "app.models.paper",
+            "app.models.project_paper",
+    ):
+        import_module(module)
     logger.info("🔄 Creating / updating database schema...")
     Base.metadata.create_all(bind=engine)
     logger.info("✅ Database schema up to date.")
 
 
-def get_db():
+def get_db() -> Generator[Session, Any, None]:
     """Yield a database session for FastAPI routes."""
     db = SESSION_LOCAL()
     try:

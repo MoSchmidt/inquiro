@@ -1,12 +1,16 @@
-"""Pydantic models for user-facing responses."""
-
 from pydantic import BaseModel
+
+
+class UserCreate(BaseModel):
+    """Request to create a new user."""
+
+    username: str
 
 
 class UserResponse(BaseModel):
     """Representation of a user returned by the API."""
 
-    id: int
+    user_id: int
     username: str
 
     class Config:  # pylint: disable=too-few-public-methods

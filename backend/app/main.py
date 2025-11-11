@@ -1,7 +1,6 @@
-"""Application entry point for the Inquiro FastAPI service."""
-
 import logging
 from contextlib import asynccontextmanager
+from typing import Any, AsyncGenerator
 
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
@@ -24,7 +23,7 @@ logger = logging.getLogger("inquiro")
 # Lifespan Event Handlers (Modern FastAPI)
 # ---------------------------------------------------------
 @asynccontextmanager
-async def lifespan(_app: FastAPI):
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None, Any]:
     """Initialize and tear down application resources."""
 
     logger.info("🚀 Starting Inquiro API in '%s' mode...", settings.ENVIRONMENT)
@@ -48,7 +47,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-
 # ---------------------------------------------------------
 # Development-only CORS configuration
 # ---------------------------------------------------------
@@ -64,7 +62,6 @@ if settings.ENVIRONMENT == "dev":
         allow_methods=["*"],
         allow_headers=["*"],
     )
-
 
 # ---------------------------------------------------------
 # Register Routers
