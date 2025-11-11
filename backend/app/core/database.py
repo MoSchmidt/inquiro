@@ -3,7 +3,7 @@
 import logging
 from importlib import import_module
 
-from sqlalchemy import create_engine, inspect, text
+from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 from app.core.config import settings

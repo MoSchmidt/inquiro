@@ -6,6 +6,7 @@ class UserCreate(BaseModel):
 
     username: str
 
+
 class UserResponse(BaseModel):
     """Representation of a user returned by the API."""
 

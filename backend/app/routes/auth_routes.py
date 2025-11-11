@@ -8,6 +8,7 @@ from app.services.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
+
 @router.post(
     "/login",
     response_model=LoginResponse,
@@ -25,6 +26,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)) -> LoginResponse
         token_type="bearer",
         user=UserResponse.model_validate(user)
     )
+
 
 @router.post(
     "/refresh",
