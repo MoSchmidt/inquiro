@@ -27,8 +27,7 @@ jobs:
         run: |
           pylint --rcfile=../.pylintrc $(git ls-files '*.py')
 
-
-  ruff:
+  mypy:
     runs-on: ubuntu-latest
 
     steps:
@@ -40,10 +39,14 @@ jobs:
         with:
           python-version: "3.14"
 
-      - name: Install Ruff
-        run: pip install ruff
-
-      - name: Run Ruff
+      - name: Install MyPy and dependencies
         working-directory: backend
         run: |
-          ruff check .
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install mypy
+
+      - name: Run MyPy
+        working-directory: backend
+        run: |
+          mypy .
