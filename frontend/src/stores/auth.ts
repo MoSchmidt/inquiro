@@ -1,12 +1,7 @@
 import { defineStore } from 'pinia';
 
-interface ApiUser {
-    user_id: number;
-    username: string;
-}
-
 interface User {
-    id: number;
+    user_id: number;
     username: string;
 }
 
@@ -28,14 +23,11 @@ export const useAuthStore = defineStore('auth', {
     },
 
     actions: {
-        setAuth(payload: { accessToken: string, refreshToken: string, user: ApiUser }) {
+        setAuth(payload: { accessToken: string, refreshToken: string, user: User }) {
             const { accessToken, refreshToken, user } = payload;
             this.accessToken = accessToken;
             this.refreshToken = refreshToken;
-            this.user = {
-                id: user.user_id,
-                username: user.username,
-            };
+            this.user = user;
         },
 
         clearAuth() {
