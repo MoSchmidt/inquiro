@@ -14,7 +14,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
     status_code=status.HTTP_200_OK,
     summary="Authenticate a user and return JWT tokens"
 )
-def login(request: LoginRequest, db: Session = Depends(get_db)):
+def login(request: LoginRequest, db: Session = Depends(get_db)) -> LoginResponse:
     """Authenticate a user and return access plus refresh tokens."""
 
     user, access_token, refresh_token = AuthService.login(db, request.username)
@@ -32,7 +32,7 @@ def login(request: LoginRequest, db: Session = Depends(get_db)):
     status_code=status.HTTP_200_OK,
     summary="Generate a new access token using a refresh token"
 )
-def refresh_access_token(request: RefreshRequest):
+def refresh_access_token(request: RefreshRequest) -> RefreshResponse:
     """Validate a refresh token and return a new access token."""
 
     new_access_token = AuthService.refresh(request.refresh_token)

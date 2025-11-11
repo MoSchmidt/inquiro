@@ -15,7 +15,7 @@ router = APIRouter(prefix="/users", tags=["Users"])
     status_code=status.HTTP_201_CREATED,
     summary="Create a new user"
 )
-def create_user(request: UserCreate, db: Session = Depends(get_db)):
+def create_user(request: UserCreate, db: Session = Depends(get_db)) -> UserResponse:
     """Create a new user."""
 
     user = UserService.create_user(db, request.username)
@@ -31,7 +31,7 @@ def create_user(request: UserCreate, db: Session = Depends(get_db)):
 def get_current_user_profile(
         current_username: str = Depends(get_current_user),
         db: Session = Depends(get_db),
-):
+) -> UserResponse:
     """Return the authenticated user's profile."""
 
     user = UserService.get_user_by_username(db, current_username)
