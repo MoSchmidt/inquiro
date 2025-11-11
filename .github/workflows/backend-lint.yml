@@ -47,6 +47,5 @@ jobs:
           pip install mypy
 
       - name: Run MyPy
-        working-directory: backend
         run: |
-          mypy .
+          mypy backend
