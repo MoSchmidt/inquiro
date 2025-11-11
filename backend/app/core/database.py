@@ -2,9 +2,10 @@
 
 import logging
 from importlib import import_module
+from typing import Any, Generator
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy.orm import declarative_base, sessionmaker, Session
 
 from app.core.config import settings
 
@@ -35,7 +36,7 @@ def init_db() -> None:
     logger.info("✅ Database schema up to date.")
 
 
-def get_db():
+def get_db() -> Generator[Session, Any, None]:
     """Yield a database session for FastAPI routes."""
     db = SESSION_LOCAL()
     try:
