@@ -1,0 +1,31 @@
+from openai import OpenAI
+
+from app.core.config import settings
+from app.llm.openai.prompts import KEYWORD_PROMPT
+
+
+class OpenAIProvider:
+    """Wrapper around the OpenAI client."""
+
+    _model: str
+
+    def __init__(self) -> None:
+        self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        self._model = "gpt-5-nano-2025-08-07"
+
+    def extract_keywords(self, user_text: str) -> str:
+        response = self.client.responses.create(
+            model=self._model,
+            reasoning={"effort": "low"},
+            input=[
+                {
+                    "role": "developer",
+                    "content":  KEYWORD_PROMPT,
+                },
+                {
+                    "role": "user",
+                    "content": user_text,
+                },
+            ],
+        )
+        return response.output_text
