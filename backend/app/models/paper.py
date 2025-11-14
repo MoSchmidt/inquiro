@@ -1,9 +1,10 @@
 """SQLAlchemy model and enumerations for scholarly papers."""
 
-from datetime import datetime, date
+from datetime import date, datetime
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import BigInteger, Date, DateTime, Enum as SqlEnum, JSON, String, Text
+from sqlalchemy import JSON, BigInteger, Date, DateTime, String, Text
+from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -18,9 +19,7 @@ class Paper(Base):
 
     paper_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, index=True)
     doi: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
-    source: Mapped[PaperSource] = mapped_column(
-        SqlEnum(PaperSource, name="paper_source"), nullable=False
-    )
+    source: Mapped[PaperSource] = mapped_column(SqlEnum(PaperSource, name="paper_source"), nullable=False)
     paper_type: Mapped[PaperType] = mapped_column(
         SqlEnum(PaperType, name="paper_type"),
         nullable=False,
@@ -33,16 +32,12 @@ class Paper(Base):
     published_at: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
     pdf_url: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
     url: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
-    fetched_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     project_links: Mapped[List["ProjectPaper"]] = relationship(
         "ProjectPaper", back_populates="paper", cascade="all, delete-orphan"
     )
-    projects: Mapped[List["Project"]] = relationship(
-        "Project", secondary="project_paper", back_populates="papers"
-    )
+    projects: Mapped[List["Project"]] = relationship("Project", secondary="project_paper", back_populates="papers")
 
 
 if TYPE_CHECKING:

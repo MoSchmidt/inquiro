@@ -16,21 +16,15 @@ class Project(Base):
     __tablename__ = "project"
 
     project_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, index=True)
-    created_by: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("user.user_id"), nullable=False, index=True
-    )
+    created_by: Mapped[int] = mapped_column(BigInteger, ForeignKey("user.user_id"), nullable=False, index=True)
     project_name: Mapped[str] = mapped_column(String(255), nullable=False)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     creator: Mapped["User"] = relationship("User", back_populates="projects")
     project_papers: Mapped[List["ProjectPaper"]] = relationship(
         "ProjectPaper", back_populates="project", cascade="all, delete-orphan"
     )
-    papers: Mapped[List["Paper"]] = relationship(
-        "Paper", secondary="project_paper", back_populates="projects"
-    )
+    papers: Mapped[List["Paper"]] = relationship("Paper", secondary="project_paper", back_populates="projects")
 
 
 if TYPE_CHECKING:

@@ -17,13 +17,9 @@ class User(Base):
 
     user_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, index=True)
     username: Mapped[str] = mapped_column(String(50), unique=True, nullable=False, index=True)
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, server_default=func.now()
-    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
-    projects: Mapped[List["Project"]] = relationship(
-        "Project", back_populates="creator", cascade="all, delete-orphan"
-    )
+    projects: Mapped[List["Project"]] = relationship("Project", back_populates="creator", cascade="all, delete-orphan")
 
 
 if TYPE_CHECKING:

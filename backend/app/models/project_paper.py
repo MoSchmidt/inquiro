@@ -24,17 +24,11 @@ class ProjectPaper(Base):
         ),
     )
 
-    project_paper_id: Mapped[int] = mapped_column(
-        BigInteger, primary_key=True, index=True
-    )
+    project_paper_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, index=True)
 
-    project_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("project.project_id"), nullable=False, index=True
-    )
+    project_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("project.project_id"), nullable=False, index=True)
 
-    paper_id: Mapped[int] = mapped_column(
-        BigInteger, ForeignKey("paper.paper_id"), nullable=False, index=True
-    )
+    paper_id: Mapped[int] = mapped_column(BigInteger, ForeignKey("paper.paper_id"), nullable=False, index=True)
 
     added_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
@@ -42,12 +36,8 @@ class ProjectPaper(Base):
         server_default=func.now(),
     )
 
-    project: Mapped["Project"] = relationship(
-        "Project", back_populates="project_papers"
-    )
-    paper: Mapped["Paper"] = relationship(
-        "Paper", back_populates="project_links"
-    )
+    project: Mapped["Project"] = relationship("Project", back_populates="project_papers")
+    paper: Mapped["Paper"] = relationship("Paper", back_populates="project_links")
 
 
 if TYPE_CHECKING:
