@@ -83,6 +83,7 @@ The backend and frontend are started manually.
 
    ```bash
    pip install -r requirements.txt
+   pip install -r requirements-dev.txt
    ```
    
 5. **Create a local environment file**:
@@ -103,6 +104,13 @@ The backend and frontend are started manually.
     
    Then adjust the values if needed (e.g., database port, credentials).
 
+6. **Install Git hooks**:
+
+   ```bash
+   pre-commit install
+   ```
+
+   After this, the formatters and linters will run automatically every time you commit.
 
 7. **Start the FastAPI server**:
 
