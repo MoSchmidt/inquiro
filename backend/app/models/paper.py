@@ -1,9 +1,10 @@
 """SQLAlchemy model and enumerations for scholarly papers."""
 
-from datetime import datetime, date
+from datetime import date, datetime
 from typing import TYPE_CHECKING, List, Optional
 
-from sqlalchemy import BigInteger, Date, DateTime, Enum as SqlEnum, JSON, String, Text
+from sqlalchemy import JSON, BigInteger, Date, DateTime, String, Text
+from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 

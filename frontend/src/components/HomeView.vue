@@ -1,8 +1,7 @@
-<script setup>
-import {useAuthStore} from "@/stores/auth.js";
+<script setup lang="ts">
+import { useAuthStore } from '@/stores/auth';
 
-const authStore = useAuthStore()
-
+const authStore = useAuthStore();
 </script>
 
 <template>
@@ -10,6 +9,4 @@ const authStore = useAuthStore()
   <p>{{ authStore.accessToken }}</p>
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

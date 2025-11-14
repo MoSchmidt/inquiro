@@ -1,5 +1,14 @@
 .idea/
 .vscode/
-__pycache__/
-
 *.env
+
+# Node
+node_modules/
+dist/
+.npm/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.pyc

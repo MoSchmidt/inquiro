@@ -7,6 +7,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     """Application settings loaded from environment variables or ``.env`` files."""
+
     # --- App Settings ---
     APP_NAME: str = "Inquiro API"
     ENVIRONMENT: str = "dev"

@@ -5,7 +5,7 @@ from importlib import import_module
 from typing import Any, Generator
 
 from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker, Session
+from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 from app.core.config import settings
 
@@ -25,10 +25,10 @@ def init_db() -> None:
     """Automatically create or update tables based on SQLAlchemy models."""
 
     for module in (
-            "app.models.user",
-            "app.models.project",
-            "app.models.paper",
-            "app.models.project_paper",
+        "app.models.user",
+        "app.models.project",
+        "app.models.paper",
+        "app.models.project_paper",
     ):
         import_module(module)
     logger.info("🔄 Creating / updating database schema...")

@@ -1,11 +1,12 @@
-<script setup>
+<script setup lang="ts">
 import { ref } from 'vue';
-import axios from 'axios';
+import { AxiosError } from 'axios';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
+import { login } from '@/services/auth';
 
-const username = ref('michael');
-const errorMessage = ref(null);
+const username = ref('');
+const errorMessage = ref<string | null>(null);
 const isLoading = ref(false);
 
 const authStore = useAuthStore();
@@ -16,31 +17,23 @@ const handleLogin = async () => {
   errorMessage.value = null;
 
   try {
-    console.log("Trying to login")
-    const response = await axios.post('http://localhost:8000/auth/login', {
-      username: username.value,
-    });
-    console.log(response)
-
-    const { access_token, refresh_token, user } = response.data;
+    const { access_token, refresh_token, user } = await login(username.value);
 
     authStore.setAuth({
       accessToken: access_token,
       refreshToken: refresh_token,
-      user,
+      user: user,
     });
 
-    console.log(authStore.accessToken);
-
     await router.push({ name: 'home' });
+  } catch (error: unknown) {
+    const axiosError = error as AxiosError<{ detail?: string }>;
 
-  } catch (error) {
-    if (error.response?.data?.detail) {
-      errorMessage.value = error.response.data.detail;
+    if (axiosError.response?.data?.detail) {
+      errorMessage.value = axiosError.response.data.detail;
     } else {
       errorMessage.value = 'An unexpected error occurred.';
     }
-    console.error('Login failed:', error);
   } finally {
     isLoading.value = false;
   }
@@ -48,9 +41,39 @@ const handleLogin = async () => {
 </script>
 
 <template>
-  <div>
-    <v-btn @click="handleLogin" :disabled="isLoading || authStore.isAuthenticated">
-      {{ isLoading ? 'Logging in...' : 'Login' }}
-    </v-btn>
-  </div>
+  <v-container fluid>
+    <v-card class="mx-auto" max-width="420">
+      <v-card-title> Login </v-card-title>
+
+      <v-card-text>
+        <v-alert
+          v-if="errorMessage"
+          type="error"
+          variant="tonal"
+          density="compact"
+          class="mb-4"
+        >
+          {{ errorMessage }}
+        </v-alert>
+
+        <v-text-field
+          v-model="username"
+          label="Username"
+          variant="outlined"
+          density="comfortable"
+        />
+      </v-card-text>
+
+      <v-card-actions>
+        <v-btn
+          color="primary"
+          block
+          :disabled="isLoading || authStore.isAuthenticated"
+          @click="handleLogin"
+        >
+          Sign in
+        </v-btn>
+      </v-card-actions>
+    </v-card>
+  </v-container>
 </template>

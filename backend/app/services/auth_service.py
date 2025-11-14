@@ -16,8 +16,7 @@ class AuthService:
         user = UserRepository.get_by_username(db, username)
         if not user:
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid username."
+                status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username."
             )
 
         access_token = create_access_token({"sub": user.username})

@@ -1,0 +1,14 @@
+# Build & dependency folders
+node_modules/
+dist/
+dist-ssr/
+build/
+.husky/
+
+# Lockfiles
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+
+# Any vendor or minified files
+*.min.js
