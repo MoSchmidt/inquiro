@@ -14,7 +14,6 @@ model = model.to(device)
 
 def embed_text(text: str) -> List[float]:
     """Generate a SPECTER2 embedding for a text string."""
-    # tokenizer.sep_token = "[SEP]"
     text = text.replace("\n", " ")
     inputs = tokenizer(
         text,
@@ -28,38 +27,22 @@ def embed_text(text: str) -> List[float]:
     with torch.no_grad():
         outputs = model(**inputs)
 
-    # CLS embedding
     emb = outputs.last_hidden_state[:, 0, :].squeeze().cpu().numpy()
     return emb.tolist()
 
 
-def ingest_arxiv_metadata(json_path: str, limit: int = 50) -> List[Dict]:
+def ingest_arxiv_metadata(path: str, limit: int = 50) -> List[Dict]:
     """
-    Reads the arXiv metadata snapshot JSONL file and processes
-    the first `limit` papers.
+    Read the arXiv metadata snapshot JSONL file and process the first `limit` papers.
+    """
+    json_file = Path(path)
 
-    Returns a list of dicts:
-    [
-        {
-            "id": "...",
-            "title": "...",
-            "abstract": "...",
-            "categories": "...",
-            "embedding": [...]
-        },
-        ...
-    ]
-    """
-    json_file = Path(json_path)
     if not json_file.exists():
         raise FileNotFoundError(f"Could not find dataset at {json_file}")
 
-    if not json_path.exists():
-        raise FileNotFoundError(f"Could not find dataset at {json_path}")
-
     papers: List[Dict] = []
 
-    with json_path.open("r", encoding="utf-8") as f:
+    with json_file.open("r", encoding="utf-8") as f:
         for i, line in enumerate(f):
             if i >= limit:
                 break
@@ -71,8 +54,6 @@ def ingest_arxiv_metadata(json_path: str, limit: int = 50) -> List[Dict]:
             categories = data.get("categories", "")
 
             full_text = f"{title}. {abstract}"
-
-            # Generate embedding
             vector = embed_text(full_text)
 
             papers.append(
@@ -89,13 +70,12 @@ def ingest_arxiv_metadata(json_path: str, limit: int = 50) -> List[Dict]:
     return papers
 
 
-# local testing only!
+# Local testing only
 if __name__ == "__main__":
-    # ⚠️ change this to your real path
-    json_path = r"C:\arxiv-metadata-oai-snapshot.json"
+    test_path = r"C:\arxiv-metadata-oai-snapshot.json"
 
     test_papers = ingest_arxiv_metadata(
-        json_path=json_path,
+        path=test_path,
         limit=5,
     )
 
