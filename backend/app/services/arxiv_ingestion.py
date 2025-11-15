@@ -13,6 +13,7 @@ model = model.to(device)
 
 
 def embed_text(text: str) -> List[float]:
+    """Generate a SPECTER2 embedding for a text string."""
     # tokenizer.sep_token = "[SEP]"
     text = text.replace("\n", " ")
     inputs = tokenizer(
@@ -49,7 +50,10 @@ def ingest_arxiv_metadata(json_path: str, limit: int = 50) -> List[Dict]:
         ...
     ]
     """
-    json_path = Path(json_path)
+    json_file = Path(json_path)
+    if not json_file.exists():
+        raise FileNotFoundError(f"Could not find dataset at {json_file}")
+
     if not json_path.exists():
         raise FileNotFoundError(f"Could not find dataset at {json_path}")
 
@@ -90,10 +94,10 @@ if __name__ == "__main__":
     # ⚠️ change this to your real path
     json_path = r"C:\arxiv-metadata-oai-snapshot.json"
 
-    papers = ingest_arxiv_metadata(
+    test_papers = ingest_arxiv_metadata(
         json_path=json_path,
         limit=5,
     )
 
-    for p in papers:
+    for p in test_papers:
         print(p["id"], p["title"][:80])
