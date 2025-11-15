@@ -72,10 +72,10 @@ def ingest_arxiv_metadata(path: str, limit: int = 50) -> List[Dict]:
 
 # Local testing only
 if __name__ == "__main__":
-    test_path = r"C:\arxiv-metadata-oai-snapshot.json"
+    TEST_PATH = r"C:\arxiv-metadata-oai-snapshot.json"
 
     test_papers = ingest_arxiv_metadata(
-        path=test_path,
+        path=TEST_PATH,
         limit=5,
     )
 
