@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 # Reusable text-building utility (official format)
 # ---------------------------------------------------
 def build_specter2_text(title: str, abstract: str, tokenizer: AutoTokenizer) -> str:
-    """Create the official SPECTER2 input: title + [SEP] + abstract."""
+    """Create the official SPECTER2 input format: title + [SEP] + abstract."""
     t = title or ""
     a = abstract or ""
     return t + tokenizer.sep_token + a
@@ -22,22 +22,22 @@ class Specter2Embedder:
     """Wrapper around the SPECTER2 retrieval (proximity) model."""
 
     def __init__(self, device: Optional[str] = None) -> None:
-
+        """Load SPECTER2 tokenizer, base model, and proximity adapter."""
         if device is None:
             device = "cuda" if torch.cuda.is_available() else "cpu"
 
         self.device = torch.device(device)
-        logger.info(f"Loading SPECTER2 base + proximity adapter on {self.device}...")
+        logger.info("Loading SPECTER2 base + proximity adapter on %s...", self.device)
 
         # Load tokenizer + base model
         self.tokenizer = AutoTokenizer.from_pretrained(
             "allenai/specter2_base",
-            trust_remote_code=True
+            trust_remote_code=True,
         )
 
         self.model = AutoAdapterModel.from_pretrained(
             "allenai/specter2_base",
-            trust_remote_code=True
+            trust_remote_code=True,
         )
 
         # Load retrieval adapter (proximity)
@@ -45,7 +45,7 @@ class Specter2Embedder:
             "allenai/specter2",
             load_as="proximity",
             set_active=True,
-            source="hf"
+            source="hf",
         )
 
         self.model.to(self.device)
@@ -54,10 +54,11 @@ class Specter2Embedder:
         logger.info("SPECTER2 model + adapter loaded successfully.")
 
     def embed_batch(self, texts: List[str]) -> List[Optional[List[float]]]:
-        """Return SPECTER2 embeddings for a batch of prepared input texts."""
-
+        """
+        Compute SPECTER2 embeddings for a batch of input texts.
+        Returns a list of dense vectors or None for failed items.
+        """
         try:
-            # Clean newlines only; no other preprocessing
             cleaned = [t.replace("\n", " ") for t in texts]
 
             inputs = self.tokenizer(
@@ -70,8 +71,8 @@ class Specter2Embedder:
             ).to(self.device)
 
             with torch.no_grad():
-                out = self.model(**inputs)
-                cls_vectors = out.last_hidden_state[:, 0, :].cpu().numpy()
+                outputs = self.model(**inputs)
+                cls_vectors = outputs.last_hidden_state[:, 0, :].cpu().numpy()
 
             return [v.tolist() for v in cls_vectors]
 
@@ -80,9 +81,10 @@ class Specter2Embedder:
             torch.cuda.empty_cache()
             return [None] * len(texts)
 
-        except Exception as e:
-            logger.error(f"Embedding error: {e}")
+        except Exception as e:  # noqa: W0718
+            logger.error("Embedding error: %s", e)
             return [None] * len(texts)
 
     def embed_one(self, text: str) -> Optional[List[float]]:
+        """Compute a single SPECTER2 embedding."""
         return self.embed_batch([text])[0]

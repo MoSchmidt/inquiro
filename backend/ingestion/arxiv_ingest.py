@@ -8,7 +8,7 @@ import pandas as pd
 
 from app.llm.embeddings.specter2 import (
     Specter2Embedder,
-    build_specter2_text
+    build_specter2_text,
 )
 
 logger = logging.getLogger(__name__)
@@ -19,22 +19,21 @@ logging.basicConfig(
 
 
 def write_shard(shard_buffer: List[Dict], shard_idx: int, out_path: Path) -> int:
+    """Write a Parquet shard to disk and return the next shard index."""
     df = pd.DataFrame(shard_buffer)
     shard_file = out_path / f"shard_{shard_idx:05d}.parquet"
     df.to_parquet(shard_file, index=False)
-    logger.info(f"✔ Wrote shard {shard_idx} → {shard_file} ({len(df)} rows)")
+    logger.info("✔ Wrote shard %s → %s (%s rows)", shard_idx, shard_file, len(df))
     return shard_idx + 1
 
 
-def process_batch(
-        batch_buffer: List[Dict],
-        embedder: Specter2Embedder,
-) -> List[Dict]:
+def process_batch(batch_buffer: List[Dict], embedder: Specter2Embedder) -> List[Dict]:
+    """Convert a batch of metadata dicts into embedding rows."""
     texts = [
         build_specter2_text(
             p.get("title", ""),
             p.get("abstract", ""),
-            embedder.tokenizer
+            embedder.tokenizer,
         )
         for p in batch_buffer
     ]
@@ -53,14 +52,16 @@ def process_batch(
     return rows
 
 
+# pylint: disable=too-many-arguments, too-many-positional-arguments, too-many-locals
 def ingest_arxiv_metadata_to_parquet(
-        path: str,
-        out_dir: str,
-        embedder: Specter2Embedder,
-        limit: Optional[int] = None,
-        batch_size: int = 64,
-        shard_size: int = 5000,
+    path: str,
+    out_dir: str,
+    embedder: Specter2Embedder,
+    limit: Optional[int] = None,
+    batch_size: int = 64,
+    shard_size: int = 5000,
 ):
+    """Ingest a JSONL ArXiv dump and write Parquet shards with embeddings."""
     json_file = Path(path)
     out_path = Path(out_dir)
     out_path.mkdir(parents=True, exist_ok=True)
@@ -68,8 +69,8 @@ def ingest_arxiv_metadata_to_parquet(
     if not json_file.exists():
         raise FileNotFoundError(f"Dataset not found: {json_file}")
 
-    logger.info(f"Reading: {json_file}")
-    logger.info(f"Writing shards: {out_path}")
+    logger.info("Reading: %s", json_file)
+    logger.info("Writing shards: %s", out_path)
 
     batch_buffer: List[Dict] = []
     shard_buffer: List[Dict] = []
@@ -83,7 +84,7 @@ def ingest_arxiv_metadata_to_parquet(
             try:
                 data = json.loads(line)
             except json.JSONDecodeError:
-                logger.warning(f"Skipping invalid JSON at line {i}")
+                logger.warning("Skipping invalid JSON at line %s", i)
                 continue
 
             batch_buffer.append(data)
@@ -98,7 +99,7 @@ def ingest_arxiv_metadata_to_parquet(
                     shard_buffer.clear()
 
             if (i + 1) % 1000 == 0:
-                logger.info(f"Processed {i + 1} papers...")
+                logger.info("Processed %s papers...", i + 1)
 
     if batch_buffer:
         rows = process_batch(batch_buffer, embedder)
@@ -107,7 +108,7 @@ def ingest_arxiv_metadata_to_parquet(
     if shard_buffer:
         write_shard(shard_buffer, shard_idx, out_path)
 
-    logger.info(f"Done. Total shards: {shard_idx + 1}")
+    logger.info("Done. Total shards: %s", shard_idx + 1)
 
 
 if __name__ == "__main__":
@@ -121,12 +122,12 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    embedder = Specter2Embedder(device=args.device)
+    cli_embedder = Specter2Embedder(device=args.device)
 
     ingest_arxiv_metadata_to_parquet(
         path=args.path,
         out_dir=args.out,
-        embedder=embedder,
+        embedder=cli_embedder,
         limit=args.limit,
         batch_size=args.batch_size,
         shard_size=args.shard_size,
