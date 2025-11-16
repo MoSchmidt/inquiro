@@ -80,7 +80,7 @@ class Specter2Embedder:
             torch.cuda.empty_cache()
             return [None] * len(texts)
 
-        except Exception as e:  # noqa: W0718
+        except Exception as e:  # pylint: disable=broad-exception-caught
             logger.error("Embedding error: %s", e)
             return [None] * len(texts)
 

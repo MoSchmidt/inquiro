@@ -60,7 +60,7 @@ def ingest_arxiv_metadata_to_parquet(
     limit: Optional[int] = None,
     batch_size: int = 64,
     shard_size: int = 5000,
-):
+) -> None:
     """Ingest a JSONL ArXiv dump and write Parquet shards with embeddings."""
     json_file = Path(path)
     out_path = Path(out_dir)
