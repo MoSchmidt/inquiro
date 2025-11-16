@@ -12,3 +12,6 @@ dist/
 venv/
 __pycache__/
 *.pyc
+
+# Embeddings data
+backend/ingestion/data
