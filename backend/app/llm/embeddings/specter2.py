@@ -2,8 +2,7 @@ import logging
 from typing import List, Optional
 
 import torch
-from adapters import AutoAdapterModel
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, AutoAdapterModel
 
 logger = logging.getLogger(__name__)
 
