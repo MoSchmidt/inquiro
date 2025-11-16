@@ -10,11 +10,11 @@
 
 Make sure the following tools are installed on your system:
 
-| Tool                    | Recommended Version | Installation Link                                                                                 |
-| ----------------------- | ------------------- | ------------------------------------------------------------------------------------------------- |
-| **Docker**              | Latest              | [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/)             |
-| **Python**              | 3.14.0              | [python.org/downloads/release/python-3140](https://www.python.org/downloads/release/python-3140/) |
-| **Node.js**             | TBD                 | [nodejs.org](https://nodejs.org/)                                                                 |
+| Tool                    | Recommended Version | Installation Link                                                                                   |
+| ----------------------- |---------------------|-----------------------------------------------------------------------------------------------------|
+| **Docker**              | Latest              | [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/)               |
+| **Python**              | 3.11.14             | [python.org/downloads/release/python-31114](https://www.python.org/downloads/release/python-31114/) |
+| **Node.js**             | TBD                 | [nodejs.org](https://nodejs.org/)                                                                   |
 
 💡 **Note:** Docker is only required to run the PostgreSQL database locally.
 The backend and frontend are started manually.
@@ -56,27 +56,54 @@ The backend and frontend are started manually.
    cd backend
    ```
 
-3. **(Optional but recommended) Create and activate a virtual environment named `inquiro-env`**:
+Here is a clean, professional, and minimal update for that section — giving users **two clear options**:
+(1) standard `venv` with the correct Python version, or
+(2) Anaconda environment with the correct version.
 
-   🧠 Linux / macOS
+You can paste this directly into your README.
 
-   ```bash
-   # Create a virtual environment
-   python -m venv inquiro-env
+---
 
-   # Activate it
-   source inquiro-env/bin/activate
-   ```
+## (Optional but recommended) Create and activate a Python environment
 
-   🪟 Windows (PowerShell)
+You can choose **either** a standard `venv` (recommended if you already installed Python 3.11.14 manually) **or** an Anaconda environment.
 
-   ```bash
-   # Create a virtual environment
-   python -m venv inquiro-env
+### ✅ Option A — Create a virtual environment using `venv` (Python 3.11.14)
 
-   # Activate it
-   inquiro-env\Scripts\activate
-   ```
+Ensure Python **3.11.14** is available on your system (check with `python --version` or `python3 --version`).
+
+🧠 **Linux / macOS**
+
+```bash
+# Create a virtual environment using the correct Python version
+python3.11 -m venv inquiro-env
+
+# Activate it
+source inquiro-env/bin/activate
+```
+
+🪟 **Windows (PowerShell)**
+
+```bash
+# Create a virtual environment
+py -3.11 -m venv inquiro-env
+
+# Activate it
+inquiro-env\Scripts\activate
+```
+
+---
+
+### ✅ Option B — Create an environment using Anaconda (Python 3.11.14)
+
+If you're using Conda, you can create a dedicated environment:
+
+```bash
+conda create -n inquiro-env python=3.11.14
+conda activate inquiro-env
+```
+
+This ensures all dependencies install cleanly—especially libraries like `torch`, `transformers`, and scientific packages.
 
 
 4. **Install dependencies**:
