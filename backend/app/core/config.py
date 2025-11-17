@@ -25,6 +25,9 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
+    # --- OpenAI ---
+    OPENAI_API_KEY: str
+
     model_config = SettingsConfigDict(
         env_file=os.getenv("ENV_FILE", "dev.env"),
         extra="ignore",
