@@ -29,15 +29,9 @@ class Specter2Embedder:
         logger.info("Loading SPECTER2 base + proximity adapter on %s...", self.device)
 
         # Load tokenizer + base model
-        self.tokenizer = AutoTokenizer.from_pretrained(
-            "allenai/specter2_base",
-            trust_remote_code=True,
-        )
+        self.tokenizer = AutoTokenizer.from_pretrained("allenai/specter2_base")
 
-        self.model = AutoAdapterModel.from_pretrained(
-            "allenai/specter2_base",
-            trust_remote_code=True,
-        )
+        self.model = AutoAdapterModel.from_pretrained("allenai/specter2_base")
 
         # Load retrieval adapter (proximity)
         self.model.load_adapter(
