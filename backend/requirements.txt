@@ -19,3 +19,14 @@ email-validator==2.3.0
 # --- Security & Auth ---
 python-jose[cryptography]==3.3.0
 starlette~=0.49.3
+
+# --- ML / Embeddings ---
+torch>=2.0.0,<3.0.0
+
+adapter-transformers==3.2.1
+transformers==4.33.3
+tokenizers==0.13.3
+huggingface_hub<0.20.0
+
+pandas>=2.2.0
+pyarrow>=22.0.0
