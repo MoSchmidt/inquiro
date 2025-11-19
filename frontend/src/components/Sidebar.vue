@@ -18,17 +18,25 @@ const emit = defineEmits([
   'logout',
 ]);
 
-const email = ref('');
-const password = ref('');
+const username = ref('')
+//const email = ref('');
+//const password = ref('');
 const loginDialogOpen = ref(false);
 
 const handleLoginSubmit = () => {
+  if (username.value) {
+    emit('login', username.value);
+    username.value = '';
+    loginDialogOpen.value = false;
+  }
+  /*
   if (email.value && password.value) {
     emit('login', email.value, password.value);
     email.value = '';
     password.value = '';
     loginDialogOpen.value = false;
   }
+   */
 };
 
 const handleNewProjectClick = () => {
@@ -74,7 +82,7 @@ const handleNewProjectClick = () => {
               class="mb-2 rounded-lg"
               :title="project.name"
               :subtitle="project.query"
-              :lines="3"
+              lines="three"
           >
             <template #prepend>
               <v-icon :icon="FolderOpen" color="blue-darken-2"></v-icon>
@@ -119,7 +127,7 @@ const handleNewProjectClick = () => {
         <v-card-text>
           <p class="mb-4 text-medium-emphasis">Geben Sie Ihre Anmeldedaten ein, um auf Ihre Projekte zuzugreifen.</p>
           <v-form @submit.prevent="handleLoginSubmit">
-            <v-text-field
+            <!--<v-text-field
                 v-model="email"
                 label="Email"
                 type="email"
@@ -134,6 +142,14 @@ const handleNewProjectClick = () => {
                 variant="outlined"
                 required
                 class="mb-4"
+            ></v-text-field>-->
+            <v-text-field
+              v-model="username"
+              label="Username"
+              type="text"
+              variant="outlined"
+              required
+              class="mb-4"
             ></v-text-field>
             <v-btn type="submit" color="primary" block>Login</v-btn>
           </v-form>

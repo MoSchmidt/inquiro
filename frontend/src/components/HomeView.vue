@@ -1,15 +1,3 @@
-<!--<script setup lang="ts">
-import { useAuthStore } from '@/stores/auth';
-
-const authStore = useAuthStore();
-</script>
-
-<template>
-  <h1>Hello, {{ authStore.user }}</h1>
-  <p>{{ authStore.accessToken }}</p>
-</template>
-
-<style scoped></style>-->
 <script setup lang="ts">
 import { ref } from 'vue';
 import { VLayout, VAppBar, VNavigationDrawer, VMain, VBtn, VIcon, VToolbarTitle, VContainer } from 'vuetify/components';
@@ -19,11 +7,19 @@ import InputSection from './InputSection.vue';
 import ResultsSection from './ResultsSection.vue';
 import { Paper, Project } from './types'; // Importiere die Typen
 
+import { useAuthStore } from '@/stores/auth';
+import { login } from '@/services/auth';
+import {AxiosError} from "axios";
+
 // Zustand
 const sidebarOpen = ref(false);
 const currentQuery = ref<string | null>(null);
 const outputs = ref<Paper[]>([]);
-const isLoggedIn = ref(false);
+//const isLoggedIn = ref(false);
+
+const errorMessage = ref<string | null>(null);
+const isLoading = ref(false);
+const authStore = useAuthStore();
 
 const initialProjects: Project[] = [
   {
@@ -51,6 +47,20 @@ const initialProjects: Project[] = [
     query: 'Quantum computing advances',
     date: '2025-11-13',
     outputs: [
+      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
+      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
+      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
+      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
+      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
+      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
+      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
+      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
+      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
+      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
+      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
+      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
+      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
+      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
       { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' }
     ]
   }
@@ -92,16 +102,42 @@ const handleNewQuery = () => {
   currentQuery.value = null;
   outputs.value = [];
 };
-
+/*
 const handleLogin = (email: string, password: string) => {
   // Mock login logic
   isLoggedIn.value = true;
   sidebarOpen.value = false;
   console.log(`Logging in with: ${email} and ${password}`);
 };
+*/
+const handleLogin = async (usernameFromSidebar: string) => {
+  isLoading.value = true;
+  errorMessage.value = null;
 
+  try {
+    const { access_token, refresh_token, user } = await login(usernameFromSidebar);
+
+    authStore.setAuth({
+      accessToken: access_token,
+      refreshToken: refresh_token,
+      user: user,
+    });
+    sidebarOpen.value = false;
+  } catch (error: unknown) {
+    const axiosError = error as AxiosError<{ detail?: string }>;
+
+    if (axiosError.response?.data?.detail) {
+      errorMessage.value = axiosError.response.data.detail;
+    } else {
+      errorMessage.value = 'An unexpected error occurred.';
+    }
+  } finally {
+    isLoading.value = false;
+  }
+}
 const handleLogout = () => {
-  isLoggedIn.value = false;
+  //isLoggedIn.value = false;
+  authStore.clearAuth();
 };
 </script>
 
@@ -117,7 +153,7 @@ const handleLogout = () => {
         <Sidebar
             :is-open="sidebarOpen"
             :recent-projects="recentProjects"
-            :is-logged-in="isLoggedIn"
+            :is-logged-in="authStore.isAuthenticated"
             @close="sidebarOpen = false"
             @project-select="handleProjectSelect"
             @new-project="handleNewQuery"
@@ -150,3 +186,15 @@ const handleLogout = () => {
     </v-layout>
   </v-app>
 </template>
+<!--<script setup lang="ts">
+import { useAuthStore } from '@/stores/auth';
+
+const authStore = useAuthStore();
+</script>
+
+<template>
+  <h1>Hello, {{ authStore.user }}</h1>
+  <p>{{ authStore.accessToken }}</p>
+</template>
+
+<style scoped></style>-->
