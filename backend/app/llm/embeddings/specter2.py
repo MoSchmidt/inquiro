@@ -2,7 +2,7 @@ import logging
 from typing import List, Optional
 
 import torch
-from transformers import AutoTokenizer, AutoAdapterModel
+from transformers import AutoAdapterModel, AutoTokenizer
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ def build_specter2_text(title: str, abstract: str, tokenizer: AutoTokenizer) -> 
 class Specter2Embedder:
     """Wrapper around the SPECTER2 retrieval (proximity) model."""
 
-    def __init__(self, device: Optional[str] = None) -> None:
+    def __init__(self, model: str = "allenai/specter2", device: Optional[str] = None) -> None:
         """Load SPECTER2 tokenizer, base model, and proximity adapter."""
         if device is None:
             device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -35,8 +35,8 @@ class Specter2Embedder:
 
         # Load retrieval adapter (proximity)
         self.model.load_adapter(
-            "allenai/specter2",
-            load_as="proximity",
+            model,
+            load_as="specter2",
             set_active=True,
             source="hf",
         )
