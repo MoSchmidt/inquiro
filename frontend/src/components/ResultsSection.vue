@@ -23,8 +23,12 @@ const props = defineProps<{
 
     <div>
       <h3 class="text-h6 mb-4">Generierte Artikel ({{ outputs.length }})</h3>
-      <v-card flat class="overflow-hidden">
-        <v-table density="default">
+      <v-card flat>
+        <v-table
+            density="default"
+            fixed-header
+            height="400px"
+        >
           <thead>
           <tr>
             <th class="text-left w-40">Titel</th>
