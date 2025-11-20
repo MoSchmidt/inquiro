@@ -20,7 +20,7 @@ DB_CONFIG = {
     "host": "inquiro-db.cxa6mocs0pr2.eu-central-1.rds.amazonaws.com",
     "port": 5432,
     "user": "postgres",
-    "password": "inquiroDB#0815",
+    "password": "...",
     "dbname": "inquiro_db",
 }
 
