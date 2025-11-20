@@ -33,7 +33,7 @@ def iter_shards(data_dir: Path) -> Iterable[Path]:
 
 
 def parse_date(date_str: Optional[str]):
-    """Parse YYYY-MM-DD or return None."""
+    """Parse YYYY-MM-DD or return none."""
     if not date_str:
         return None
     try:
