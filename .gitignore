@@ -14,4 +14,4 @@ __pycache__/
 *.pyc
 
 # Embeddings data
-backend/app/ingestion/data
+backend/ingestion/data
