@@ -26,9 +26,7 @@ class Paper(Base):
 
     __tablename__ = "paper"
 
-    # ------------------
     # Columns
-    # ------------------
     paper_id: Mapped[int] = mapped_column(BigInteger, primary_key=True, index=True)
     doi: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
 
@@ -54,16 +52,12 @@ class Paper(Base):
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
 
-    # ------------------
     # Vector Embedding
-    # ------------------
     embedding: Mapped[Optional[List[float]]] = mapped_column(
         Vector(768), nullable=True
     )
 
-    # ------------------
     # Relationships
-    # ------------------
     project_links: Mapped[List["ProjectPaper"]] = relationship(
         "ProjectPaper", back_populates="paper", cascade="all, delete-orphan"
     )
@@ -72,15 +66,16 @@ class Paper(Base):
         "Project", secondary="project_paper", back_populates="papers"
     )
 
-    # ------------------
     # Indexes (HNSW)
-    # ------------------
     __table_args__ = (
         Index(
             "ix_paper_embedding_hnsw",
             "embedding",
             postgresql_using="hnsw",
-            postgresql_with={"m": 16, "ef_search": 40, "lists": 100},
+            postgresql_ops={
+                "embedding": "vector_cosine_ops"
+            },
+            postgresql_with={"m": 16, "ef_construction": 64},
         ),
     )
 
