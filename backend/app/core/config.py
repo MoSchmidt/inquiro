@@ -1,6 +1,7 @@
 """Configuration objects and helpers for the FastAPI application."""
 
 import os
+from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -24,6 +25,9 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+
+    # --- OpenAI ---
+    OPENAI_API_KEY: Optional[str] = None
 
     model_config = SettingsConfigDict(
         env_file=os.getenv("ENV_FILE", "dev.env"),
