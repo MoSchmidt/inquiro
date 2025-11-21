@@ -54,12 +54,13 @@ def process_batch(batch_buffer: List[Dict], embedder: Specter2Embedder) -> List[
 
 # pylint: disable=too-many-arguments, too-many-positional-arguments, too-many-locals
 def ingest_arxiv_metadata_to_parquet(
-    path: str,
-    out_dir: str,
-    embedder: Specter2Embedder,
-    limit: Optional[int] = None,
-    batch_size: int = 64,
-    shard_size: int = 5000,
+        path: str,
+        out_dir: str,
+        embedder: Specter2Embedder,
+        skip: int = 0,
+        limit: Optional[int] = None,
+        batch_size: int = 64,
+        shard_size: int = 5000,
 ) -> None:
     """Ingest a JSONL ArXiv dump and write Parquet shards with embeddings."""
     json_file = Path(path)
@@ -70,6 +71,8 @@ def ingest_arxiv_metadata_to_parquet(
         raise FileNotFoundError(f"Dataset not found: {json_file}")
 
     logger.info("Reading: %s", json_file)
+    if skip:
+        logger.info("Skipping first %s lines...", skip)
     logger.info("Writing shards: %s", out_path)
 
     batch_buffer: List[Dict] = []
@@ -78,7 +81,10 @@ def ingest_arxiv_metadata_to_parquet(
 
     with json_file.open("r", encoding="utf-8") as f:
         for i, line in enumerate(f):
-            if limit and i >= limit:
+            if i < skip:
+                continue
+
+            if limit and i >= skip + limit:
                 break
 
             try:
@@ -115,9 +121,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Ingest ArXiv metadata into Parquet shards.")
     parser.add_argument("--path", type=str, required=True)
     parser.add_argument("--out", type=str, required=True)
+    parser.add_argument("--skip", type=int, default=0)
     parser.add_argument("--limit", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=64)
-    parser.add_argument("--shard-size", type=int, default=5000)
     parser.add_argument("--device", type=str, default=None)
 
     args = parser.parse_args()
@@ -128,7 +134,8 @@ if __name__ == "__main__":
         path=args.path,
         out_dir=args.out,
         embedder=cli_embedder,
+        skip=args.skip,
         limit=args.limit,
         batch_size=args.batch_size,
-        shard_size=args.shard_size,
+        shard_size=5000
     )
