@@ -1,0 +1,22 @@
+meta {
+  name: Test Keywords Endpoint
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{base_url}}/search
+  body: json
+  auth: inherit
+}
+
+body:json {
+    {
+        "query": "I am searching papers dealing with multi-agent deep reinforcement learnign for multi-winner approval voting. Especially the voting rules CC, PAV and the method of equal shares are of interest to me."
+    }
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}
