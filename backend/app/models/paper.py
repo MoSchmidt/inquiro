@@ -45,9 +45,9 @@ class Paper(Base):
     authors: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
     abstract: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     published_at: Mapped[Optional[date]] = mapped_column(Date, nullable=True)
-    pdf_url: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
-    url: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
-
+    paper_id_external: Mapped[Optional[str]] = mapped_column(
+        String(255), nullable=True
+    )  # <-- added
     fetched_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
