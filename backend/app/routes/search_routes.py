@@ -1,0 +1,21 @@
+from fastapi import APIRouter, status
+
+from app.schemas.search_dto import SearchRequest, SearchResponse
+from app.services.search_service import SearchService
+
+router = APIRouter(prefix="/search", tags=["Search"])
+
+
+@router.post(
+    "",
+    response_model=SearchResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Search for papers",
+)
+def search(request: SearchRequest) -> SearchResponse:
+    """
+    Returns a list of papers that match the search query
+    """
+
+    papers = SearchService.search_papers(request.query)
+    return SearchResponse.model_validate(papers)
