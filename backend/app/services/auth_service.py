@@ -1,4 +1,5 @@
 from fastapi import HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from app.core.security import create_access_token, create_refresh_token, verify_token
@@ -10,7 +11,7 @@ class AuthService:
     """Service for authentication and token handling."""
 
     @staticmethod
-    def login(db: Session, username: str) -> tuple[User, str, str]:
+    def login(db: AsyncSession, username: str) -> tuple[User, str, str]:
         """Authenticate a user and create JWT tokens."""
 
         user = UserRepository.get_by_username(db, username)

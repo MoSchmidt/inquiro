@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, status
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -29,8 +30,8 @@ def create_user(request: UserCreate, db: Session = Depends(get_db)) -> UserRespo
     summary="Get the current user's profile",
 )
 def get_current_user_profile(
-    current_username: str = Depends(get_current_user),
-    db: Session = Depends(get_db),
+        current_username: str = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db),
 ) -> UserResponse:
     """Return the authenticated user's profile."""
 

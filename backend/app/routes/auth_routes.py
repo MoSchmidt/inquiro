@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, status
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
@@ -20,7 +21,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
     status_code=status.HTTP_200_OK,
     summary="Authenticate a user and return JWT tokens",
 )
-def login(request: LoginRequest, db: Session = Depends(get_db)) -> LoginResponse:
+def login(request: LoginRequest, db: AsyncSession = Depends(get_db)) -> LoginResponse:
     """Authenticate a user and return access plus refresh tokens."""
 
     user, access_token, refresh_token = AuthService.login(db, request.username)

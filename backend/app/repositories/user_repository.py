@@ -1,6 +1,7 @@
 from typing import Optional
 
-from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.user import User
 
@@ -9,20 +10,22 @@ class UserRepository:
     """Repository for user-related database operations."""
 
     @staticmethod
-    def get_by_username(db: Session, username: str) -> Optional[User]:
+    async def get_by_username(db: AsyncSession, username: str) -> Optional[User]:
         """Fetch a user by username."""
-        return db.query(User).filter(User.username == username).first()
+        result = await db.execute(select(User).where(User.username == username))
+        return result.scalar_one_or_none()
 
     @staticmethod
-    def exists(db: Session, username: str) -> bool:
+    async def exists(db: AsyncSession, username: str) -> bool:
         """Check whether a user exists."""
-        return db.query(User).filter(User.username == username).first() is not None
+        result = await db.execute(select(User).where(User.username == username))
+        return result.scalar_one_or_none() is not None
 
     @staticmethod
-    def create(db: Session, username: str) -> User:
+    async def create(db: AsyncSession, username: str) -> User:
         """Create a new user."""
         user = User(username=username)
         db.add(user)
-        db.commit()
-        db.refresh(user)
+        await db.commit()
+        await db.refresh(user)
         return user
