@@ -106,6 +106,34 @@ def insert_rows(conn: connection, rows: List[Tuple[Any, ...]]) -> None:
     conn.commit()
 
 
+def build_row(row: Any) -> Optional[Tuple[Any, ...]]:
+    """Build a single row tuple for DB insertion."""
+    doi = getattr(row, "doi", None)
+    title: str = (getattr(row, "title", "") or "").strip()
+    abstract: str = (getattr(row, "abstract", "") or "").strip()
+    published_at = parse_date(getattr(row, "update_date", None))
+    raw_authors = getattr(row, "authors_parsed", None)
+    authors_json = authors_to_json(raw_authors)
+    arxiv_id = getattr(row, "id", None)
+    paper_id_external = arxiv_id or None
+    embedding = getattr(row, "embedding", None)
+    if embedding is None:
+        return None
+    embedding_literal = embedding_to_literal(embedding)
+
+    return (
+        doi,
+        "ARXIV",
+        "PREPRINT",
+        title,
+        authors_json,
+        abstract,
+        published_at,
+        paper_id_external,
+        embedding_literal,
+    )
+
+
 def ingest_shard(conn: connection, shard_path: Path, batch_size: int) -> None:
     """Ingest a single parquet shard into the database."""
     logger.info("Ingesting %s", shard_path.name)
@@ -114,43 +142,13 @@ def ingest_shard(conn: connection, shard_path: Path, batch_size: int) -> None:
     rows: List[Tuple[Any, ...]] = []
 
     for row in df.itertuples(index=False):
-        doi = getattr(row, "doi", None)
-        title: str = (getattr(row, "title", "") or "").strip()
-        abstract: str = (getattr(row, "abstract", "") or "").strip()
-        published_at = parse_date(getattr(row, "update_date", None))
-
-        raw_authors = getattr(row, "authors_parsed", None)
-        authors_json = authors_to_json(raw_authors)
-
-        arxiv_id = getattr(row, "id", None)
-        paper_id_external = arxiv_id or None
-
-        embedding = getattr(row, "embedding", None)
-        if embedding is None:
+        row_tuple = build_row(row)
+        if row_tuple is None:
             continue
-
-        embedding_literal = embedding_to_literal(embedding)
-
-        rows.append(
-            (
-                doi,
-                "ARXIV",
-                "PREPRINT",
-                title,
-                authors_json,
-                abstract,
-                published_at,
-                paper_id_external,
-                embedding_literal,
-            )
-        )
-
+        rows.append(row_tuple)
         if len(rows) >= batch_size:
             insert_rows(conn, rows)
             rows.clear()
-
-    if rows:
-        insert_rows(conn, rows)
 
 
 def main(data_dir: Path, batch_size: int) -> None:
