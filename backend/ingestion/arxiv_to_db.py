@@ -38,7 +38,7 @@ def parse_date(d: Optional[str]) -> Optional[date]:
         return None
     try:
         return datetime.strptime(d, "%Y-%m-%d").date()
-    except Exception:
+    except ValueError:
         return None
 
 
@@ -59,7 +59,7 @@ def authors_to_json(x: Any) -> str:
     """Convert author list structure into JSON string."""
     try:
         return json.dumps(to_plain(x))
-    except Exception:
+    except (TypeError, ValueError):
         return "[]"
 
 
