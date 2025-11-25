@@ -1,6 +1,7 @@
 import argparse
 import json
 import logging
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Iterable, List, Optional, Tuple
@@ -14,11 +15,11 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(
 logger = logging.getLogger(__name__)
 
 DB_CONFIG = {
-    "host": "inquiro-db.cxa6mocs0pr2.eu-central-1.rds.amazonaws.com",
-    "port": 5432,
-    "user": "postgres",
-    "password": "TODO",
-    "dbname": "inquiro_db",
+    "host": os.getenv("POSTGRES_HOST"),
+    "port": int(os.getenv("POSTGRES_PORT")),
+    "user": os.getenv("POSTGRES_USER"),
+    "password": os.getenv("POSTGRES_PASSWORD"),
+    "dbname": os.getenv("POSTGRES_DB"),
     "sslmode": "require",
 }
 
@@ -145,13 +146,17 @@ def main(data_dir: Path, batch_size: int):
 
 
 if __name__ == "__main__":
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    default_data_path = os.path.join(script_dir, "arxiv-vector-embeddings")
+
     parser = argparse.ArgumentParser(
         description="Bulk ingest arXiv parquet shards into paper table."
     )
     parser.add_argument(
         "--data-dir",
         type=str,
-        default=r"C:/Users/AnthonyMalRivett/Documents/arxiv-vector-embeddings",
+        default=default_data_path,
+        help="Path to the folder containing the embeddings",
     )
     parser.add_argument("--batch-size", type=int, default=1000)
     args = parser.parse_args()
