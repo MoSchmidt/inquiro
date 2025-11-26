@@ -130,4 +130,3 @@ def remove_paper_from_project(
         db, current_username, project_id, paper_id
     )
 
-

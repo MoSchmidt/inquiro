@@ -13,7 +13,12 @@ class ProjectRepository:
     @staticmethod
     def list_for_user(db: Session, user_id: int) -> List[Project]:
         """Return all projects owned by the given user."""
-        return db.query(Project).filter(Project.created_by == user_id).order_by(Project.created_at.desc()).all()
+        return (
+            db.query(Project)
+            .filter(Project.created_by == user_id)
+            .order_by(Project.created_at.desc())
+            .all()
+        )
 
     @staticmethod
     def get_for_user(db: Session, project_id: int, user_id: int) -> Optional[Project]:
@@ -32,7 +37,6 @@ class ProjectRepository:
         db.commit()
         db.refresh(project)
         return project
-
     @staticmethod
     def update_name(db: Session, project: Project, new_name: str) -> Project:
         """Update the project's name."""

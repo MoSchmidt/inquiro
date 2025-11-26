@@ -46,4 +46,3 @@ class ProjectWithPapersResponse(BaseModel):
     project: ProjectResponse
     papers: List[PaperSummary]
 
-
