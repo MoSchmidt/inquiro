@@ -104,4 +104,3 @@ class ProjectRepository:
         db.refresh(project)
         return project
 
-

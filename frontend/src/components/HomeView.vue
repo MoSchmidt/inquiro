@@ -5,16 +5,19 @@ import { Menu as MenuIcon } from 'lucide-vue-next';
 import Sidebar from './Sidebar.vue';
 import InputSection from './InputSection.vue';
 import ResultsSection from './ResultsSection.vue';
+import ProjectResultsSection from './ProjectResultsSection.vue';
 import type { Paper } from './types';
 
 import { useAuthStore } from '@/stores/auth';
 import { useProjectsStore } from '@/stores/projects';
 import { login } from '@/services/auth';
+import { searchPapers } from '@/services/search';
 import type { AxiosError } from 'axios';
 
 const sidebarOpen = ref(false);
 const currentQuery = ref<string | null>(null);
 const outputs = ref<Paper[]>([]);
+const isProjectView = ref(false);
 
 const errorMessage = ref<string | null>(null);
 const isLoading = ref(false);
@@ -37,9 +40,29 @@ onMounted(() => {
   }
 });
 
-const handleSubmitQuery = (query: string) => {
+const handleSubmitQuery = async (query: string) => {
   currentQuery.value = query;
+  isProjectView.value = false;
   outputs.value = [];
+  errorMessage.value = null;
+  isLoading.value = true;
+
+  try {
+    const response = await searchPapers(query);
+    outputs.value = response.papers.map((p) => ({
+      paper_id: p.paper_id,
+      title: p.title,
+      author: p.authors ? Object.values(p.authors).join(', ') : '',
+      year: p.published_at ? new Date(p.published_at).getFullYear() : 0,
+      url: p.url ?? '',
+      abstract: p.abstract ?? undefined,
+    }));
+  } catch (error) {
+    console.error('Search failed', error);
+    errorMessage.value = 'Suche fehlgeschlagen.';
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 const handleProjectSelect = async (projectId: number) => {
@@ -48,6 +71,7 @@ const handleProjectSelect = async (projectId: number) => {
   const selected = projectsStore.selectedProject;
   if (!selected) return;
 
+  isProjectView.value = true;
   currentQuery.value = selected.project.project_name;
   outputs.value = selected.papers.map((p) => ({
     paper_id: p.paper_id,
@@ -60,6 +84,7 @@ const handleProjectSelect = async (projectId: number) => {
 };
 
 const handleNewQuery = () => {
+  isProjectView.value = false;
   currentQuery.value = null;
   outputs.value = [];
 };
@@ -125,6 +150,31 @@ const handleRemovePaper = async (paper: Paper) => {
     abstract: p.abstract ?? undefined,
   }));
 };
+
+const addToProjectDialogOpen = ref(false);
+const paperToAdd = ref<Paper | null>(null);
+const selectedProjectIdForAdd = ref<number | null>(null);
+
+const projectOptions = computed(() => projectsStore.projects);
+
+const handleAddFromSearch = (paper: Paper) => {
+  if (!authStore.isAuthenticated || !projectsStore.projects.length) {
+    return;
+  }
+  paperToAdd.value = paper;
+  selectedProjectIdForAdd.value = projectsStore.projects[0]?.project_id ?? null;
+  addToProjectDialogOpen.value = true;
+};
+
+const confirmAddToProject = async () => {
+  if (!paperToAdd.value || !paperToAdd.value.paper_id || !selectedProjectIdForAdd.value) {
+    addToProjectDialogOpen.value = false;
+    return;
+  }
+  await projectsStore.addPaper(selectedProjectIdForAdd.value, paperToAdd.value.paper_id);
+  addToProjectDialogOpen.value = false;
+  paperToAdd.value = null;
+};
 </script>
 
 <template>
@@ -165,17 +215,54 @@ const handleRemovePaper = async (paper: Paper) => {
             <InputSection @submit="handleSubmitQuery" />
           </div>
           <div v-else>
+            <ProjectResultsSection
+              v-if="isProjectView"
+              :project-name="currentQuery || ''"
+              :papers="outputs"
+              :show-abstract="true"
+              @remove="handleRemovePaper"
+            />
             <ResultsSection
+              v-else
               :query="currentQuery"
               :outputs="outputs"
               :show-abstract="true"
-              :show-actions="true"
-              @remove="handleRemovePaper"
+              :show-add="authStore.isAuthenticated"
+              @add="handleAddFromSearch"
             />
           </div>
         </v-container>
       </v-main>
     </v-layout>
+    <v-dialog v-model="addToProjectDialogOpen" max-width="500">
+      <v-card>
+        <v-card-title class="text-h5">
+          Paper zu Projekt hinzufügen
+        </v-card-title>
+        <v-card-text>
+          <p class="mb-4 text-medium-emphasis">
+            Wählen Sie ein Projekt aus, zu dem dieses Paper hinzugefügt werden soll.
+          </p>
+          <v-select
+            v-model="selectedProjectIdForAdd"
+            :items="projectOptions"
+            item-title="project_name"
+            item-value="project_id"
+            label="Projekt"
+            variant="outlined"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="addToProjectDialogOpen = false">
+            Abbrechen
+          </v-btn>
+          <v-btn color="primary" @click="confirmAddToProject">
+            Hinzufügen
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-app>
 </template>
 <!--<script setup lang="ts">

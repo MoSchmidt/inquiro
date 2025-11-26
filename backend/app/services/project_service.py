@@ -49,7 +49,36 @@ class ProjectService:
                 detail="Project not found.",
             )
 
-        papers = [PaperSummary.model_validate(p) for p in project.papers]
+        papers: list[PaperSummary] = []
+        for paper in project.papers:
+            authors_value = None
+            if isinstance(paper.authors, dict):
+                authors_value = paper.authors
+            elif isinstance(paper.authors, list):
+                formatted = []
+                for item in paper.authors:
+                    if isinstance(item, (list, tuple)) and item:
+                        last = item[0] or ""
+                        first = item[1] if len(item) > 1 else ""
+                        middle = item[2] if len(item) > 2 else ""
+                        name = " ".join(part for part in [first, middle, last] if part)
+                        if name:
+                            formatted.append(name)
+                if formatted:
+                    authors_value = {
+                        str(idx): name for idx, name in enumerate(formatted)
+                    }
+            papers.append(
+                PaperSummary(
+                    paper_id=paper.paper_id,
+                    title=paper.title,
+                    authors=authors_value,
+                    abstract=paper.abstract,
+                    published_at=paper.published_at,
+                    url=paper.paper_id_external,
+                    pdf_url=None,
+                )
+            )
         return ProjectWithPapersResponse(
             project=ProjectResponse.model_validate(project),
             papers=papers,
@@ -111,7 +140,36 @@ class ProjectService:
                 detail=str(exc),
             ) from exc
 
-        papers = [PaperSummary.model_validate(p) for p in project.papers]
+        papers: list[PaperSummary] = []
+        for paper in project.papers:
+            authors_value = None
+            if isinstance(paper.authors, dict):
+                authors_value = paper.authors
+            elif isinstance(paper.authors, list):
+                formatted = []
+                for item in paper.authors:
+                    if isinstance(item, (list, tuple)) and item:
+                        last = item[0] or ""
+                        first = item[1] if len(item) > 1 else ""
+                        middle = item[2] if len(item) > 2 else ""
+                        name = " ".join(part for part in [first, middle, last] if part)
+                        if name:
+                            formatted.append(name)
+                if formatted:
+                    authors_value = {
+                        str(idx): name for idx, name in enumerate(formatted)
+                    }
+            papers.append(
+                PaperSummary(
+                    paper_id=paper.paper_id,
+                    title=paper.title,
+                    authors=authors_value,
+                    abstract=paper.abstract,
+                    published_at=paper.published_at,
+                    url=paper.paper_id_external,
+                    pdf_url=None,
+                )
+            )
         return ProjectWithPapersResponse(
             project=ProjectResponse.model_validate(project),
             papers=papers,
@@ -133,10 +191,38 @@ class ProjectService:
                 detail=str(exc),
             ) from exc
 
-        papers = [PaperSummary.model_validate(p) for p in project.papers]
+        papers: list[PaperSummary] = []
+        for paper in project.papers:
+            authors_value = None
+            if isinstance(paper.authors, dict):
+                authors_value = paper.authors
+            elif isinstance(paper.authors, list):
+                formatted = []
+                for item in paper.authors:
+                    if isinstance(item, (list, tuple)) and item:
+                        last = item[0] or ""
+                        first = item[1] if len(item) > 1 else ""
+                        middle = item[2] if len(item) > 2 else ""
+                        name = " ".join(part for part in [first, middle, last] if part)
+                        if name:
+                            formatted.append(name)
+                if formatted:
+                    authors_value = {
+                        str(idx): name for idx, name in enumerate(formatted)
+                    }
+            papers.append(
+                PaperSummary(
+                    paper_id=paper.paper_id,
+                    title=paper.title,
+                    authors=authors_value,
+                    abstract=paper.abstract,
+                    published_at=paper.published_at,
+                    url=paper.paper_id_external,
+                    pdf_url=None,
+                )
+            )
         return ProjectWithPapersResponse(
             project=ProjectResponse.model_validate(project),
             papers=papers,
         )
-
 
