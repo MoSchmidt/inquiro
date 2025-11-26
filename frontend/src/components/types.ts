@@ -1,14 +1,15 @@
 export interface Paper {
-    title: string;
-    author: string;
-    year: number;
-    url: string;
+  paper_id?: number;
+  title: string;
+  author: string;
+  year: number;
+  url: string;
+  abstract?: string;
 }
 
 export interface Project {
-    id: string;
-    name: string;
-    query: string;
-    date: string;
-    outputs: Paper[];
+  id: number;
+  name: string;
+  date: string;
+  outputs: Paper[];
 }
