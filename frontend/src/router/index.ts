@@ -10,16 +10,16 @@ const router = createRouter({
       path: '/',
       name: 'home',
       component: HomeView,
-      meta: { requiresAuth: true },
-    },
+      //meta: { requiresAuth: true },
+    }, /*
     {
       path: '/login',
       name: 'login',
       component: LoginView,
-    },
+    }, */
   ],
 });
-
+/*
 router.beforeEach((to, from, next) => {
   const auth = useAuthStore();
 
@@ -30,6 +30,6 @@ router.beforeEach((to, from, next) => {
   } else {
     next();
   }
-});
+}); */
 
 export default router;
