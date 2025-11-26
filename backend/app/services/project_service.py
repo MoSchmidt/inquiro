@@ -13,6 +13,7 @@ from app.schemas.project_dto import (
     ProjectUpdate,
     ProjectWithPapersResponse,
 )
+from app.services.author_utils import normalize_authors
 
 
 class ProjectService:
@@ -51,23 +52,7 @@ class ProjectService:
 
         papers: list[PaperSummary] = []
         for paper in project.papers:
-            authors_value = None
-            if isinstance(paper.authors, dict):
-                authors_value = paper.authors
-            elif isinstance(paper.authors, list):
-                formatted = []
-                for item in paper.authors:
-                    if isinstance(item, (list, tuple)) and item:
-                        last = item[0] or ""
-                        first = item[1] if len(item) > 1 else ""
-                        middle = item[2] if len(item) > 2 else ""
-                        name = " ".join(part for part in [first, middle, last] if part)
-                        if name:
-                            formatted.append(name)
-                if formatted:
-                    authors_value = {
-                        str(idx): name for idx, name in enumerate(formatted)
-                    }
+            authors_value = normalize_authors(paper.authors)
             papers.append(
                 PaperSummary(
                     paper_id=paper.paper_id,
@@ -83,7 +68,6 @@ class ProjectService:
             project=ProjectResponse.model_validate(project),
             papers=papers,
         )
-
     @staticmethod
     def create_project(
         db: Session, username: str, payload: ProjectCreate
@@ -142,23 +126,7 @@ class ProjectService:
 
         papers: list[PaperSummary] = []
         for paper in project.papers:
-            authors_value = None
-            if isinstance(paper.authors, dict):
-                authors_value = paper.authors
-            elif isinstance(paper.authors, list):
-                formatted = []
-                for item in paper.authors:
-                    if isinstance(item, (list, tuple)) and item:
-                        last = item[0] or ""
-                        first = item[1] if len(item) > 1 else ""
-                        middle = item[2] if len(item) > 2 else ""
-                        name = " ".join(part for part in [first, middle, last] if part)
-                        if name:
-                            formatted.append(name)
-                if formatted:
-                    authors_value = {
-                        str(idx): name for idx, name in enumerate(formatted)
-                    }
+            authors_value = normalize_authors(paper.authors)
             papers.append(
                 PaperSummary(
                     paper_id=paper.paper_id,
@@ -193,23 +161,7 @@ class ProjectService:
 
         papers: list[PaperSummary] = []
         for paper in project.papers:
-            authors_value = None
-            if isinstance(paper.authors, dict):
-                authors_value = paper.authors
-            elif isinstance(paper.authors, list):
-                formatted = []
-                for item in paper.authors:
-                    if isinstance(item, (list, tuple)) and item:
-                        last = item[0] or ""
-                        first = item[1] if len(item) > 1 else ""
-                        middle = item[2] if len(item) > 2 else ""
-                        name = " ".join(part for part in [first, middle, last] if part)
-                        if name:
-                            formatted.append(name)
-                if formatted:
-                    authors_value = {
-                        str(idx): name for idx, name in enumerate(formatted)
-                    }
+            authors_value = normalize_authors(paper.authors)
             papers.append(
                 PaperSummary(
                     paper_id=paper.paper_id,

@@ -1,10 +1,9 @@
-import datetime
-
 from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from app.models.paper import Paper as PaperModel
 from app.schemas.search_dto import Paper as PaperSchema, SearchResponse
+from app.services.author_utils import normalize_authors
 
 # from app.core.deps import get_openai_provider, get_specter2_query_embedder
 
@@ -24,7 +23,7 @@ class SearchService:
     """
 
     @staticmethod
-    def search_papers(db: Session, query: str) -> SearchResponse:
+    def search_papers(db: Session, _query: str) -> SearchResponse:
         """
         Return the 5 most recent papers from the database.
 
@@ -42,8 +41,9 @@ class SearchService:
         # # Additionally embed the original query -> could also be used for searching
         # embeddings.append(embedder.embed_one(query))
         #
-        # TODO: Use `embeddings` to perform a vector similarity search against
-        # the `paper.embedding` column (pgvector) and return real results.
+        # In a future iteration, the embeddings can be used to perform a vector
+        # similarity search against the `paper.embedding` column (pgvector) and
+        # return semantically relevant results.
 
         # Simple placeholder: return the 5 most recently fetched papers
         papers_db = (
@@ -61,22 +61,7 @@ class SearchService:
             if not p.title:
                 continue
 
-            authors_value = None
-            if isinstance(p.authors, dict):
-                authors_value = p.authors
-            elif isinstance(p.authors, list):
-                # Example format: [["Last", "First", "Middle"], ...]
-                formatted = []
-                for item in p.authors:
-                    if isinstance(item, (list, tuple)) and item:
-                        last = item[0] or ""
-                        first = item[1] if len(item) > 1 else ""
-                        middle = item[2] if len(item) > 2 else ""
-                        name = " ".join(part for part in [first, middle, last] if part)
-                        if name:
-                            formatted.append(name)
-                if formatted:
-                    authors_value = {str(idx): name for idx, name in enumerate(formatted)}
+            authors_value = normalize_authors(p.authors)
 
             paper_schemas.append(
                 PaperSchema(
