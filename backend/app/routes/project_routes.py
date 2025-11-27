@@ -113,7 +113,7 @@ def add_paper_to_project(
 @router.delete(
     "/{project_id}/papers/{paper_id}",
     response_model=ProjectWithPapersResponse,
-    status_code=status.HTTP_204_NO_CONTENT,
+    status_code=status.HTTP_200_OK,
     summary="Remove a paper from a project",
 )
 def remove_paper_from_project(
