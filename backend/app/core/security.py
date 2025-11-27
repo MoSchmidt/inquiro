@@ -45,8 +45,8 @@ def verify_token(token: str) -> Optional[Dict[str, Any]]:
         return None
 
 
-def get_current_user(token: str = Depends(oauth2_scheme)) -> str:
-    """Return the username encoded in the access token."""
+def get_current_user_id(token: str = Depends(oauth2_scheme)) -> int:
+    """Return the user id encoded in the access token."""
 
     payload = verify_token(token)
     if not payload:
@@ -56,11 +56,11 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> str:
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    username = payload.get("sub")
-    if not username:
+    user_id = int(payload.get("sub"))
+    if not user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token payload.",
         )
 
-    return username
+    return user_id

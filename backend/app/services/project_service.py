@@ -76,21 +76,34 @@ class ProjectService:
     @staticmethod
     def _to_overview_dtos(papers: Sequence[Paper]) -> list[PaperOverviewDto]:
         """Convert list of Paper ORM objects into DTOs."""
+
+        def format_author(author_rec: list[str]) -> str:
+
+            # First 3 fields are name parts (last, first, middle)
+            name_parts = [part for part in author_rec[:3] if part]
+            name = " ".join(name_parts)
+
+            # 4th element = affiliation
+            aff = author_rec[3] if len(author_rec) > 3 and author_rec[3] else None
+
+            if aff:
+                return f"{name} ({aff})"
+            return name
+
         items: list[PaperOverviewDto] = []
 
         for p in papers:
             authors_str = ""
+
             if p.authors:
-                # your authors JSON may differ (e.g. {"authors": ["a","b"]})
-                arr = p.authors.get("authors", [])
-                authors_str = ", ".join(arr)
+                authors_str = ", ".join(format_author(a) for a in p.authors)
 
             items.append(
                 PaperOverviewDto(
                     title=p.title,
-                    year=p.published_at.year if p.published_at else None,
                     authors=authors_str,
                     published_at=str(p.published_at) if p.published_at else None,
                 )
             )
+
         return items

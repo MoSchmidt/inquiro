@@ -29,7 +29,7 @@ class ProjectRepository:
                 detail=f"Invalid sort field: {sort.sort_by}"
             )
 
-        if sort.sort_order == SortDirection.ASC:
+        if sort and sort.sort_order == SortDirection.ASC:
             return column.asc()
 
         return column.desc()
@@ -82,7 +82,6 @@ class ProjectRepository:
             stmt = stmt.where(
                 or_(
                     Paper.title.ilike(text),
-                    Paper.abstract.ilike(text),
                     func.cast(Paper.authors, String).ilike(text),
                 )
             )

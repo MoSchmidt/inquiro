@@ -16,6 +16,12 @@ class UserRepository:
         return result.scalar_one_or_none()
 
     @staticmethod
+    async def get_by_user_id(db: AsyncSession, user_id: int) -> Optional[User]:
+        """Fetch a user by user id."""
+        result = await db.execute(select(User).where(User.user_id == user_id))
+        return result.scalar_one_or_none()
+
+    @staticmethod
     async def exists(db: AsyncSession, username: str) -> bool:
         """Check whether a user exists."""
         result = await db.execute(select(User).where(User.username == username))

@@ -20,9 +20,9 @@ class UserService:
         return await UserRepository.create(db, username)
 
     @staticmethod
-    async def get_user_by_username(db: AsyncSession, username: str) -> User:
+    async def get_user_by_user_id(db: AsyncSession, user_id: int) -> User:
         """Fetch a user by username."""
-        user = await UserRepository.get_by_username(db, username)
+        user = await UserRepository.get_by_user_id(db, user_id)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
