@@ -1,6 +1,8 @@
-import api from '../api/axios';
+import { AuthenticationApi } from '@/api';
+
+const authApi = new AuthenticationApi();
 
 export async function login(username: string) {
-  const response = await api.post('/auth/login', { username });
+  const response = await authApi.loginAuthLoginPost({ username });
   return response.data;
 }
