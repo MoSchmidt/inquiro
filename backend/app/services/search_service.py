@@ -24,6 +24,11 @@ class SearchService:
         keywords = openai_provider.extract_keywords(query)
         logger.info("Keywords: %s", keywords)
 
+        # Fallback if keyword extraction returns an empty list
+        if not keywords:
+            logger.warning("No keywords extracted; falling back to raw query embedding.")
+            keywords = [query]
+
         embedder = get_specter2_query_embedder()
         embeddings = embedder.embed_batch(keywords)
 
