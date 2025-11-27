@@ -14,8 +14,10 @@
 
 
 
-export * from './apis/authentication-api';
-export * from './apis/projects-api';
-export * from './apis/search-api';
-export * from './apis/users-api';
+/**
+ * Request payload to create a new project.
+ */
+export interface ProjectCreate {
+    'project_name': string;
+}
 

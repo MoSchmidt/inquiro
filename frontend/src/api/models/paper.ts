@@ -19,7 +19,7 @@
  */
 export interface Paper {
     'paper_id': number;
-    'doi': string;
+    'doi': string | null;
     'source': string;
     'paper_type': string;
     'title': string;

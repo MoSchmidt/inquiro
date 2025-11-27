@@ -33,7 +33,7 @@ import type { SearchResponse } from '../models';
 export const SearchApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
-         * Returns a list of papers that match the search query
+         * Returns a list of papers that match the search query.  Currently, this returns the 5 most recently fetched papers, regardless of the query string.
          * @summary Search for papers
          * @param {SearchRequest} searchRequest 
          * @param {*} [options] Override http request option.
@@ -77,7 +77,7 @@ export const SearchApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = SearchApiAxiosParamCreator(configuration)
     return {
         /**
-         * Returns a list of papers that match the search query
+         * Returns a list of papers that match the search query.  Currently, this returns the 5 most recently fetched papers, regardless of the query string.
          * @summary Search for papers
          * @param {SearchRequest} searchRequest 
          * @param {*} [options] Override http request option.
@@ -99,7 +99,7 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
     const localVarFp = SearchApiFp(configuration)
     return {
         /**
-         * Returns a list of papers that match the search query
+         * Returns a list of papers that match the search query.  Currently, this returns the 5 most recently fetched papers, regardless of the query string.
          * @summary Search for papers
          * @param {SearchRequest} searchRequest 
          * @param {*} [options] Override http request option.
@@ -116,7 +116,7 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
  */
 export class SearchApi extends BaseAPI {
     /**
-     * Returns a list of papers that match the search query
+     * Returns a list of papers that match the search query.  Currently, this returns the 5 most recently fetched papers, regardless of the query string.
      * @summary Search for papers
      * @param {SearchRequest} searchRequest 
      * @param {*} [options] Override http request option.
