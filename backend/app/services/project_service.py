@@ -68,15 +68,12 @@ class ProjectService:
             project=ProjectResponse.model_validate(project),
             papers=papers,
         )
+
     @staticmethod
-    def create_project(
-        db: Session, username: str, payload: ProjectCreate
-    ) -> ProjectResponse:
+    def create_project(db: Session, username: str, payload: ProjectCreate) -> ProjectResponse:
         """Create a new project for the given user."""
         user = ProjectService._get_user(db, username)
-        project = ProjectRepository.create_for_user(
-            db, user.user_id, payload.project_name
-        )
+        project = ProjectRepository.create_for_user(db, user.user_id, payload.project_name)
         return ProjectResponse.model_validate(project)
 
     @staticmethod
@@ -177,4 +174,3 @@ class ProjectService:
             project=ProjectResponse.model_validate(project),
             papers=papers,
         )
-

@@ -33,5 +33,3 @@ def normalize_authors(authors: Any) -> Optional[Dict[str, str]]:
         return None
 
     return {str(idx): name for idx, name in enumerate(formatted)}
-
-
