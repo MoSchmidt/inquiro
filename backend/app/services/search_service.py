@@ -20,7 +20,6 @@ class SearchService:
         """
         Returns a list of matching papers based on the query
         """
-
         openai_provider = get_openai_provider()
         keywords = openai_provider.extract_keywords(query)
         logger.info("Keywords: %s", keywords)
