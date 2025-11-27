@@ -35,15 +35,16 @@ class ProjectRepository:
         project = Project(created_by=user_id, project_name=project_name)
         db.add(project)
         db.commit()
-        db.refresh(project)
+        db.refresh(project, attribute_names=["papers"])
         return project
+
     @staticmethod
     def update_name(db: Session, project: Project, new_name: str) -> Project:
         """Update the project's name."""
         project.project_name = new_name
         db.add(project)
         db.commit()
-        db.refresh(project)
+        db.refresh(project, attribute_names=["papers"])
         return project
 
     @staticmethod
@@ -51,7 +52,7 @@ class ProjectRepository:
         """Delete a project owned by the given user."""
         project = ProjectRepository.get_for_user(db, project_id, user_id)
         if project is None:
-            return
+            raise ValueError("Project not found or not owned by user")
         db.delete(project)
         db.commit()
 
@@ -79,7 +80,7 @@ class ProjectRepository:
             db.add(link)
             db.commit()
 
-        db.refresh(project)
+        db.refresh(project, attribute_names=["papers"])
         return project
 
     @staticmethod
@@ -101,5 +102,5 @@ class ProjectRepository:
             db.delete(link)
             db.commit()
 
-        db.refresh(project)
+        db.refresh(project, attribute_names=["papers"])
         return project

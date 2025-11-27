@@ -94,7 +94,7 @@ def delete_project(
 
 
 @router.post(
-    "/{project_id}/papers",
+    "/{project_id}/papers/{paper_id}",
     response_model=ProjectWithPapersResponse,
     status_code=status.HTTP_200_OK,
     summary="Add a paper to a project",
@@ -107,15 +107,13 @@ def add_paper_to_project(
 ) -> ProjectWithPapersResponse:
     """Store a reference to an existing paper in the given project."""
 
-    return ProjectService.add_paper_to_project(
-        db, current_username, project_id, paper_id
-    )
+    return ProjectService.add_paper_to_project(db, current_username, project_id, paper_id)
 
 
 @router.delete(
     "/{project_id}/papers/{paper_id}",
     response_model=ProjectWithPapersResponse,
-    status_code=status.HTTP_200_OK,
+    status_code=status.HTTP_204_NO_CONTENT,
     summary="Remove a paper from a project",
 )
 def remove_paper_from_project(
@@ -126,6 +124,4 @@ def remove_paper_from_project(
 ) -> ProjectWithPapersResponse:
     """Remove a stored paper reference from the given project."""
 
-    return ProjectService.remove_paper_from_project(
-        db, current_username, project_id, paper_id
-    )
+    return ProjectService.remove_paper_from_project(db, current_username, project_id, paper_id)

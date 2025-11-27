@@ -25,17 +25,10 @@ jobs:
           pip install -r requirements.txt
           pip install pylint
 
-      - name: Run Pylint (non-blocking)
+      - name: Run Pylint
         working-directory: backend
         run: |
-          files="$(git ls-files '*.py' || true)"
-          if [ -z "$files" ]; then
-            echo "No Python files to lint, skipping."
-            exit 0
-          fi
-          # Pylint is effectively disabled via .pylintrc (disable=all),
-          # and this step is kept only for compatibility.
-          pylint --rcfile=../.pylintrc $files || true
+            pylint --rcfile=../.pylintrc $(git ls-files '*.py')
 
   mypy:
     runs-on: ubuntu-latest
