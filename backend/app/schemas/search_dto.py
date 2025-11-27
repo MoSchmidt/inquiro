@@ -1,10 +1,10 @@
-from datetime import date, datetime
+from datetime import date
 from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict
 
 
-class Paper(BaseModel):
+class PaperDto(BaseModel):
     """
     Representation of a paper (as specified in the DB)
     """
@@ -17,7 +17,6 @@ class Paper(BaseModel):
     authors: Optional[List[List[str]]]
     abstract: Optional[str]
     published_at: Optional[date]
-    fetched_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -35,4 +34,4 @@ class SearchResponse(BaseModel):
     Response to search for specified query
     """
 
-    papers: List[Paper]
+    papers: List[PaperDto]
