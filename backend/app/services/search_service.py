@@ -73,7 +73,8 @@ class SearchService:
             try:
                 raw = openai_provider.extract_keywords(query)
                 keywords = SearchService._normalize_keywords(raw)
-            except Exception as exc:
+            except Exception as exc:  # pylint: disable=broad-exception-caught
+                # We intentionally catch all Exceptions here. Any failure triggers a fallback.
                 last_error = exc
                 logger.exception(
                     "Keyword extraction failed on attempt %d/%d",
