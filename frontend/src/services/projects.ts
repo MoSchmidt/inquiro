@@ -1,71 +1,39 @@
-import api from '../api/axios';
+import { ProjectCreate, ProjectsApi, ProjectUpdate } from '@/api';
+import { apiAxios } from '@/auth/axios-auth';
 
-export interface PaperSummary {
-  paper_id: number;
-  title: string;
-  authors?: Record<string, string> | null;
-  abstract?: string | null;
-  published_at?: string | null;
-  url?: string | null;
-  pdf_url?: string | null;
-}
-
-export interface Project {
-  project_id: number;
-  project_name: string;
-  created_at: string;
-}
-
-export interface ProjectWithPapers {
-  project: Project;
-  papers: PaperSummary[];
-}
-
-export interface ProjectCreatePayload {
-  project_name: string;
-}
-
-export interface ProjectUpdatePayload {
-  project_name?: string;
-}
+const projectApi = new ProjectsApi(undefined, undefined, apiAxios);
 
 export async function listProjects() {
-  const response = await api.get<Project[]>('/projects');
+  const response = await projectApi.listProjectsProjectsGet();
   return response.data;
 }
 
-export async function createProject(payload: ProjectCreatePayload) {
-  const response = await api.post<Project>('/projects', payload);
+export async function createProject(payload: ProjectCreate) {
+  const response = await projectApi.createProjectProjectsPost(payload);
   return response.data;
 }
 
 export async function getProject(projectId: number) {
-  const response = await api.get<ProjectWithPapers>(`/projects/${projectId}`);
+  const response = await projectApi.getProjectProjectsProjectIdGet(projectId);
   return response.data;
 }
 
-export async function updateProject(projectId: number, payload: ProjectUpdatePayload) {
-  const response = await api.patch<Project>(`/projects/${projectId}`, payload);
+export async function updateProject(projectId: number, payload: ProjectUpdate) {
+  const response = await projectApi.updateProjectProjectsProjectIdPatch(projectId, payload);
   return response.data;
 }
 
 export async function deleteProject(projectId: number) {
-  await api.delete(`/projects/${projectId}`);
+  await projectApi.deleteProjectProjectsProjectIdDelete(projectId);
 }
 
 export async function addPaperToProject(projectId: number, paperId: number) {
-  const response = await api.post<ProjectWithPapers>(
-    `/projects/${projectId}/papers`,
-    null,
-    { params: { paper_id: paperId } },
-  );
+  const response = await projectApi.addPaperToProjectProjectsProjectIdPapersPaperIdPost(projectId, paperId);
   return response.data;
 }
 
 export async function removePaperFromProject(projectId: number, paperId: number) {
-  const response = await api.delete<ProjectWithPapers>(
-    `/projects/${projectId}/papers/${paperId}`,
-  );
+  const response = await projectApi.removePaperFromProjectProjectsProjectIdPapersPaperIdDelete(projectId, paperId);
   return response.data;
 }
 

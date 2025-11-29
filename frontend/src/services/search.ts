@@ -1,20 +1,12 @@
-import api from '../api/axios';
+import { SearchApi, SearchRequest, SearchResponse } from '@/api';
+import { apiAxios } from '@/auth/axios-auth';
 
-export interface SearchPaper {
-  paper_id: number;
-  title: string;
-  authors?: Record<string, string> | null;
-  abstract?: string | null;
-  published_at?: string | null;
-  url?: string | null;
-}
+const searchApi = new SearchApi(undefined, undefined, apiAxios);
 
-export interface SearchResponse {
-  papers: SearchPaper[];
-}
-
-export async function searchPapers(query: string): Promise<SearchResponse> {
-  const response = await api.post<SearchResponse>('/search', { query });
+export async function searchPapers(searchText: string): Promise<SearchResponse> {
+  const request: SearchRequest = {
+    query: searchText,
+  };
+  const response = await searchApi.searchSearchPost(request);
   return response.data;
 }
-
