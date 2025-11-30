@@ -28,7 +28,7 @@ jobs:
       - name: Run Pylint
         working-directory: backend
         run: |
-          pylint --rcfile=../.pylintrc $(git ls-files '*.py')
+            pylint --rcfile=../.pylintrc $(git ls-files '*.py')
 
   mypy:
     runs-on: ubuntu-latest

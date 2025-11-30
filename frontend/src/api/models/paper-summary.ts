@@ -14,8 +14,16 @@
 
 
 
-export * from './apis/authentication-api';
-export * from './apis/projects-api';
-export * from './apis/search-api';
-export * from './apis/users-api';
+/**
+ * Lightweight representation of a paper inside a project.
+ */
+export interface PaperSummary {
+    'paper_id': number;
+    'title': string;
+    'authors'?: { [key: string]: any; } | null;
+    'abstract'?: string | null;
+    'published_at'?: string | null;
+    'url'?: string | null;
+    'pdf_url'?: string | null;
+}
 
