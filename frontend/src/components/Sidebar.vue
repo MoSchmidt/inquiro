@@ -95,7 +95,7 @@ const handleNewProjectSubmit = () => {
 <template>
   <div class="d-flex flex-column h-100">
     <v-card flat class="pa-4 d-flex align-center justify-space-between border-b-sm">
-      <h2 class="text-h6">Menü</h2>
+      <h2 class="text-h6">Menu</h2>
       <v-btn icon variant="text" @click="emit('close')">
         <v-icon :icon="X" size="24" />
       </v-btn>
@@ -110,7 +110,7 @@ const handleNewProjectSubmit = () => {
           @click="handleNewProjectClick"
         >
           <v-icon :icon="Plus" start size="18" />
-          Neues Projekt
+          New Project
         </v-btn>
       </div>
 
@@ -119,7 +119,7 @@ const handleNewProjectSubmit = () => {
       <div class="px-4">
         <h3 class="text-subtitle-1 mb-3 d-flex align-center">
           <v-icon :icon="Clock" size="16" class="me-2" />
-          Ihre Projekte
+          Your Projects
         </h3>
         <v-list density="compact" nav class="pa-0">
           <v-list-item
@@ -157,7 +157,7 @@ const handleNewProjectSubmit = () => {
         <v-card flat class="pa-3 mb-3 bg-green-lighten-5 border-success">
           <div class="d-flex align-center">
             <v-icon :icon="CheckCircle" color="success" class="me-2" size="18"></v-icon>
-            <p class="text-success text-body-2">Erfolgreich eingeloggt</p>
+            <p class="text-success text-body-2">Successfully logged in</p>
           </div>
         </v-card>
         <v-btn block variant="outlined" color="secondary" @click="emit('logout')">
@@ -169,10 +169,10 @@ const handleNewProjectSubmit = () => {
 
     <v-dialog v-model="loginDialogOpen" max-width="500">
       <v-card>
-        <v-card-title class="text-h5">Login in Ihr Konto</v-card-title>
+        <v-card-title class="text-h5">Login to your account</v-card-title>
         <v-card-text>
           <p class="mb-4 text-medium-emphasis">
-            Geben Sie Ihren Benutzernamen ein, um auf Ihre Projekte zuzugreifen.
+            Enter your username to access your projects.
           </p>
           <v-form @submit.prevent="handleLoginSubmit">
             <v-text-field
@@ -189,7 +189,7 @@ const handleNewProjectSubmit = () => {
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="secondary" variant="text" @click="loginDialogOpen = false">
-            Schließen
+            Close
           </v-btn>
         </v-card-actions>
       </v-card>
@@ -197,27 +197,27 @@ const handleNewProjectSubmit = () => {
 
     <v-dialog v-model="newProjectDialogOpen" max-width="500">
       <v-card>
-        <v-card-title class="text-h5">Neues Projekt</v-card-title>
+        <v-card-title class="text-h5">New Project</v-card-title>
         <v-card-text>
           <p class="mb-4 text-medium-emphasis">
-            Geben Sie einen Namen für Ihr neues Projekt ein.
+            Enter a name for your new project.
           </p>
           <v-form @submit.prevent="handleNewProjectSubmit">
             <v-text-field
               v-model="newProjectName"
-              label="Projektname"
+              label="Project name"
               type="text"
               variant="outlined"
               required
               class="mb-4"
             ></v-text-field>
-            <v-btn type="submit" color="primary" block>Projekt erstellen</v-btn>
+            <v-btn type="submit" color="primary" block>Create Project</v-btn>
           </v-form>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn color="secondary" variant="text" @click="newProjectDialogOpen = false">
-            Schließen
+            Close
           </v-btn>
         </v-card-actions>
       </v-card>

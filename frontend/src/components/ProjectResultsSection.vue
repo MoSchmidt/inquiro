@@ -36,13 +36,13 @@ const emit = defineEmits<{
           </h1>
         </div>
         <p class="text-caption text-medium-emphasis">
-          {{ papers.length }} gespeicherte Paper
+          {{ papers.length }} saved papers
         </p>
       </v-card-text>
     </v-card>
 
     <div>
-      <h3 class="text-h6 mb-4">Artikel ({{ papers.length }})</h3>
+      <h3 class="text-h6 mb-4">Articles ({{ papers.length }})</h3>
 
       <v-expansion-panels v-if="papers.length" multiple class="paper-panels">
         <v-expansion-panel
@@ -82,7 +82,7 @@ const emit = defineEmits<{
                 {{ paper.abstract }}
               </span>
               <span v-else class="text-disabled">
-                Kein Abstract vorhanden.
+                No abstract available.
               </span>
             </div>
             <div>
@@ -93,17 +93,17 @@ const emit = defineEmits<{
                 rel="noopener noreferrer"
                 class="text-decoration-none text-blue-darken-2 d-inline-flex align-center"
               >
-                Zum Paper
+                View paper
                 <v-icon :icon="ExternalLink" size="14" class="ms-1"></v-icon>
               </a>
-              <span v-else class="text-disabled">Keine URL verfügbar.</span>
+              <span v-else class="text-disabled">No URL available.</span>
             </div>
           </v-expansion-panel-text>
         </v-expansion-panel>
       </v-expansion-panels>
 
       <div v-else class="text-center py-12">
-        <p class="text-medium-emphasis">Dieses Projekt hat noch keine gespeicherten Paper.</p>
+        <p class="text-medium-emphasis">This project has no saved papers yet.</p>
       </div>
     </div>
   </v-container>

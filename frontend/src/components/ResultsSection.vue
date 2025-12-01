@@ -43,14 +43,14 @@ watch(
       <v-card-text class="d-flex align-start pa-0">
         <v-icon :icon="FileText" color="blue-darken-2" class="mt-1 me-3"></v-icon>
         <div>
-          <h3 class="text-h6 text-blue-darken-4 mb-2">Ihre Abfrage</h3>
+          <h3 class="text-h6 text-blue-darken-4 mb-2">Your Query</h3>
           <p class="text-blue-darken-3">{{ query }}</p>
         </div>
       </v-card-text>
     </v-card>
 
     <div>
-      <h3 class="text-h6 mb-4">Artikel ({{ outputs.length }})</h3>
+      <h3 class="text-h6 mb-4">Articles ({{ outputs.length }})</h3>
       <v-expansion-panels v-if="outputs.length" v-model="expanded" multiple class="paper-panels">
         <v-expansion-panel
           v-for="(paper, index) in outputs"
@@ -89,7 +89,7 @@ watch(
                 {{ paper.abstract }}
               </span>
               <span v-else class="text-disabled">
-                Kein Abstract vorhanden.
+                No abstract available.
               </span>
             </div>
             <div>
@@ -100,10 +100,10 @@ watch(
                 rel="noopener noreferrer"
                 class="text-decoration-none text-blue-darken-2 d-inline-flex align-center"
               >
-                Zum Paper
+                View paper
                 <v-icon :icon="ExternalLink" size="14" class="ms-1"></v-icon>
               </a>
-              <span v-else class="text-disabled">Keine URL verfügbar.</span>
+              <span v-else class="text-disabled">No URL available.</span>
             </div>
           </v-expansion-panel-text>
         </v-expansion-panel>
@@ -111,7 +111,7 @@ watch(
     </div>
 
     <div v-if="outputs.length === 0" class="text-center py-12">
-      <p class="text-medium-emphasis">Noch keine Ergebnisse vorhanden</p>
+      <p class="text-medium-emphasis">No results yet</p>
     </div>
   </v-container>
 </template>

@@ -59,7 +59,7 @@ const handleSubmitQuery = async (query: string) => {
     }));
   } catch (error) {
     console.error('Search failed', error);
-    errorMessage.value = 'Suche fehlgeschlagen.';
+    errorMessage.value = 'Search failed.';
   } finally {
     isLoading.value = false;
   }
@@ -205,7 +205,7 @@ const confirmAddToProject = async () => {
         <v-toolbar-title class="text-h6">AI Text Processor</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-btn v-if="currentQuery" @click="handleNewQuery" variant="outlined" color="primary">
-          Neue Abfrage
+          New Query
         </v-btn>
       </v-app-bar>
 
@@ -237,28 +237,28 @@ const confirmAddToProject = async () => {
     <v-dialog v-model="addToProjectDialogOpen" max-width="500">
       <v-card>
         <v-card-title class="text-h5">
-          Paper zu Projekt hinzufügen
+          Add paper to project
         </v-card-title>
         <v-card-text>
           <p class="mb-4 text-medium-emphasis">
-            Wählen Sie ein Projekt aus, zu dem dieses Paper hinzugefügt werden soll.
+            Choose a project to add this paper to.
           </p>
           <v-select
             v-model="selectedProjectIdForAdd"
             :items="projectOptions"
             item-title="project_name"
             item-value="project_id"
-            label="Projekt"
+            label="Project"
             variant="outlined"
           />
         </v-card-text>
         <v-card-actions>
           <v-spacer />
           <v-btn variant="text" @click="addToProjectDialogOpen = false">
-            Abbrechen
+            Cancel
           </v-btn>
           <v-btn color="primary" @click="confirmAddToProject">
-            Hinzufügen
+            Add
           </v-btn>
         </v-card-actions>
       </v-card>
