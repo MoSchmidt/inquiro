@@ -37,8 +37,7 @@ def create_refresh_token(data: Dict[str, Any], expires_delta: Optional[timedelta
 
 
 def verify_token(token: str) -> Optional[Dict[str, Any]]:
-    """Decode a JWT token and return its payload, if valid."""
-
+    """Decode a JWT token and return its payload if valid."""
     try:
         return jwt.decode(token, settings.JWT_SECRET_KEY, algorithms=[ALGORITHM])
     except JWTError:
@@ -46,7 +45,7 @@ def verify_token(token: str) -> Optional[Dict[str, Any]]:
 
 
 def get_current_user_id(token: str = Depends(oauth2_scheme)) -> int:
-    """Return the user id encoded in the access token."""
+    """Return the user ID encoded in the access token."""
 
     payload = verify_token(token)
     if not payload:
@@ -60,15 +59,15 @@ def get_current_user_id(token: str = Depends(oauth2_scheme)) -> int:
     if sub_value is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token payload.",
+            detail="Invalid token payload: missing subject.",
         )
 
     try:
         user_id = int(sub_value)
-    except (ValueError, TypeError):
+    except (ValueError, TypeError) as exc:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token subject.",
-        )
+        ) from exc
 
     return user_id
