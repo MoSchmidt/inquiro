@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.core.deps import get_openai_provider, get_specter2_query_embedder
 from app.repositories.search_repository import SearchRepository
 from app.schemas.search_dto import PaperDto, SearchResponse
+from app.utils.author_utils import normalize_authors
 
 logger = logging.getLogger("inquiro")
 
@@ -47,6 +48,8 @@ class SearchService:
         for doc, avg_dist in rows:
             logger.info("Match: %s... | Avg. Distance: %.4f", doc.title[:30], avg_dist)
 
+            authors_value = normalize_authors(doc.authors)
+
             results.append(
                 PaperDto(
                     paper_id=doc.paper_id,
@@ -54,7 +57,7 @@ class SearchService:
                     source=str(doc.source),
                     paper_type=str(doc.paper_type),
                     title=doc.title,
-                    authors=doc.authors,
+                    authors=authors_value,
                     abstract=doc.abstract,
                     published_at=doc.published_at,
                 )

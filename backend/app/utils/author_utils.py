@@ -1,35 +1,39 @@
 """Utility helpers for working with author metadata."""
 
-from typing import Any, Dict, Optional
+from typing import List, Any
 
 
-def normalize_authors(authors: Any) -> Optional[Dict[str, str]]:
+def normalize_authors(authors: Any) -> List[str]:
     """
-    Normalize various author representations into a dict of index -> name.
+    Normalize author representations from either:
+    - dict mapping → ["name1", "name2", ...]
+    - list of lists/tuples → [["last", "first", "middle", ...], ...]
 
-    Expected input formats include:
-    - dict already mapping indices/roles to names (returned as-is)
-    - list of [last, first, middle] triplets such as
-      [["Doe", "Jane", ""], ["Smith", "John", "A."]]
+    Always returns a flat List[str].
     """
 
+    # Case 1: dict | None → convert safely to list of values
     if isinstance(authors, dict):
-        return authors
+        return [str(name) for name in authors.values() if name]
 
+    if authors is None:
+        return []
+
+    # Case 2: invalid type → return empty list
     if not isinstance(authors, list):
-        return None
+        return []
 
-    formatted: list[str] = []
+    formatted: List[str] = []
+
     for item in authors:
         if isinstance(item, (list, tuple)) and item:
             last = item[0] or ""
             first = item[1] if len(item) > 1 else ""
             middle = item[2] if len(item) > 2 else ""
-            name = " ".join(part for part in [first, middle, last] if part)
+
+            name = " ".join(part for part in [first, middle, last] if part).strip()
+
             if name:
                 formatted.append(name)
 
-    if not formatted:
-        return None
-
-    return {str(idx): name for idx, name in enumerate(formatted)}
+    return formatted

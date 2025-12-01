@@ -5,8 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import Project
 from app.repositories.project_repository import ProjectRepository
+from app.schemas.paper_dto import PaperDto
 from app.schemas.project_dto import (
-    PaperSummary,
     ProjectCreate,
     ProjectResponse,
     ProjectUpdate,
@@ -183,16 +183,19 @@ class ProjectService:
     @staticmethod
     def _build_paper_summaries(
         project: Project,
-    ) -> list[PaperSummary]:
-        """Convert project.papers into PaperSummary DTOs."""
-        summaries: list[PaperSummary] = []
+    ) -> list[PaperDto]:
+        """Convert project.papers into PaperDtos."""
+        summaries: list[PaperDto] = []
         for paper in project.papers:
             authors_value = normalize_authors(paper.authors)
             summaries.append(
-                PaperSummary(
+                PaperDto(
                     paper_id=paper.paper_id,
+                    doi=paper.doi,
                     title=paper.title,
+                    source=str(paper.source),
                     authors=authors_value,
+                    paper_type=str(paper.paper_type),
                     abstract=paper.abstract,
                     published_at=paper.published_at,
                 )

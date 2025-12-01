@@ -15,7 +15,7 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { PaperSummary } from './paper-summary';
+import type { PaperDto } from './paper-dto';
 // May contain unused imports in some cases
 // @ts-ignore
 import type { ProjectResponse } from './project-response';
@@ -25,6 +25,6 @@ import type { ProjectResponse } from './project-response';
  */
 export interface ProjectWithPapersResponse {
     'project': ProjectResponse;
-    'papers': Array<PaperSummary>;
+    'papers': Array<PaperDto>;
 }
 

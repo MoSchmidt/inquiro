@@ -156,7 +156,7 @@ export const ProjectsApiAxiosParamCreator = function (configuration?: Configurat
             };
         },
         /**
-         * 
+         * Retrieve all papers for a project.
          * @summary Get the paper for a project.
          * @param {number} projectId 
          * @param {*} [options] Override http request option.
@@ -362,7 +362,7 @@ export const ProjectsApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * 
+         * Retrieve all papers for a project.
          * @summary Get the paper for a project.
          * @param {number} projectId 
          * @param {*} [options] Override http request option.
@@ -455,7 +455,7 @@ export const ProjectsApiFactory = function (configuration?: Configuration, baseP
             return localVarFp.deleteProjectProjectsProjectIdDelete(projectId, options).then((request) => request(axios, basePath));
         },
         /**
-         * 
+         * Retrieve all papers for a project.
          * @summary Get the paper for a project.
          * @param {number} projectId 
          * @param {*} [options] Override http request option.
@@ -537,7 +537,7 @@ export class ProjectsApi extends BaseAPI {
     }
 
     /**
-     * 
+     * Retrieve all papers for a project.
      * @summary Get the paper for a project.
      * @param {number} projectId 
      * @param {*} [options] Override http request option.
