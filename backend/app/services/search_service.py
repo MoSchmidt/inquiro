@@ -3,7 +3,6 @@ import re
 from typing import Any, Iterable, List
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session
 
 from app.core.deps import get_openai_provider, get_specter2_query_embedder
 from app.repositories.search_repository import SearchRepository
@@ -69,9 +68,9 @@ class SearchService:
 
     @staticmethod
     def _extract_keywords_with_retry(
-        openai_provider: Any,
-        query: str,
-        max_retries: int = 2,
+            openai_provider: Any,
+            query: str,
+            max_retries: int = 2,
     ) -> List[str]:
         """
         Extract keywords from the provider with retries and format normalization
