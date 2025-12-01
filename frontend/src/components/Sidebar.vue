@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useAuthStore } from '@/stores/auth';
+import { login } from '@/services/auth';
 import {
   VList,
   VListItem,
@@ -32,14 +34,44 @@ const emit = defineEmits<{
 
 const username = ref('');
 const loginDialogOpen = ref(false);
+const loginError = ref<string | null>(null);
+const loginLoading = ref(false);
+const authStore = useAuthStore();
 const newProjectDialogOpen = ref(false);
 const newProjectName = ref('');
 
-const handleLoginSubmit = () => {
-  if (username.value) {
-    emit('login', username.value);
-    username.value = '';
-    loginDialogOpen.value = false;
+const handleLoginSubmit = async () => {
+  loginError.value = null;
+  if (!username.value) return;
+
+  loginLoading.value = true;
+  try {
+    const resp = await login(username.value);
+    if (resp && resp.access_token) {
+      authStore.setAuth({
+        accessToken: resp.access_token,
+        refreshToken: resp.refresh_token,
+        user: resp.user,
+      });
+      // close dialog and notify parent
+      username.value = '';
+      loginDialogOpen.value = false;
+      emit('login', username.value);
+      emit('close');
+    } else {
+      loginError.value = 'Login failed';
+    }
+  } catch (err: unknown) {
+    // try to read axios error message
+    try {
+      // @ts-ignore
+      const message = err?.response?.data?.detail || err?.message;
+      loginError.value = message ?? 'Login failed';
+    } catch {
+      loginError.value = 'Login failed';
+    }
+  } finally {
+    loginLoading.value = false;
   }
 };
 
