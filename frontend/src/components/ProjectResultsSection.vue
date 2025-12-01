@@ -1,59 +1,52 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
 import {
   VCard,
-  VCardTitle,
   VCardText,
   VIcon,
-  VBtn,
   VExpansionPanels,
   VExpansionPanel,
   VExpansionPanelTitle,
   VExpansionPanelText,
+  VBtn,
 } from 'vuetify/components';
-import { FileText, ExternalLink, FolderPlus } from 'lucide-vue-next';
+import { FileText, ExternalLink, Trash2 } from 'lucide-vue-next';
 import type { Paper } from './types';
 
 const props = defineProps<{
-  query: string;
-  outputs: Paper[];
+  projectName: string;
+  papers: Paper[];
   showAbstract?: boolean;
-  showAdd?: boolean;
 }>();
 
 const emit = defineEmits<{
-  (e: 'add', paper: Paper): void;
+  (e: 'remove', paper: Paper): void;
 }>();
-
-const expanded = ref<number[]>([]);
-
-watch(
-  () => props.outputs,
-  (newOutputs) => {
-    // Expand all panels whenever a new result set arrives
-    expanded.value = newOutputs.map((_, index) => index);
-  },
-  { immediate: true },
-);
 </script>
 
 <template>
   <v-container class="py-6" style="max-width: 1200px;">
-    <v-card flat class="mb-8 pa-4 bg-blue-lighten-5 border-sm">
-      <v-card-text class="d-flex align-start pa-0">
-        <v-icon :icon="FileText" color="blue-darken-2" class="mt-1 me-3"></v-icon>
-        <div>
-          <h3 class="text-h6 text-blue-darken-4 mb-2">Ihre Abfrage</h3>
-          <p class="text-blue-darken-3">{{ query }}</p>
+    <v-card flat class="mb-6 pa-4 project-header-card">
+      <v-card-text class="pa-0">
+        <div class="d-flex align-center mb-2">
+          <div class="project-icon d-flex align-center justify-center me-3">
+            <v-icon :icon="FileText" size="20" />
+          </div>
+          <h1 class="project-title">
+            {{ projectName }}
+          </h1>
         </div>
+        <p class="text-caption text-medium-emphasis">
+          {{ papers.length }} gespeicherte Paper
+        </p>
       </v-card-text>
     </v-card>
 
     <div>
-      <h3 class="text-h6 mb-4">Artikel ({{ outputs.length }})</h3>
-      <v-expansion-panels v-if="outputs.length" v-model="expanded" multiple class="paper-panels">
+      <h3 class="text-h6 mb-4">Artikel ({{ papers.length }})</h3>
+
+      <v-expansion-panels v-if="papers.length" multiple class="paper-panels">
         <v-expansion-panel
-          v-for="(paper, index) in outputs"
+          v-for="(paper, index) in papers"
           :key="index"
           elevation="1"
           class="mb-3 paper-panel"
@@ -70,15 +63,15 @@ watch(
                   <span v-if="paper.year">{{ paper.year }}</span>
                 </div>
               </div>
-              <div class="d-flex align-center mt-2 mt-sm-0" v-if="showAdd">
+              <div class="d-flex align-center mt-2 mt-sm-0">
                 <v-btn
                   icon
                   size="small"
                   variant="text"
-                  color="primary"
-                  @click.stop="emit('add', paper)"
+                  color="error"
+                  @click.stop="emit('remove', paper)"
                 >
-                  <v-icon :icon="FolderPlus" size="16" />
+                  <v-icon :icon="Trash2" size="16" />
                 </v-btn>
               </div>
             </div>
@@ -108,26 +101,35 @@ watch(
           </v-expansion-panel-text>
         </v-expansion-panel>
       </v-expansion-panels>
-    </div>
 
-    <div v-if="outputs.length === 0" class="text-center py-12">
-      <p class="text-medium-emphasis">Noch keine Ergebnisse vorhanden</p>
+      <div v-else class="text-center py-12">
+        <p class="text-medium-emphasis">Dieses Projekt hat noch keine gespeicherten Paper.</p>
+      </div>
     </div>
   </v-container>
 </template>
 
 <style scoped>
-.bg-blue-lighten-5 {
-  background-color: #e9f2ff !important;
+.project-header-card {
+  border-radius: 0;
+  border: none;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.45);
+  background: transparent;
 }
-.border-sm {
-  border: 1px solid #BBDEFB;
+
+.project-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.04);
+  color: #1f2937;
 }
-.w-35 { width: 35%; }
-.w-25 { width: 25%; }
-.w-15 { width: 15%; }
-.w-10 { width: 10%; }
-.w-5 { width: 5%; }
+
+.project-title {
+  font-size: 1.8rem;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+}
 
 .paper-panels {
   gap: 12px;
@@ -136,7 +138,7 @@ watch(
 .paper-panel {
   border-radius: 12px !important;
   border: 1px solid rgba(148, 163, 184, 0.25);
-  background: linear-gradient(135deg, #ffffff, #f9fafb);
+  background: linear-gradient(135deg, #ffffff, #f8fafc);
   transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
 }
 
@@ -162,3 +164,5 @@ watch(
   line-height: 1.5;
 }
 </style>
+
+

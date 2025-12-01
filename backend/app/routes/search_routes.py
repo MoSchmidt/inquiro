@@ -16,7 +16,10 @@ router = APIRouter(prefix="/search", tags=["Search"])
 )
 def search(request: SearchRequest, db: Session = Depends(get_db)) -> SearchResponse:
     """
-    Returns a list of papers that match the search query
+    Returns a list of papers that match the search query.
+
+    Currently, this returns the 5 most recently fetched papers, regardless
+    of the query string.
     """
 
     papers = SearchService.search_papers(request.query, db)

@@ -13,7 +13,7 @@ logger = logging.getLogger("inquiro")
 
 class SearchService:
     """
-    Service for managing search requests
+    Service for managing search requests.
     """
 
     MAX_KEYWORD_RETRIES = 2

@@ -14,8 +14,12 @@
 
 
 
-export * from './apis/authentication-api';
-export * from './apis/projects-api';
-export * from './apis/search-api';
-export * from './apis/users-api';
+/**
+ * Representation of a project.
+ */
+export interface ProjectResponse {
+    'project_id': number;
+    'project_name': string;
+    'created_at': string;
+}
 

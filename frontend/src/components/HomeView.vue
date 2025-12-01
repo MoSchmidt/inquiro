@@ -1,115 +1,94 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { VLayout, VAppBar, VNavigationDrawer, VMain, VBtn, VIcon, VToolbarTitle, VContainer } from 'vuetify/components';
-import { Menu as MenuIcon, FileText } from 'lucide-vue-next'; // Lucide Icons
+import { Menu as MenuIcon } from 'lucide-vue-next';
 import Sidebar from './Sidebar.vue';
 import InputSection from './InputSection.vue';
 import ResultsSection from './ResultsSection.vue';
-import { Paper, Project } from './types'; // Importiere die Typen
+import ProjectResultsSection from './ProjectResultsSection.vue';
+import type { Paper } from './types';
 
 import { useAuthStore } from '@/stores/auth';
+import { useProjectsStore } from '@/stores/projects';
 import { login } from '@/services/auth';
-import {AxiosError} from "axios";
+import { searchPapers } from '@/services/search';
+import type { AxiosError } from 'axios';
 
-// Zustand
 const sidebarOpen = ref(false);
 const currentQuery = ref<string | null>(null);
 const outputs = ref<Paper[]>([]);
-//const isLoggedIn = ref(false);
+const isProjectView = ref(false);
 
 const errorMessage = ref<string | null>(null);
 const isLoading = ref(false);
+
 const authStore = useAuthStore();
+const projectsStore = useProjectsStore();
 
-const initialProjects: Project[] = [
-  {
-    id: '1',
-    name: 'Project Alpha',
-    query: 'Machine learning applications in healthcare',
-    date: '2025-11-15',
-    outputs: [
-      { title: 'Deep Learning for Medical Image Analysis', author: 'Smith, J. et al.', year: 2024, url: 'https://example.com/paper1' },
-      { title: 'AI-Driven Diagnosis Systems', author: 'Johnson, M. & Lee, K.', year: 2023, url: 'https://example.com/paper2' }
-    ]
-  },
-  {
-    id: '2',
-    name: 'Project Beta',
-    query: 'Climate change impacts on biodiversity',
-    date: '2025-11-14',
-    outputs: [
-      { title: 'Global Warming Effects on Ecosystems', author: 'Brown, A. et al.', year: 2024, url: 'https://example.com/paper3' }
-    ]
-  },
-  {
-    id: '3',
-    name: 'Project Gamma',
-    query: 'Quantum computing advances',
-    date: '2025-11-13',
-    outputs: [
-      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
-      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
-      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
-      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
-      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
-      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
-      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
-      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
-      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
-      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
-      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
-      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
-      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
-      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' },
-      { title: 'Quantum Algorithms for Optimization', author: 'Chen, L. & Wang, Y.', year: 2023, url: 'https://example.com/paper4' }
-    ]
+const recentProjects = computed(() =>
+  projectsStore.projects.map((p) => ({
+    id: p.project_id,
+    name: p.project_name,
+    date: p.created_at.split('T')[0],
+    outputs: [] as Paper[],
+  })),
+);
+
+onMounted(() => {
+  if (authStore.isAuthenticated) {
+    projectsStore.loadProjects();
   }
-];
-const recentProjects = ref<Project[]>(initialProjects);
+});
 
-// Methoden
-const handleSubmitQuery = (query: string) => {
+const handleSubmitQuery = async (query: string) => {
   currentQuery.value = query;
+  isProjectView.value = false;
+  outputs.value = [];
+  errorMessage.value = null;
+  isLoading.value = true;
 
-  // Simuliere die Generierung von Artikeln
-  const generatedOutputs: Paper[] = [
-    { title: 'Recent Advances in Natural Language Processing', author: 'Anderson, P. & Martinez, R.', year: 2024, url: 'https://example.com/nlp-advances' },
-    { title: 'Transformer Models: A Comprehensive Review', author: 'Davis, K. et al.', year: 2023, url: 'https://example.com/transformers' },
-    { title: 'Attention Mechanisms in Neural Networks', author: 'Wilson, T. & Thompson, S.', year: 2024, url: 'https://example.com/attention' },
-    { title: 'BERT and Beyond: Language Model Evolution', author: 'Garcia, M. et al.', year: 2023, url: 'https://example.com/bert' },
-    { title: 'Large Language Models in Practice', author: 'Taylor, J. & White, L.', year: 2024, url: 'https://example.com/llm-practice' }
-  ];
-  outputs.value = generatedOutputs;
-
-  // Füge zu den aktuellen Projekten hinzu
-  const newProject: Project = {
-    id: Date.now().toString(),
-    name: `Project ${recentProjects.value.length + 1}`,
-    query,
-    date: new Date().toISOString().split('T')[0],
-    outputs: generatedOutputs
-  };
-  recentProjects.value.unshift(newProject); // Füge am Anfang hinzu
+  try {
+    const response = await searchPapers(query);
+    outputs.value = response.papers.map((p) => ({
+      paper_id: p.paper_id,
+      title: p.title,
+      author: p.authors ? Object.values(p.authors).join(', ') : '',
+      year: p.published_at ? new Date(p.published_at).getFullYear() : 0,
+      url: p.url ?? '',
+      abstract: p.abstract ?? undefined,
+    }));
+  } catch (error) {
+    console.error('Search failed', error);
+    errorMessage.value = 'Suche fehlgeschlagen.';
+  } finally {
+    isLoading.value = false;
+  }
 };
 
-const handleProjectSelect = (project: Project) => {
-  currentQuery.value = project.query;
-  outputs.value = project.outputs;
+const handleProjectSelect = async (projectId: number) => {
+  await projectsStore.selectProject(projectId);
   sidebarOpen.value = false;
+  const selected = projectsStore.selectedProject;
+  if (!selected) return;
+
+  isProjectView.value = true;
+  currentQuery.value = selected.project.project_name;
+  outputs.value = selected.papers.map((p) => ({
+    paper_id: p.paper_id,
+    title: p.title,
+    author: p.authors ? Object.values(p.authors).join(', ') : '',
+    year: p.published_at ? new Date(p.published_at).getFullYear() : 0,
+    url: p.url ?? '',
+    abstract: p.abstract ?? undefined,
+  }));
 };
 
 const handleNewQuery = () => {
+  isProjectView.value = false;
   currentQuery.value = null;
   outputs.value = [];
 };
-/*
-const handleLogin = (email: string, password: string) => {
-  // Mock login logic
-  isLoggedIn.value = true;
-  sidebarOpen.value = false;
-  console.log(`Logging in with: ${email} and ${password}`);
-};
-*/
+
 const handleLogin = async (usernameFromSidebar: string) => {
   isLoading.value = true;
   errorMessage.value = null;
@@ -122,6 +101,7 @@ const handleLogin = async (usernameFromSidebar: string) => {
       refreshToken: refresh_token,
       user: user,
     });
+    await projectsStore.loadProjects();
     sidebarOpen.value = false;
   } catch (error: unknown) {
     const axiosError = error as AxiosError<{ detail?: string }>;
@@ -134,10 +114,66 @@ const handleLogin = async (usernameFromSidebar: string) => {
   } finally {
     isLoading.value = false;
   }
-}
+};
+
 const handleLogout = () => {
-  //isLoggedIn.value = false;
   authStore.clearAuth();
+  projectsStore.$reset();
+  currentQuery.value = null;
+  outputs.value = [];
+};
+
+const handleNewProject = async (name: string) => {
+  const project = await projectsStore.createNewProject(name);
+  if (project) {
+    await handleProjectSelect(project.project_id);
+  }
+};
+
+const handleRemovePaper = async (paper: Paper) => {
+  if (!projectsStore.selectedProject || !paper.paper_id) {
+    return;
+  }
+  await projectsStore.removePaper(projectsStore.selectedProject.project.project_id, paper.paper_id);
+  const selected = projectsStore.selectedProject;
+  if (!selected) {
+    outputs.value = [];
+    currentQuery.value = null;
+    return;
+  }
+  outputs.value = selected.papers.map((p) => ({
+    paper_id: p.paper_id,
+    title: p.title,
+    author: p.authors ? Object.values(p.authors).join(', ') : '',
+    year: p.published_at ? new Date(p.published_at).getFullYear() : 0,
+    url: p.url ?? '',
+    abstract: p.abstract ?? undefined,
+  }));
+};
+
+const addToProjectDialogOpen = ref(false);
+const paperToAdd = ref<Paper | null>(null);
+const selectedProjectIdForAdd = ref<number | null>(null);
+
+const projectOptions = computed(() => projectsStore.projects);
+
+const handleAddFromSearch = (paper: Paper) => {
+  if (!authStore.isAuthenticated || !projectsStore.projects.length) {
+    return;
+  }
+  paperToAdd.value = paper;
+  selectedProjectIdForAdd.value = projectsStore.projects[0]?.project_id ?? null;
+  addToProjectDialogOpen.value = true;
+};
+
+const confirmAddToProject = async () => {
+  if (!paperToAdd.value || !paperToAdd.value.paper_id || !selectedProjectIdForAdd.value) {
+    addToProjectDialogOpen.value = false;
+    return;
+  }
+  await projectsStore.addPaper(selectedProjectIdForAdd.value, paperToAdd.value.paper_id);
+  addToProjectDialogOpen.value = false;
+  paperToAdd.value = null;
 };
 </script>
 
@@ -145,20 +181,20 @@ const handleLogout = () => {
   <v-app>
     <v-layout>
       <v-navigation-drawer
-          v-model="sidebarOpen"
-          location="left"
-          temporary
-          width="320"
+        v-model="sidebarOpen"
+        location="left"
+        temporary
+        width="320"
       >
         <Sidebar
-            :is-open="sidebarOpen"
-            :recent-projects="recentProjects"
-            :is-logged-in="authStore.isAuthenticated"
-            @close="sidebarOpen = false"
-            @project-select="handleProjectSelect"
-            @new-project="handleNewQuery"
-            @login="handleLogin"
-            @logout="handleLogout"
+          :is-open="sidebarOpen"
+          :recent-projects="recentProjects"
+          :is-logged-in="authStore.isAuthenticated"
+          @close="sidebarOpen = false"
+          @project-select="handleProjectSelect"
+          @new-project="handleNewProject"
+          @login="handleLogin"
+          @logout="handleLogout"
         />
       </v-navigation-drawer>
 
@@ -179,11 +215,54 @@ const handleLogout = () => {
             <InputSection @submit="handleSubmitQuery" />
           </div>
           <div v-else>
-            <ResultsSection :query="currentQuery" :outputs="outputs" />
+            <ProjectResultsSection
+              v-if="isProjectView"
+              :project-name="currentQuery || ''"
+              :papers="outputs"
+              :show-abstract="true"
+              @remove="handleRemovePaper"
+            />
+            <ResultsSection
+              v-else
+              :query="currentQuery"
+              :outputs="outputs"
+              :show-abstract="true"
+              :show-add="authStore.isAuthenticated"
+              @add="handleAddFromSearch"
+            />
           </div>
         </v-container>
       </v-main>
     </v-layout>
+    <v-dialog v-model="addToProjectDialogOpen" max-width="500">
+      <v-card>
+        <v-card-title class="text-h5">
+          Paper zu Projekt hinzufügen
+        </v-card-title>
+        <v-card-text>
+          <p class="mb-4 text-medium-emphasis">
+            Wählen Sie ein Projekt aus, zu dem dieses Paper hinzugefügt werden soll.
+          </p>
+          <v-select
+            v-model="selectedProjectIdForAdd"
+            :items="projectOptions"
+            item-title="project_name"
+            item-value="project_id"
+            label="Projekt"
+            variant="outlined"
+          />
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer />
+          <v-btn variant="text" @click="addToProjectDialogOpen = false">
+            Abbrechen
+          </v-btn>
+          <v-btn color="primary" @click="confirmAddToProject">
+            Hinzufügen
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-app>
 </template>
 <!--<script setup lang="ts">
