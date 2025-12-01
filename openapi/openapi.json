@@ -590,7 +590,7 @@
         "title": "LoginResponse",
         "description": "Response returned after a successful login."
       },
-      "Paper": {
+      "PaperDto": {
         "properties": {
           "paper_id": {
             "type": "integer",
@@ -622,10 +622,13 @@
           "authors": {
             "anyOf": [
               {
-                "additionalProperties": {
-                  "type": "string"
+                "items": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
                 },
-                "type": "object"
+                "type": "array"
               },
               {
                 "type": "null"
@@ -655,33 +658,6 @@
               }
             ],
             "title": "Published At"
-          },
-          "pdf_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Pdf Url"
-          },
-          "url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Url"
-          },
-          "fetched_at": {
-            "type": "string",
-            "format": "date-time",
-            "title": "Fetched At"
           }
         },
         "type": "object",
@@ -693,12 +669,9 @@
           "title",
           "authors",
           "abstract",
-          "published_at",
-          "pdf_url",
-          "url",
-          "fetched_at"
+          "published_at"
         ],
-        "title": "Paper",
+        "title": "PaperDto",
         "description": "Representation of a paper (as specified in the DB)"
       },
       "PaperSummary": {
@@ -906,7 +879,7 @@
         "properties": {
           "papers": {
             "items": {
-              "$ref": "#/components/schemas/Paper"
+              "$ref": "#/components/schemas/PaperDto"
             },
             "type": "array",
             "title": "Papers"
