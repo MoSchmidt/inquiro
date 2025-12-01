@@ -87,6 +87,7 @@ async def get_papers_for_project(
         db: AsyncSession = Depends(get_db),
         current_user_id: int = Depends(get_current_user_id),
 ) -> ProjectWithPapersResponse:
+    """Retrieve all papers for a project."""
     return await ProjectService.list_project_papers(
         session=db,
         user_id=current_user_id,

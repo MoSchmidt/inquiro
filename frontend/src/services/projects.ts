@@ -14,7 +14,7 @@ export async function createProject(payload: ProjectCreate) {
 }
 
 export async function getProject(projectId: number) {
-  const response = await projectApi.getProjectProjectsProjectIdGet(projectId);
+  const response = await projectApi.getPapersForProjectProjectsProjectIdPapersGet(projectId);
   return response.data;
 }
 

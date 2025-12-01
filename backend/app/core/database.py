@@ -20,7 +20,7 @@ engine = create_async_engine(
     future=True,
 )
 
-AsyncSessionLocal = async_sessionmaker(
+async_session_local = async_sessionmaker(
     engine,
     class_=AsyncSession,
     expire_on_commit=False,
@@ -47,5 +47,5 @@ async def init_db() -> None:
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:
     """Yield an async database session for FastAPI routes."""
-    async with AsyncSessionLocal() as session:
+    async with async_session_local() as session:
         yield session

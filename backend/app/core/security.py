@@ -56,11 +56,19 @@ def get_current_user_id(token: str = Depends(oauth2_scheme)) -> int:
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    user_id = int(payload.get("sub"))
-    if not user_id:
+    sub_value = payload.get("sub")
+    if sub_value is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token payload.",
+        )
+
+    try:
+        user_id = int(sub_value)
+    except (ValueError, TypeError):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token subject.",
         )
 
     return user_id

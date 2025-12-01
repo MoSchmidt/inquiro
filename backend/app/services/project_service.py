@@ -83,6 +83,7 @@ class ProjectService:
         project_id: int,
         user_id: int,
     ) -> ProjectWithPapersResponse:
+        """Load all papers for a project."""
         await ProjectService._validate_project_access(session, project_id, user_id)
 
         project = await ProjectRepository.get_with_papers(session, project_id)
@@ -181,7 +182,7 @@ class ProjectService:
 
     @staticmethod
     def _build_paper_summaries(
-        project,
+        project: Project,
     ) -> list[PaperSummary]:
         """Convert project.papers into PaperSummary DTOs."""
         summaries: list[PaperSummary] = []

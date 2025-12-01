@@ -168,13 +168,14 @@ class ProjectRepository:
             .select_from(Project)
             .where(Project.project_id == project_id)
         )
-        return (await session.scalar(stmt)) > 0
+        count = await session.scalar(stmt) or 0
+        return count > 0
 
     @staticmethod
     async def is_user_project_owner(
-        session: AsyncSession,
-        project_id: int,
-        user_id: int,
+            session: AsyncSession,
+            project_id: int,
+            user_id: int,
     ) -> bool:
         """Return True if the user is the owner of the project."""
         stmt = (
@@ -185,4 +186,5 @@ class ProjectRepository:
                 Project.created_by == user_id,
             )
         )
-        return (await session.scalar(stmt)) > 0
+        count = await session.scalar(stmt) or 0
+        return count > 0
