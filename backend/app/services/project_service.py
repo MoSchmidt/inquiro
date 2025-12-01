@@ -1,60 +1,155 @@
-from typing import Sequence
+from typing import List
 
-from fastapi import HTTPException
+from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from starlette import status
 
-from app.models import Paper
+from app.models import Project
 from app.repositories.project_repository import ProjectRepository
-from app.schemas.generic import SortRequestDto, SearchTextRequestDto
-from app.schemas.project_dto import PapersPageResponse, PaperOverviewDto
+from app.schemas.project_dto import (
+    PaperSummary,
+    ProjectCreate,
+    ProjectResponse,
+    ProjectUpdate,
+    ProjectWithPapersResponse,
+)
+from app.utils.author_utils import normalize_authors
 
 
 class ProjectService:
+    """Service for managing user projects and their stored papers."""
 
+    # ------------------------------------------------------------------
+    # Project CRUD + details
+    # ------------------------------------------------------------------
+    @staticmethod
+    async def list_projects(
+        session: AsyncSession,
+        user_id: int,
+    ) -> List[ProjectResponse]:
+        """List all projects owned by the given user."""
+        projects = await ProjectRepository.list_for_user(session, user_id)
+        return [ProjectResponse.model_validate(p) for p in projects]
+
+    @staticmethod
+    async def create_project(
+        session: AsyncSession,
+        user_id: int,
+        payload: ProjectCreate,
+    ) -> ProjectResponse:
+        """Create a new project for the given user."""
+        project = await ProjectRepository.create_for_user(
+            session, user_id, payload.project_name
+        )
+        return ProjectResponse.model_validate(project)
+
+    @staticmethod
+    async def update_project(
+        session: AsyncSession,
+        user_id: int,
+        project_id: int,
+        payload: ProjectUpdate,
+    ) -> ProjectResponse:
+        """Update metadata of an existing project."""
+        await ProjectService._validate_project_access(session, project_id, user_id)
+
+        project = await ProjectRepository.get(session, project_id)
+
+        if payload.project_name is not None:
+            project = await ProjectRepository.update_name(
+                session, project, payload.project_name
+            )
+
+        return ProjectResponse.model_validate(project)
+
+    @staticmethod
+    async def delete_project(
+        session: AsyncSession,
+        user_id: int,
+        project_id: int,
+    ) -> None:
+        """Delete a project that belongs to the given user."""
+        # Enforce 404 vs 403 semantics
+        await ProjectService._validate_project_access(session, project_id, user_id)
+
+        await ProjectRepository.delete(session, project_id)
+
+
+    # ------------------------------------------------------------------
+    # Project papers: listing / paging / search
+    # ------------------------------------------------------------------
     @staticmethod
     async def list_project_papers(
-            session: AsyncSession,
-            project_id: int,
-            user_id: int,
-            page_number: int,
-            page_size: int,
-            sort: SortRequestDto | None = None,
-            search: SearchTextRequestDto | None = None,
-    ) -> PapersPageResponse:
+        session: AsyncSession,
+        project_id: int,
+        user_id: int,
+    ) -> ProjectWithPapersResponse:
+        await ProjectService._validate_project_access(session, project_id, user_id)
 
-        await ProjectService._validate_project_access(
-            session=session,
-            project_id=project_id,
-            user_id=user_id,
-        )
+        project = await ProjectRepository.get_with_papers(session, project_id)
 
-        papers = await ProjectRepository.fetch_project_papers(
-            session=session,
-            project_id=project_id,
-            page_number=page_number,
-            page_size=page_size,
-            sort=sort,
-            search=search,
-        )
+        return ProjectService._build_project_with_papers_response(project)
 
-        paper_dtos = ProjectService._to_overview_dtos(papers)
+    # ------------------------------------------------------------------
+    # Project papers: add / remove
+    # ------------------------------------------------------------------
+    @staticmethod
+    async def add_paper_to_project(
+        session: AsyncSession,
+        user_id: int,
+        project_id: int,
+        paper_id: int,
+    ) -> ProjectWithPapersResponse:
+        """Add a paper reference to the given project."""
+        await ProjectService._validate_project_access(session, project_id, user_id)
 
-        return PapersPageResponse(
-            page_number=page_number,
-            page_size=page_size,
-            papers=paper_dtos,
-        )
+        try:
+            project = await ProjectRepository.add_paper(
+                session,
+                project_id=project_id,
+                paper_id=paper_id,
+            )
+        except ValueError as exc:
+            # Currently only "Project not found" / "Paper not found"
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
 
-    # ───────────────────────────────────────────────
-    # Helper methods
-    # ───────────────────────────────────────────────
+        return ProjectService._build_project_with_papers_response(project)
 
     @staticmethod
+    async def remove_paper_from_project(
+        session: AsyncSession,
+        user_id: int,
+        project_id: int,
+        paper_id: int,
+    ) -> ProjectWithPapersResponse:
+        """Remove a paper reference from the given project."""
+        await ProjectService._validate_project_access(session, project_id, user_id)
+
+        try:
+            project = await ProjectRepository.remove_paper(
+                session,
+                project_id=project_id,
+                paper_id=paper_id,
+            )
+        except ValueError as exc:
+            # Currently only "Project not found" / "Paper not found"
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=str(exc),
+            ) from exc
+
+        return ProjectService._build_project_with_papers_response(project)
+
+    # ------------------------------------------------------------------
+    # Helper methods (access checks, mapping, users)
+    # ------------------------------------------------------------------
+    @staticmethod
     async def _validate_project_access(
-            session: AsyncSession,
-            project_id: int,
-            user_id: int,
+        session: AsyncSession,
+        project_id: int,
+        user_id: int,
     ) -> None:
         """Ensure: project exists AND user is owner."""
         exists = await ProjectRepository.exists(session, project_id)
@@ -74,36 +169,31 @@ class ProjectService:
             )
 
     @staticmethod
-    def _to_overview_dtos(papers: Sequence[Paper]) -> list[PaperOverviewDto]:
-        """Convert list of Paper ORM objects into DTOs."""
+    def _build_project_with_papers_response(
+        project: Project,
+    ) -> ProjectWithPapersResponse:
+        """Map a Project ORM entity (with .papers) to a response DTO."""
+        papers = ProjectService._build_paper_summaries(project)
+        return ProjectWithPapersResponse(
+            project=ProjectResponse.model_validate(project),
+            papers=papers,
+        )
 
-        def format_author(author_rec: list[str]) -> str:
-
-            # First 3 fields are name parts (last, first, middle)
-            name_parts = [part for part in author_rec[:3] if part]
-            name = " ".join(name_parts)
-
-            # 4th element = affiliation
-            aff = author_rec[3] if len(author_rec) > 3 and author_rec[3] else None
-
-            if aff:
-                return f"{name} ({aff})"
-            return name
-
-        items: list[PaperOverviewDto] = []
-
-        for p in papers:
-            authors_str = ""
-
-            if p.authors:
-                authors_str = ", ".join(format_author(a) for a in p.authors)
-
-            items.append(
-                PaperOverviewDto(
-                    title=p.title,
-                    authors=authors_str,
-                    published_at=str(p.published_at) if p.published_at else None,
+    @staticmethod
+    def _build_paper_summaries(
+        project,
+    ) -> list[PaperSummary]:
+        """Convert project.papers into PaperSummary DTOs."""
+        summaries: list[PaperSummary] = []
+        for paper in project.papers:
+            authors_value = normalize_authors(paper.authors)
+            summaries.append(
+                PaperSummary(
+                    paper_id=paper.paper_id,
+                    title=paper.title,
+                    authors=authors_value,
+                    abstract=paper.abstract,
+                    published_at=paper.published_at,
                 )
             )
-
-        return items
+        return summaries

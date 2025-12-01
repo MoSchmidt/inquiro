@@ -15,3 +15,5 @@ __pycache__/
 
 # Embeddings data
 backend/ingestion/data
+
+backend/inquiro-env/

@@ -10,7 +10,7 @@ class Paper(BaseModel):
     """
 
     paper_id: int
-    doi: str
+    doi: Optional[str]  # DOI is not always reliable or present in the source data
     source: str
     paper_type: str
     title: str

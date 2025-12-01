@@ -7,7 +7,7 @@ from starlette.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.database import init_db
-from app.routes import auth_routes, search_routes, user_routes, project_routes
+from app.routes import auth_routes, project_routes, search_routes, user_routes
 
 # ---------------------------------------------------------
 # Configure Logging
