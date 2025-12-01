@@ -42,7 +42,7 @@ const submit = async () => {
 		await signup(username);
 
 		// immediately login to receive tokens
-		const resp = await login(username);
+		const resp = await login(username, password.value);
 		if (resp && resp.access_token) {
 			auth.setAuth({
 				accessToken: resp.access_token,

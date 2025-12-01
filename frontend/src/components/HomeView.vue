@@ -90,11 +90,21 @@ const handleNewQuery = () => {
 };
 
 const handleLogin = async (usernameFromSidebar: string) => {
+  // Sidebar now performs the login and sets the auth store. Here we only
+  // ensure projects are loaded when auth is present. Fallback to calling
+  // login(username) if auth isn't set yet (legacy support).
   isLoading.value = true;
   errorMessage.value = null;
 
   try {
-    const { access_token, refresh_token, user } = await login(usernameFromSidebar);
+    if (authStore.isAuthenticated) {
+      await projectsStore.loadProjects();
+      sidebarOpen.value = false;
+      isLoading.value = false;
+      return;
+    }
+
+    const { access_token, refresh_token, user } = await login(usernameFromSidebar as any);
 
     authStore.setAuth({
       accessToken: access_token,

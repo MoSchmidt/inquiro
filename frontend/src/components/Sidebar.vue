@@ -33,6 +33,7 @@ const emit = defineEmits<{
 }>();
 
 const username = ref('');
+const password = ref('');
 const loginDialogOpen = ref(false);
 const loginError = ref<string | null>(null);
 const loginLoading = ref(false);
@@ -42,21 +43,25 @@ const newProjectName = ref('');
 
 const handleLoginSubmit = async () => {
   loginError.value = null;
-  if (!username.value) return;
+  if (!username.value || !password.value) {
+    loginError.value = 'Username and password are required';
+    return;
+  }
 
   loginLoading.value = true;
   try {
-    const resp = await login(username.value);
+    const resp = await login(username.value, password.value);
     if (resp && resp.access_token) {
       authStore.setAuth({
         accessToken: resp.access_token,
         refreshToken: resp.refresh_token,
         user: resp.user,
       });
-      // close dialog and notify parent
-      username.value = '';
-      loginDialogOpen.value = false;
+      // notify parent (so it can load projects) then clear/close
       emit('login', username.value);
+      username.value = '';
+      password.value = '';
+      loginDialogOpen.value = false;
       emit('close');
     } else {
       loginError.value = 'Login failed';
@@ -183,7 +188,16 @@ const handleNewProjectSubmit = () => {
               required
               class="mb-4"
             ></v-text-field>
-            <v-btn type="submit" color="primary" block>Login</v-btn>
+            <v-text-field
+              v-model="password"
+              label="Password"
+              type="password"
+              variant="outlined"
+              required
+              class="mb-4"
+            ></v-text-field>
+            <v-btn type="submit" color="primary" block :loading="loginLoading">Login</v-btn>
+            <div v-if="loginError" class="mt-2" style="color:var(--v-theme-error)">{{ loginError }}</div>
           </v-form>
         </v-card-text>
         <v-card-actions>
