@@ -13,14 +13,18 @@
  */
 
 
-// May contain unused imports in some cases
-// @ts-ignore
-import type { PaperDto } from './paper-dto';
 
 /**
- * Response to search for specified query
+ * Representation of a paper (as specified in the DB)
  */
-export interface SearchResponse {
-    'papers': Array<PaperDto>;
+export interface PaperDto {
+    'paper_id': number;
+    'doi': string | null;
+    'source': string;
+    'paper_type': string;
+    'title': string;
+    'authors': Array<Array<string>> | null;
+    'abstract': string | null;
+    'published_at': string | null;
 }
 

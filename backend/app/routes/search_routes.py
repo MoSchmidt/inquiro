@@ -22,4 +22,5 @@ def search(request: SearchRequest, db: Session = Depends(get_db)) -> SearchRespo
     of the query string.
     """
 
-    return SearchService.search_papers(db, request.query)
+    papers = SearchService.search_papers(request.query, db)
+    return SearchResponse.model_validate(papers)
