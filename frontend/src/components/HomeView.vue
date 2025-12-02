@@ -102,8 +102,9 @@ const handleLogin = async (usernameFromSidebar: string) => {
       user: user,
     });
     await projectsStore.loadProjects();
-    sidebarOpen.value = false;
+    sidebarOpen.value = true;
   } catch (error: unknown) {
+    console.error('Login failed', error);
     const axiosError = error as AxiosError<{ detail?: string }>;
 
     if (axiosError.response?.data?.detail) {
@@ -175,8 +176,8 @@ const confirmAddToProject = async () => {
   addToProjectDialogOpen.value = false;
   paperToAdd.value = null;
 };
-</script>
 
+</script>
 <template>
   <v-app>
     <v-layout>
@@ -195,6 +196,7 @@ const confirmAddToProject = async () => {
           @new-project="handleNewProject"
           @login="handleLogin"
           @logout="handleLogout"
+          @newQuery="handleNewQuery"
         />
       </v-navigation-drawer>
 
@@ -209,8 +211,8 @@ const confirmAddToProject = async () => {
         </v-btn>
       </v-app-bar>
 
-      <v-main class="bg-grey-lighten-4">
-        <v-container fluid class="h-100">
+      <v-main class="v-main bg-grey-lighten-4">
+        <v-container fluid>
           <div v-if="!currentQuery">
             <InputSection @submit="handleSubmitQuery" />
           </div>
@@ -229,6 +231,7 @@ const confirmAddToProject = async () => {
               :show-abstract="true"
               :show-add="authStore.isAuthenticated"
               @add="handleAddFromSearch"
+              @updateQuery="handleSubmitQuery"
             />
           </div>
         </v-container>
@@ -265,15 +268,3 @@ const confirmAddToProject = async () => {
     </v-dialog>
   </v-app>
 </template>
-<!--<script setup lang="ts">
-import { useAuthStore } from '@/stores/auth';
-
-const authStore = useAuthStore();
-</script>
-
-<template>
-  <h1>Hello, {{ authStore.user }}</h1>
-  <p>{{ authStore.accessToken }}</p>
-</template>
-
-<style scoped></style>-->

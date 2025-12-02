@@ -28,6 +28,7 @@ const emit = defineEmits<{
   (e: 'newProject', name: string): void;
   (e: 'login', username: string): void;
   (e: 'logout'): void;
+  (e: 'newQuery'): void;
 }>();
 
 const username = ref('');
@@ -35,6 +36,10 @@ const loginDialogOpen = ref(false);
 const newProjectDialogOpen = ref(false);
 const newProjectName = ref('');
 
+const handleNewQueryClick = () => {
+  emit('newQuery');
+  emit('close');
+};
 const handleLoginSubmit = () => {
   if (username.value) {
     emit('login', username.value);
@@ -72,10 +77,24 @@ const handleNewProjectSubmit = () => {
     <div class="flex-grow-1 overflow-y-auto">
       <div class="pa-4 pb-2">
         <v-btn
-          color="secondary"
-          variant="outlined"
-          block
-          @click="handleNewProjectClick"
+            color="secondary"
+            variant="outlined"
+            block
+            class="aligned-button"
+            @click="handleNewQueryClick"
+        >
+          <v-icon :icon="Plus" start size="18" />
+          Neue Abfrage
+        </v-btn>
+      </div>
+
+      <div class="pa-4 pb-2">
+        <v-btn
+            color="secondary"
+            variant="outlined"
+            block
+            class="aligned-button"
+            @click="handleNewProjectClick"
         >
           <v-icon :icon="Plus" start size="18" />
           Neues Projekt
@@ -194,6 +213,14 @@ const handleNewProjectSubmit = () => {
 </template>
 
 <style scoped>
+.aligned-button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  text-align: left;
+}
+
 .border-b-sm {
   border-bottom: 1px solid #E0E0E0;
 }

@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import {computed, ref, watch} from 'vue';
 import {
   VCard,
-  VCardTitle,
   VCardText,
   VIcon,
   VBtn,
+  VTextField,
   VExpansionPanels,
   VExpansionPanel,
   VExpansionPanelTitle,
   VExpansionPanelText,
 } from 'vuetify/components';
-import { FileText, ExternalLink, FolderPlus } from 'lucide-vue-next';
+import { FileText, ExternalLink, FolderPlus, Edit3 } from 'lucide-vue-next';
 import type { Paper } from './types';
 
 const props = defineProps<{
@@ -23,10 +23,17 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'add', paper: Paper): void;
+  (e: 'updateQuery', newQuery: string): void;
 }>();
 
 const expanded = ref<number[]>([]);
-
+const editableQuery = ref(props.query);
+const isQueryChanged = computed(() => editableQuery.value.trim() !== props.query.trim());
+const handleQueryUpdate = () => {
+  if (editableQuery.value.trim()) {
+    emit('updateQuery', editableQuery.value.trim());
+  }
+};
 watch(
   () => props.outputs,
   (newOutputs) => {
@@ -38,18 +45,30 @@ watch(
 </script>
 
 <template>
-  <v-container class="py-6" style="max-width: 1200px;">
-    <v-card flat class="mb-8 pa-4 bg-blue-lighten-5 border-sm">
-      <v-card-text class="d-flex align-start pa-0">
-        <v-icon :icon="FileText" color="blue-darken-2" class="mt-1 me-3"></v-icon>
-        <div>
-          <h3 class="text-h6 text-blue-darken-4 mb-2">Ihre Abfrage</h3>
-          <p class="text-blue-darken-3">{{ query }}</p>
-        </div>
-      </v-card-text>
-    </v-card>
-
-    <div>
+    <v-container class="results-section">
+      <v-card flat class="mb-8 pa-4 bg-blue-lighten-5 border-sm">
+        <v-card-text class="d-flex align-start pa-0">
+          <v-icon :icon="FileText" color="blue-darken-2" class="mt-1 me-3"></v-icon>
+          <div class="flex-grow-1">
+            <v-text-field
+                v-model="editableQuery"
+                label="Ihre Abfrage"
+                variant="outlined"
+                dense
+                class="mb-2"
+            ></v-text-field>
+            <v-btn
+                v-if="isQueryChanged"
+                color="primary"
+                variant="outlined"
+                size="small"
+                @click="handleQueryUpdate">
+              <v-icon :icon="Edit3" start size="18"/>
+              Abfrage aktualisieren
+            </v-btn>
+          </div>
+        </v-card-text>
+      </v-card>
       <h3 class="text-h6 mb-4">Artikel ({{ outputs.length }})</h3>
       <v-expansion-panels v-if="outputs.length" v-model="expanded" multiple class="paper-panels">
         <v-expansion-panel
@@ -108,7 +127,6 @@ watch(
           </v-expansion-panel-text>
         </v-expansion-panel>
       </v-expansion-panels>
-    </div>
 
     <div v-if="outputs.length === 0" class="text-center py-12">
       <p class="text-medium-emphasis">Noch keine Ergebnisse vorhanden</p>
@@ -123,11 +141,6 @@ watch(
 .border-sm {
   border: 1px solid #BBDEFB;
 }
-.w-35 { width: 35%; }
-.w-25 { width: 25%; }
-.w-15 { width: 15%; }
-.w-10 { width: 10%; }
-.w-5 { width: 5%; }
 
 .paper-panels {
   gap: 12px;
