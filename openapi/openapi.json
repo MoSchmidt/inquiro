@@ -278,52 +278,6 @@
       }
     },
     "/projects/{project_id}": {
-      "get": {
-        "tags": [
-          "Projects"
-        ],
-        "summary": "Get a project with its stored papers",
-        "description": "Return a single project and all papers stored in it.",
-        "operationId": "get_project_projects__project_id__get",
-        "security": [
-          {
-            "OAuth2PasswordBearer": []
-          }
-        ],
-        "parameters": [
-          {
-            "name": "project_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "Project Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ProjectWithPapersResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      },
       "patch": {
         "tags": [
           "Projects"
@@ -406,6 +360,54 @@
         "responses": {
           "204": {
             "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{project_id}/papers": {
+      "get": {
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Get the paper for a project.",
+        "description": "Retrieve all papers for a project.",
+        "operationId": "get_papers_for_project_projects__project_id__papers_get",
+        "security": [
+          {
+            "OAuth2PasswordBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectWithPapersResponse"
+                }
+              }
+            }
           },
           "422": {
             "description": "Validation Error",
@@ -620,20 +622,10 @@
             "title": "Title"
           },
           "authors": {
-            "anyOf": [
-              {
-                "items": {
-                  "items": {
-                    "type": "string"
-                  },
-                  "type": "array"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
             "title": "Authors"
           },
           "abstract": {
@@ -673,82 +665,6 @@
         ],
         "title": "PaperDto",
         "description": "Representation of a paper (as specified in the DB)"
-      },
-      "PaperSummary": {
-        "properties": {
-          "paper_id": {
-            "type": "integer",
-            "title": "Paper Id"
-          },
-          "title": {
-            "type": "string",
-            "title": "Title"
-          },
-          "authors": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Authors"
-          },
-          "abstract": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Abstract"
-          },
-          "published_at": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date-time"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Published At"
-          },
-          "url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Url"
-          },
-          "pdf_url": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Pdf Url"
-          }
-        },
-        "type": "object",
-        "required": [
-          "paper_id",
-          "title"
-        ],
-        "title": "PaperSummary",
-        "description": "Lightweight representation of a paper inside a project."
       },
       "ProjectCreate": {
         "properties": {
@@ -814,7 +730,7 @@
           },
           "papers": {
             "items": {
-              "$ref": "#/components/schemas/PaperSummary"
+              "$ref": "#/components/schemas/PaperDto"
             },
             "type": "array",
             "title": "Papers"

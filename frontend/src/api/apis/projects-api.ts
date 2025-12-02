@@ -156,16 +156,16 @@ export const ProjectsApiAxiosParamCreator = function (configuration?: Configurat
             };
         },
         /**
-         * Return a single project and all papers stored in it.
-         * @summary Get a project with its stored papers
+         * Retrieve all papers for a project.
+         * @summary Get the paper for a project.
          * @param {number} projectId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getProjectProjectsProjectIdGet: async (projectId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        getPapersForProjectProjectsProjectIdPapersGet: async (projectId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'projectId' is not null or undefined
-            assertParamExists('getProjectProjectsProjectIdGet', 'projectId', projectId)
-            const localVarPath = `/projects/{project_id}`
+            assertParamExists('getPapersForProjectProjectsProjectIdPapersGet', 'projectId', projectId)
+            const localVarPath = `/projects/{project_id}/papers`
                 .replace(`{${"project_id"}}`, encodeURIComponent(String(projectId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -362,16 +362,16 @@ export const ProjectsApiFp = function(configuration?: Configuration) {
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
-         * Return a single project and all papers stored in it.
-         * @summary Get a project with its stored papers
+         * Retrieve all papers for a project.
+         * @summary Get the paper for a project.
          * @param {number} projectId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async getProjectProjectsProjectIdGet(projectId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ProjectWithPapersResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.getProjectProjectsProjectIdGet(projectId, options);
+        async getPapersForProjectProjectsProjectIdPapersGet(projectId: number, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<ProjectWithPapersResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.getPapersForProjectProjectsProjectIdPapersGet(projectId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
-            const localVarOperationServerBasePath = operationServerMap['ProjectsApi.getProjectProjectsProjectIdGet']?.[localVarOperationServerIndex]?.url;
+            const localVarOperationServerBasePath = operationServerMap['ProjectsApi.getPapersForProjectProjectsProjectIdPapersGet']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
         },
         /**
@@ -455,14 +455,14 @@ export const ProjectsApiFactory = function (configuration?: Configuration, baseP
             return localVarFp.deleteProjectProjectsProjectIdDelete(projectId, options).then((request) => request(axios, basePath));
         },
         /**
-         * Return a single project and all papers stored in it.
-         * @summary Get a project with its stored papers
+         * Retrieve all papers for a project.
+         * @summary Get the paper for a project.
          * @param {number} projectId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        getProjectProjectsProjectIdGet(projectId: number, options?: RawAxiosRequestConfig): AxiosPromise<ProjectWithPapersResponse> {
-            return localVarFp.getProjectProjectsProjectIdGet(projectId, options).then((request) => request(axios, basePath));
+        getPapersForProjectProjectsProjectIdPapersGet(projectId: number, options?: RawAxiosRequestConfig): AxiosPromise<ProjectWithPapersResponse> {
+            return localVarFp.getPapersForProjectProjectsProjectIdPapersGet(projectId, options).then((request) => request(axios, basePath));
         },
         /**
          * Return all projects for the authenticated user.
@@ -537,14 +537,14 @@ export class ProjectsApi extends BaseAPI {
     }
 
     /**
-     * Return a single project and all papers stored in it.
-     * @summary Get a project with its stored papers
+     * Retrieve all papers for a project.
+     * @summary Get the paper for a project.
      * @param {number} projectId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public getProjectProjectsProjectIdGet(projectId: number, options?: RawAxiosRequestConfig) {
-        return ProjectsApiFp(this.configuration).getProjectProjectsProjectIdGet(projectId, options).then((request) => request(this.axios, this.basePath));
+    public getPapersForProjectProjectsProjectIdPapersGet(projectId: number, options?: RawAxiosRequestConfig) {
+        return ProjectsApiFp(this.configuration).getPapersForProjectProjectsProjectIdPapersGet(projectId, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

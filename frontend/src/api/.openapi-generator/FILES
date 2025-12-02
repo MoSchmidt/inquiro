@@ -12,7 +12,6 @@ models/index.ts
 models/login-request.ts
 models/login-response.ts
 models/paper-dto.ts
-models/paper-summary.ts
 models/project-create.ts
 models/project-response.ts
 models/project-update.ts

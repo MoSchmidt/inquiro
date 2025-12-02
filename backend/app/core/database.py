@@ -2,10 +2,10 @@
 
 import logging
 from importlib import import_module
-from typing import Any, Generator
+from typing import AsyncGenerator
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session, declarative_base, sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
+from sqlalchemy.orm import declarative_base
 
 from app.core.config import settings
 
@@ -13,33 +13,39 @@ logger = logging.getLogger("inquiro")
 
 Base = declarative_base()
 
-engine = create_engine(
+# Use async engine with asyncpg or aiomysql driver
+engine = create_async_engine(
     settings.DATABASE_URL,
     echo=(settings.ENVIRONMENT == "dev"),
+    future=True,
 )
 
-SESSION_LOCAL = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+async_session_local = async_sessionmaker(
+    engine,
+    class_=AsyncSession,
+    expire_on_commit=False,
+    autocommit=False,
+    autoflush=False,
+)
 
 
-def init_db() -> None:
+async def init_db() -> None:
     """Automatically create or update tables based on SQLAlchemy models."""
-
     for module in (
-        "app.models.user",
-        "app.models.project",
-        "app.models.paper",
-        "app.models.project_paper",
+            "app.models.user",
+            "app.models.project",
+            "app.models.paper",
+            "app.models.project_paper",
     ):
         import_module(module)
+
     logger.info("🔄 Creating / updating database schema...")
-    Base.metadata.create_all(bind=engine)
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
     logger.info("✅ Database schema up to date.")
 
 
-def get_db() -> Generator[Session, Any, None]:
-    """Yield a database session for FastAPI routes."""
-    db = SESSION_LOCAL()
-    try:
-        yield db
-    finally:
-        db.close()
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    """Yield an async database session for FastAPI routes."""
+    async with async_session_local() as session:
+        yield session

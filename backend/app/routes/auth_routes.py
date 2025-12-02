@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.schemas.auth_dto import (
@@ -20,10 +20,10 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
     status_code=status.HTTP_200_OK,
     summary="Authenticate a user and return JWT tokens",
 )
-def login(request: LoginRequest, db: Session = Depends(get_db)) -> LoginResponse:
+async def login(request: LoginRequest, db: AsyncSession = Depends(get_db)) -> LoginResponse:
     """Authenticate a user and return access plus refresh tokens."""
 
-    user, access_token, refresh_token = AuthService.login(db, request.username)
+    user, access_token, refresh_token = await AuthService.login(db, request.username)
 
     return LoginResponse(
         access_token=access_token,
@@ -39,10 +39,10 @@ def login(request: LoginRequest, db: Session = Depends(get_db)) -> LoginResponse
     status_code=status.HTTP_200_OK,
     summary="Generate a new access token using a refresh token",
 )
-def refresh_access_token(request: RefreshRequest) -> RefreshResponse:
+async def refresh_access_token(request: RefreshRequest) -> RefreshResponse:
     """Validate a refresh token and return a new access token."""
 
-    new_access_token = AuthService.refresh(request.refresh_token)
+    new_access_token = await AuthService.refresh(request.refresh_token)
 
     return RefreshResponse(
         access_token=new_access_token,

@@ -3,19 +3,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel, ConfigDict
 
-
-class PaperSummary(BaseModel):
-    """Lightweight representation of a paper inside a project."""
-
-    paper_id: int
-    title: str
-    authors: Optional[dict] = None
-    abstract: Optional[str] = None
-    published_at: Optional[datetime] = None
-    url: Optional[str] = None
-    pdf_url: Optional[str] = None
-
-    model_config = ConfigDict(from_attributes=True)
+from app.schemas.paper_dto import PaperDto
 
 
 class ProjectCreate(BaseModel):
@@ -44,4 +32,4 @@ class ProjectWithPapersResponse(BaseModel):
     """Project including its stored papers."""
 
     project: ProjectResponse
-    papers: List[PaperSummary]
+    papers: List[PaperDto]

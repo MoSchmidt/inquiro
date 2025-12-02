@@ -1,0 +1,27 @@
+meta {
+  name: Get Papers
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{base_url}}/projects/:project_id/papers?page_number=1&page_size=10&sort_by=year&sort_order=DESC
+  body: none
+  auth: inherit
+}
+
+params:query {
+  page_number: 1
+  page_size: 10
+  sort_by: year
+  sort_order: DESC
+}
+
+params:path {
+  project_id: 1
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

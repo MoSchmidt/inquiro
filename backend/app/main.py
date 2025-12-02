@@ -28,7 +28,7 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, Any]:
 
     logger.info("🚀 Starting Inquiro API in '%s' mode...", settings.ENVIRONMENT)
     if settings.ENVIRONMENT == "dev":
-        init_db()  # Auto-create tables only in dev
+        await init_db()  # Auto-create tables only in dev
     logger.info("✅ Startup complete.")
 
     yield

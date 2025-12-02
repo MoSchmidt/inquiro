@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user_id
 from app.schemas.user_dto import UserCreate, UserResponse
 from app.services.user_service import UserService
 
@@ -15,10 +15,10 @@ router = APIRouter(prefix="/users", tags=["Users"])
     status_code=status.HTTP_201_CREATED,
     summary="Create a new user",
 )
-def create_user(request: UserCreate, db: Session = Depends(get_db)) -> UserResponse:
+async def create_user(request: UserCreate, db: AsyncSession = Depends(get_db)) -> UserResponse:
     """Create a new user."""
 
-    user = UserService.create_user(db, request.username)
+    user = await UserService.create_user(db, request.username)
     return UserResponse.model_validate(user)
 
 
@@ -28,11 +28,11 @@ def create_user(request: UserCreate, db: Session = Depends(get_db)) -> UserRespo
     status_code=status.HTTP_200_OK,
     summary="Get the current user's profile",
 )
-def get_current_user_profile(
-    current_username: str = Depends(get_current_user),
-    db: Session = Depends(get_db),
+async def get_current_user_profile(
+        current_user_id: int = Depends(get_current_user_id),
+        db: AsyncSession = Depends(get_db),
 ) -> UserResponse:
     """Return the authenticated user's profile."""
 
-    user = UserService.get_user_by_username(db, current_username)
+    user = await UserService.get_user_by_user_id(db, current_user_id)
     return UserResponse.model_validate(user)
