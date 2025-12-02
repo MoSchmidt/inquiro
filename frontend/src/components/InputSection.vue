@@ -99,10 +99,4 @@ const handleSubmit = () => {
 .border-sm {
   border: 1px solid #E0E0E0; /* Light border similar to tailwind's gray-200 */
 }
-.input-wrapper {
-  max-height: 85vh;
-  overflow-y: auto;
-  padding-right: 6px;
-}
-
 </style>

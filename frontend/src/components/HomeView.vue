@@ -180,12 +180,13 @@ const confirmAddToProject = async () => {
 </script>
 <template>
   <v-app>
-    <v-layout>
+    <v-layout class="h-screen">
       <v-navigation-drawer
         v-model="sidebarOpen"
         location="left"
         temporary
         width="320"
+        app
       >
         <Sidebar
           :is-open="sidebarOpen"
@@ -268,3 +269,9 @@ const confirmAddToProject = async () => {
     </v-dialog>
   </v-app>
 </template>
+
+<style scoped>
+.v-main {
+  overflow-y: auto;
+}
+</style>
