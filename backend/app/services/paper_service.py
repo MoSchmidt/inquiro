@@ -86,7 +86,7 @@ class PaperService:
         except httpx.HTTPStatusError as exc:
             # arXiv returned 404 or similar error
             logger.warning("Failed to fetch arXiv paper %s: %s", external_id, exc, exc_info=True)
-            raise HTTPException(status_code=404, detail="Paper not found")
+            raise HTTPException(status_code=404, detail="Paper not found") from exc
         except httpx.RequestError as exc:
             logger.warning(
                 "Network error while fetching arXiv paper %s: %s", external_id, exc, exc_info=True
@@ -94,13 +94,13 @@ class PaperService:
             raise HTTPException(
                 status_code=503,
                 detail="Upstream arXiv service unavailable, please try again later.",
-            )
-        except Exception:
+            ) from exc
+        except Exception as exc:
             # Catch-all for unexpected issues (PDF parsing, LLM errors, ...)
             logger.exception("Error summarising arxiv paper %s", external_id)
             raise HTTPException(
                 status_code=500, detail="An unexpected error occurred while summarising the paper."
-            )
+            ) from exc
         finally:
             if pdf_file and pdf_file.exists():
                 try:
