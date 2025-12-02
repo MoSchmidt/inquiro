@@ -182,22 +182,22 @@ const confirmAddToProject = async () => {
   <v-app>
     <v-layout class="h-screen">
       <v-navigation-drawer
-        v-model="sidebarOpen"
-        location="left"
-        temporary
-        width="320"
-        app
+          v-model="sidebarOpen"
+          location="left"
+          temporary
+          width="320"
+          app
       >
         <Sidebar
-          :is-open="sidebarOpen"
-          :recent-projects="recentProjects"
-          :is-logged-in="authStore.isAuthenticated"
-          @close="sidebarOpen = false"
-          @project-select="handleProjectSelect"
-          @new-project="handleNewProject"
-          @login="handleLogin"
-          @logout="handleLogout"
-          @newQuery="handleNewQuery"
+            :is-open="sidebarOpen"
+            :recent-projects="recentProjects"
+            :is-logged-in="authStore.isAuthenticated"
+            @close="sidebarOpen = false"
+            @project-select="handleProjectSelect"
+            @new-project="handleNewProject"
+            @login="handleLogin"
+            @logout="handleLogout"
+            @newQuery="handleNewQuery"
         />
       </v-navigation-drawer>
 
@@ -212,66 +212,47 @@ const confirmAddToProject = async () => {
         </v-btn>
       </v-app-bar>
 
-      <v-main class="v-main bg-grey-lighten-4">
-        <v-container fluid>
+      <v-main class="v-main bg-grey-lighten-4 scroll-blocked">
+        <v-container fluid class="scroll-container">
           <div v-if="!currentQuery">
             <InputSection @submit="handleSubmitQuery" />
           </div>
           <div v-else>
             <ProjectResultsSection
-              v-if="isProjectView"
-              :project-name="currentQuery || ''"
-              :papers="outputs"
-              :show-abstract="true"
-              @remove="handleRemovePaper"
+                v-if="isProjectView"
+                :project-name="currentQuery || ''"
+                :papers="outputs"
+                :show-abstract="true"
+                @remove="handleRemovePaper"
             />
             <ResultsSection
-              v-else
-              :query="currentQuery"
-              :outputs="outputs"
-              :show-abstract="true"
-              :show-add="authStore.isAuthenticated"
-              @add="handleAddFromSearch"
-              @updateQuery="handleSubmitQuery"
+                v-else
+                :query="currentQuery"
+                :outputs="outputs"
+                :show-abstract="true"
+                :show-add="authStore.isAuthenticated"
+                @add="handleAddFromSearch"
+                @updateQuery="handleSubmitQuery"
             />
           </div>
         </v-container>
       </v-main>
     </v-layout>
-    <v-dialog v-model="addToProjectDialogOpen" max-width="500">
-      <v-card>
-        <v-card-title class="text-h5">
-          Paper zu Projekt hinzufügen
-        </v-card-title>
-        <v-card-text>
-          <p class="mb-4 text-medium-emphasis">
-            Wählen Sie ein Projekt aus, zu dem dieses Paper hinzugefügt werden soll.
-          </p>
-          <v-select
-            v-model="selectedProjectIdForAdd"
-            :items="projectOptions"
-            item-title="project_name"
-            item-value="project_id"
-            label="Projekt"
-            variant="outlined"
-          />
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn variant="text" @click="addToProjectDialogOpen = false">
-            Abbrechen
-          </v-btn>
-          <v-btn color="primary" @click="confirmAddToProject">
-            Hinzufügen
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </v-app>
 </template>
 
 <style scoped>
-.v-main {
+
+.scroll-blocked {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.scroll-container {
+  flex: 1 1 auto;
+  height: 100%;
   overflow-y: auto;
 }
 </style>
