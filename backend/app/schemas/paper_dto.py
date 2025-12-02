@@ -26,7 +26,6 @@ class PaperSummaryRequest(BaseModel):
     Request to summarise a specified paper
     """
 
-    paper_id: int
     query: str
 
 
