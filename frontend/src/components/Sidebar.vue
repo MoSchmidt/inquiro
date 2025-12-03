@@ -30,6 +30,7 @@ const emit = defineEmits<{
   (e: 'newProject', name: string): void;
   (e: 'login', username: string): void;
   (e: 'logout'): void;
+  (e: 'newQuery'): void;
 }>();
 
 const username = ref('');
@@ -41,6 +42,10 @@ const authStore = useAuthStore();
 const newProjectDialogOpen = ref(false);
 const newProjectName = ref('');
 
+const handleNewQueryClick = () => {
+  emit('newQuery');
+  emit('close');
+};
 const handleLoginSubmit = async () => {
   loginError.value = null;
   if (!username.value || !password.value) {
@@ -109,10 +114,24 @@ const handleNewProjectSubmit = () => {
     <div class="flex-grow-1 overflow-y-auto">
       <div class="pa-4 pb-2">
         <v-btn
-          color="secondary"
-          variant="outlined"
-          block
-          @click="handleNewProjectClick"
+            color="secondary"
+            variant="outlined"
+            block
+            class="aligned-button"
+            @click="handleNewQueryClick"
+        >
+          <v-icon :icon="Plus" start size="18" />
+          New Query
+        </v-btn>
+      </div>
+
+      <div class="pa-4 pb-2">
+        <v-btn
+            color="secondary"
+            variant="outlined"
+            block
+            class="aligned-button"
+            @click="handleNewProjectClick"
         >
           <v-icon :icon="Plus" start size="18" />
           New Project
@@ -240,16 +259,24 @@ const handleNewProjectSubmit = () => {
 </template>
 
 <style scoped>
+.aligned-button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  text-align: left;
+}
+
 .border-b-sm {
-  border-bottom: 1px solid #E0E0E0;
+  border-bottom: 1px solid var(--border-sm-color);
 }
 .border-t-sm {
-  border-top: 1px solid #E0E0E0;
+  border-top: 1px solid var(--border-sm-color);
 }
 .bg-green-lighten-5 {
-  background-color: #F1F8E9 !important;
+  background-color: var(--green-lighten-5) !important;
 }
 .border-success {
-  border: 1px solid #8BC34A !important;
+  border: 1px solid var(--border-sucess) !important;
 }
 </style>

@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import {computed, ref, watch} from 'vue';
 import {
   VCard,
-  VCardTitle,
   VCardText,
   VIcon,
   VBtn,
+  VTextField,
   VExpansionPanels,
   VExpansionPanel,
   VExpansionPanelTitle,
   VExpansionPanelText,
 } from 'vuetify/components';
-import { FileText, ExternalLink, FolderPlus } from 'lucide-vue-next';
+import { FileText, ExternalLink, FolderPlus, Edit3 } from 'lucide-vue-next';
 import type { Paper } from './types';
 
 const props = defineProps<{
@@ -23,10 +23,17 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'add', paper: Paper): void;
+  (e: 'updateQuery', newQuery: string): void;
 }>();
 
 const expanded = ref<number[]>([]);
-
+const editableQuery = ref(props.query);
+const isQueryChanged = computed(() => editableQuery.value.trim() !== props.query.trim());
+const handleQueryUpdate = () => {
+  if (editableQuery.value.trim()) {
+    emit('updateQuery', editableQuery.value.trim());
+  }
+};
 watch(
   () => props.outputs,
   (newOutputs) => {
@@ -38,7 +45,32 @@ watch(
 </script>
 
 <template>
-  <v-container class="py-6" style="max-width: 1200px;">
+    <v-container class="results-section">
+      <v-card flat class="mb-8 pa-4 bg-blue-lighten-5 border-sm">
+        <v-card-text class="d-flex align-start pa-0">
+          <v-icon :icon="FileText" color="blue-darken-2" class="mt-1 me-3"></v-icon>
+          <div class="flex-grow-1">
+            <v-text-field
+                v-model="editableQuery"
+                label="Ihre Abfrage"
+                variant="outlined"
+                dense
+                class="mb-2"
+            ></v-text-field>
+            <v-btn
+                v-if="isQueryChanged"
+                color="primary"
+                variant="outlined"
+                size="small"
+                @click="handleQueryUpdate">
+              <v-icon :icon="Edit3" start size="18"/>
+              Update query
+            </v-btn>
+          </div>
+        </v-card-text>
+      </v-card>
+      <h3 class="text-h6 mb-4">Articles ({{ outputs.length }})</h3>
+  <!--<v-container class="py-6" style="max-width: 1200px;">
     <v-card flat class="mb-8 pa-4 bg-blue-lighten-5 border-sm">
       <v-card-text class="d-flex align-start pa-0">
         <v-icon :icon="FileText" color="blue-darken-2" class="mt-1 me-3"></v-icon>
@@ -50,7 +82,7 @@ watch(
     </v-card>
 
     <div>
-      <h3 class="text-h6 mb-4">Articles ({{ outputs.length }})</h3>
+      <h3 class="text-h6 mb-4">Articles ({{ outputs.length }})</h3> -->
       <v-expansion-panels v-if="outputs.length" v-model="expanded" multiple class="paper-panels">
         <v-expansion-panel
           v-for="(paper, index) in outputs"
@@ -108,7 +140,6 @@ watch(
           </v-expansion-panel-text>
         </v-expansion-panel>
       </v-expansion-panels>
-    </div>
 
     <div v-if="outputs.length === 0" class="text-center py-12">
       <p class="text-medium-emphasis">No results yet</p>
@@ -118,16 +149,11 @@ watch(
 
 <style scoped>
 .bg-blue-lighten-5 {
-  background-color: #e9f2ff !important;
+  background-color: var(--blue-lighten-5) !important;
 }
 .border-sm {
-  border: 1px solid #BBDEFB;
+  border: 1px solid var(--border-sm-color-result);
 }
-.w-35 { width: 35%; }
-.w-25 { width: 25%; }
-.w-15 { width: 15%; }
-.w-10 { width: 10%; }
-.w-5 { width: 5%; }
 
 .paper-panels {
   gap: 12px;
@@ -135,15 +161,15 @@ watch(
 
 .paper-panel {
   border-radius: 12px !important;
-  border: 1px solid rgba(148, 163, 184, 0.25);
+  border: 1px solid var(--paper-panel-border);
   background: linear-gradient(135deg, #ffffff, #f9fafb);
   transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
 }
 
 .paper-panel:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
-  border-color: rgba(59, 130, 246, 0.35);
+  box-shadow: 0 10px 25px var(--paper-panel-hover-shadow);
+  border-color: var(--paper-panel-hover-border);
 }
 
 .paper-header {

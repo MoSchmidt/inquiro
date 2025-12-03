@@ -1,0 +1,19 @@
+:root {
+    /* Blue shades */
+    --blue-lighten-5:#e9f2ff;
+    --blue-lighten-4: #E3F2FD;
+    --blue-darken-2: #1976D2;
+
+    /* Green shades */
+    --green-lighten-5: #F1F8E9;
+
+    /* Border colors */
+    --border-sm-color: #E0E0E0;
+    --border-sm-color-result: #BBDEFB;
+    --border-sucess: #8BC34A;
+
+    /* Paper panel colors */
+    --paper-panel-border: rgba(148, 163, 184, 0.25);
+    --paper-panel-hover-border: rgba(59, 130, 246, 0.35);
+    --paper-panel-hover-shadow: rgba(15, 23, 42, 0.08);
+}

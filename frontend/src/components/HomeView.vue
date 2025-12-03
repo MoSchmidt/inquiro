@@ -6,8 +6,9 @@ import Sidebar from './Sidebar.vue';
 import InputSection from './InputSection.vue';
 import ResultsSection from './ResultsSection.vue';
 import ProjectResultsSection from './ProjectResultsSection.vue';
-import type { Paper } from './types';
+import CreateAccount from './CreateAccount.vue';
 
+import type { Paper } from './types';
 import { useAuthStore } from '@/stores/auth';
 import { useProjectsStore } from '@/stores/projects';
 import { login } from '@/services/auth';
@@ -19,6 +20,8 @@ const currentQuery = ref<string | null>(null);
 const outputs = ref<Paper[]>([]);
 const isProjectView = ref(false);
 
+const createAccountOpen = ref(false);
+
 const errorMessage = ref<string | null>(null);
 const isLoading = ref(false);
 
@@ -26,12 +29,12 @@ const authStore = useAuthStore();
 const projectsStore = useProjectsStore();
 
 const recentProjects = computed(() =>
-  projectsStore.projects.map((p) => ({
-    id: p.project_id,
-    name: p.project_name,
-    date: p.created_at.split('T')[0],
-    outputs: [] as Paper[],
-  })),
+    projectsStore.projects.map((p) => ({
+      id: p.project_id,
+      name: p.project_name,
+      date: p.created_at.split('T')[0],
+      outputs: [] as Paper[],
+    })),
 );
 
 onMounted(() => {
@@ -39,6 +42,13 @@ onMounted(() => {
     projectsStore.loadProjects();
   }
 });
+
+const handleAccountCreated = async () => {
+  createAccountOpen.value = false; // Close dialog
+  if (authStore.isAuthenticated) {
+    await projectsStore.loadProjects(); // Reload data for the new user
+  }
+};
 
 const handleSubmitQuery = async (query: string) => {
   currentQuery.value = query;
@@ -90,16 +100,13 @@ const handleNewQuery = () => {
 };
 
 const handleLogin = async (usernameFromSidebar: string) => {
-  // Sidebar now performs the login and sets the auth store. Here we only
-  // ensure projects are loaded when auth is present. Fallback to calling
-  // login(username) if auth isn't set yet (legacy support).
   isLoading.value = true;
   errorMessage.value = null;
 
   try {
     if (authStore.isAuthenticated) {
       await projectsStore.loadProjects();
-      sidebarOpen.value = false;
+      sidebarOpen.value = true;
       isLoading.value = false;
       return;
     }
@@ -112,8 +119,9 @@ const handleLogin = async (usernameFromSidebar: string) => {
       user: user,
     });
     await projectsStore.loadProjects();
-    sidebarOpen.value = false;
+    sidebarOpen.value = true;
   } catch (error: unknown) {
+    console.error('Login failed', error);
     const axiosError = error as AxiosError<{ detail?: string }>;
 
     if (axiosError.response?.data?.detail) {
@@ -185,26 +193,28 @@ const confirmAddToProject = async () => {
   addToProjectDialogOpen.value = false;
   paperToAdd.value = null;
 };
-</script>
 
+</script>
 <template>
   <v-app>
-    <v-layout>
+    <v-layout class="h-screen">
       <v-navigation-drawer
-        v-model="sidebarOpen"
-        location="left"
-        temporary
-        width="320"
+          v-model="sidebarOpen"
+          location="left"
+          temporary
+          width="320"
+          app
       >
         <Sidebar
-          :is-open="sidebarOpen"
-          :recent-projects="recentProjects"
-          :is-logged-in="authStore.isAuthenticated"
-          @close="sidebarOpen = false"
-          @project-select="handleProjectSelect"
-          @new-project="handleNewProject"
-          @login="handleLogin"
-          @logout="handleLogout"
+            :is-open="sidebarOpen"
+            :recent-projects="recentProjects"
+            :is-logged-in="authStore.isAuthenticated"
+            @close="sidebarOpen = false"
+            @project-select="handleProjectSelect"
+            @new-project="handleNewProject"
+            @login="handleLogin"
+            @logout="handleLogout"
+            @newQuery="handleNewQuery"
         />
       </v-navigation-drawer>
 
@@ -214,36 +224,49 @@ const confirmAddToProject = async () => {
         </v-btn>
         <v-toolbar-title class="text-h6">AI Text Processor</v-toolbar-title>
         <v-spacer></v-spacer>
+
+        <v-btn
+            v-if="!authStore.isAuthenticated"
+            variant="text"
+            color="primary"
+            class="mr-2"
+            @click="createAccountOpen = true"
+        >
+          Create Account
+        </v-btn>
+
         <v-btn v-if="currentQuery" @click="handleNewQuery" variant="outlined" color="primary">
           New Query
         </v-btn>
       </v-app-bar>
 
-      <v-main class="bg-grey-lighten-4">
-        <v-container fluid class="h-100">
+      <v-main class="v-main bg-grey-lighten-4 scroll-blocked">
+        <v-container fluid class="scroll-container">
           <div v-if="!currentQuery">
             <InputSection @submit="handleSubmitQuery" />
           </div>
           <div v-else>
             <ProjectResultsSection
-              v-if="isProjectView"
-              :project-name="currentQuery || ''"
-              :papers="outputs"
-              :show-abstract="true"
-              @remove="handleRemovePaper"
+                v-if="isProjectView"
+                :project-name="currentQuery || ''"
+                :papers="outputs"
+                :show-abstract="true"
+                @remove="handleRemovePaper"
             />
             <ResultsSection
-              v-else
-              :query="currentQuery"
-              :outputs="outputs"
-              :show-abstract="true"
-              :show-add="authStore.isAuthenticated"
-              @add="handleAddFromSearch"
+                v-else
+                :query="currentQuery"
+                :outputs="outputs"
+                :show-abstract="true"
+                :show-add="authStore.isAuthenticated"
+                @add="handleAddFromSearch"
+                @updateQuery="handleSubmitQuery"
             />
           </div>
         </v-container>
       </v-main>
     </v-layout>
+
     <v-dialog v-model="addToProjectDialogOpen" max-width="500">
       <v-card>
         <v-card-title class="text-h5">
@@ -254,12 +277,12 @@ const confirmAddToProject = async () => {
             Choose a project to add this paper to.
           </p>
           <v-select
-            v-model="selectedProjectIdForAdd"
-            :items="projectOptions"
-            item-title="project_name"
-            item-value="project_id"
-            label="Project"
-            variant="outlined"
+              v-model="selectedProjectIdForAdd"
+              :items="projectOptions"
+              item-title="project_name"
+              item-value="project_id"
+              label="Project"
+              variant="outlined"
           />
         </v-card-text>
         <v-card-actions>
@@ -273,17 +296,28 @@ const confirmAddToProject = async () => {
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <CreateAccount
+        :open="createAccountOpen"
+        @close="createAccountOpen = false"
+        @create="handleAccountCreated"
+    />
+
   </v-app>
 </template>
-<!--<script setup lang="ts">
-import { useAuthStore } from '@/stores/auth';
 
-const authStore = useAuthStore();
-</script>
+<style scoped>
 
-<template>
-  <h1>Hello, {{ authStore.user }}</h1>
-  <p>{{ authStore.accessToken }}</p>
-</template>
+.scroll-blocked {
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
 
-<style scoped></style>-->
+.scroll-container {
+  flex: 1 1 auto;
+  height: 100%;
+  overflow-y: auto;
+}
+</style>
