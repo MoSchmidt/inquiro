@@ -136,10 +136,10 @@ watch(
 
 <style scoped>
 .bg-blue-lighten-5 {
-  background-color: #e9f2ff !important;
+  background-color: var(--blue-lighten-5) !important;
 }
 .border-sm {
-  border: 1px solid #BBDEFB;
+  border: 1px solid var(--border-sm-color-result);
 }
 
 .paper-panels {
@@ -148,15 +148,15 @@ watch(
 
 .paper-panel {
   border-radius: 12px !important;
-  border: 1px solid rgba(148, 163, 184, 0.25);
+  border: 1px solid var(--paper-panel-border);
   background: linear-gradient(135deg, #ffffff, #f9fafb);
   transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
 }
 
 .paper-panel:hover {
   transform: translateY(-1px);
-  box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
-  border-color: rgba(59, 130, 246, 0.35);
+  box-shadow: 0 10px 25px var(--paper-panel-hover-shadow);
+  border-color: var(--paper-panel-hover-border);
 }
 
 .paper-header {

@@ -89,14 +89,13 @@ const handleSubmit = () => {
 </template>
 
 <style scoped>
-/* Vuetify-Klassen werden bevorzugt, aber einige benutzerdefinierte Stile für die Kreise */
 .bg-blue-lighten-4 {
-  background-color: #E3F2FD !important; /* Vuetify's light blue */
+  background-color: var(--blue-lighten-4) !important;
 }
 .text-blue-darken-2 {
-  color: #1976D2 !important; /* Vuetify's darker blue */
+  color: var(--blue-darken-2) !important;
 }
 .border-sm {
-  border: 1px solid #E0E0E0; /* Light border similar to tailwind's gray-200 */
+  border: 1px solid var(--border-sm-color);
 }
 </style>
