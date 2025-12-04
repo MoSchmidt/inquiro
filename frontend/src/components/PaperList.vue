@@ -30,8 +30,6 @@ const emit = defineEmits<{
 
 const expanded = ref<(number | string)[]>([]);
 
-const paperIds = computed(() => props.papers.map((p) => p.paper_id));
-
 watch(
   () => props.papers,
   (newPapers) => {

@@ -18,10 +18,6 @@ const props = withDefaults(
     paper: Paper;
     showAbstract?: boolean;
     showAdd?: boolean;
-    /**
-     * Optional per-card menu options.
-     * If non-empty, a 3-dots menu will be shown.
-     */
     menuOptions?: PaperMenuOption[];
   }>(),
   {
@@ -143,16 +139,6 @@ const emit = defineEmits<{
   align-items: center;
 }
 
-.title-meta {
-  min-width: 0;
-}
-
-.paper-year {
-  color: grey;
-  font-size: 0.85rem;
-  white-space: nowrap;
-}
-
 .paper-meta {
   font-size: 0.85rem;
 }
@@ -170,7 +156,7 @@ const emit = defineEmits<{
 }
 
 .expand-icon {
-  transition: transform 0.18s ease;
+  transition: transform 0.2s ease;
 }
 .expand-icon--expanded {
   transform: rotate(180deg);
