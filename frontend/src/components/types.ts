@@ -1,5 +1,5 @@
 export interface Paper {
-  paper_id?: number;
+  paper_id: number;
   title: string;
   author: string;
   year: number;
