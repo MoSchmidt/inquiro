@@ -1,9 +1,8 @@
-<!-- e.g. ProjectPapersView.vue -->
 <script setup lang="ts">
 import { VCard, VCardText, VContainer, VIcon } from 'vuetify/components';
-import { FileText } from 'lucide-vue-next';
+import { FileText, Trash2 } from 'lucide-vue-next';
 import PaperList from '@/components/PaperList.vue';
-import type { Paper } from './types';
+import type { Paper, PaperMenuOption } from './types';
 
 const props = defineProps<{
   projectName: string;
@@ -14,6 +13,24 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'remove', paper: Paper): void;
 }>();
+
+const menuOptions: PaperMenuOption[] = [
+  { label: 'Remove from Project', value: 'remove', icon: Trash2 },
+];
+
+const handleMenuSelect = ({
+  option,
+  paper,
+}: {
+  option: PaperMenuOption;
+  paper: Paper;
+}) => {
+  switch (option.value) {
+    case 'remove':
+      emit('remove', paper);
+      break;
+  }
+};
 </script>
 
 <template>
@@ -39,11 +56,11 @@ const emit = defineEmits<{
       :papers="papers"
       :show-abstract="showAbstract"
       :show-add="false"
-      :show-remove="true"
+      :menu-options="menuOptions"
       title="Artikel"
       empty-message="Dieses Projekt hat noch keine gespeicherten Paper."
       :expand-all-on-change="false"
-      @remove="paper => emit('remove', paper)"
+      @menu-select="handleMenuSelect"
     />
   </v-container>
 </template>

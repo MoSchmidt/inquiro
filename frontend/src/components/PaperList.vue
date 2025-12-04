@@ -1,51 +1,46 @@
 <script setup lang="ts">
-import { ref, watch, nextTick, computed } from 'vue';
+import { ref, watch, nextTick, computed, withDefaults } from 'vue';
 import { VExpansionPanel, VExpansionPanels } from 'vuetify/components';
-import type { Paper } from './types';
+import type { Paper, PaperMenuOption } from './types';
 import PaperCard from './PaperCard.vue';
 
 interface Props {
   papers: Paper[];
   showAbstract?: boolean;
   showAdd?: boolean;
-  showRemove?: boolean;
   title?: string;
   emptyMessage?: string;
   expandAllOnChange?: boolean;
+  menuOptions?: PaperMenuOption[];
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showAbstract: true,
   showAdd: false,
-  showRemove: false,
   title: 'Artikel',
   emptyMessage: 'Keine Ergebnisse vorhanden.',
   expandAllOnChange: false,
+  menuOptions: () => [] as PaperMenuOption[],
 });
 
 const emit = defineEmits<{
   add: [paper: Paper];
-  remove: [paper: Paper];
+  'menu-select': [{ option: PaperMenuOption; paper: Paper }];
 }>();
 
-// Store IDs of expanded panels
 const expanded = ref<(number | string)[]>([]);
 
-// Memoize paper IDs to avoid recalculating on every render
 const paperIds = computed(() => props.papers.map((p) => p.paper_id));
 
-// Auto-expand logic with performance optimization
 watch(
   () => props.papers,
   (newPapers) => {
     if (props.expandAllOnChange && newPapers.length > 0) {
-      // Use nextTick to avoid blocking UI updates
       nextTick(() => {
         expanded.value = newPapers.map((p) => p.paper_id);
       });
     } else if (!props.expandAllOnChange) {
-      // Clear expanded panels when papers change (unless auto-expand is enabled)
-      // This prevents stale panel states
+
       expanded.value = expanded.value.filter((id) =>
         newPapers.some((p) => p.paper_id === id)
       );
@@ -56,7 +51,8 @@ watch(
 
 // Event handlers
 const handleAdd = (paper: Paper) => emit('add', paper);
-const handleRemove = (paper: Paper) => emit('remove', paper);
+const handleMenuSelect = (payload: { option: PaperMenuOption; paper: Paper }) =>
+  emit('menu-select', payload);
 </script>
 
 <template>
@@ -87,9 +83,9 @@ const handleRemove = (paper: Paper) => emit('remove', paper);
           :paper="paper"
           :show-abstract="showAbstract"
           :show-add="showAdd"
-          :show-remove="showRemove"
+          :menu-options="menuOptions"
           @add="handleAdd"
-          @remove="handleRemove"
+          @menu-select="handleMenuSelect"
         />
       </v-expansion-panel>
     </v-expansion-panels>
@@ -108,12 +104,10 @@ const handleRemove = (paper: Paper) => emit('remove', paper);
 }
 
 .paper-panels {
-  /* Optimize rendering by promoting to own layer */
   will-change: auto;
 }
 
 .paper-panel {
-  /* Smooth transitions */
   border: 1px solid rgba(0, 0, 0, 0.05) !important;
   border-top: none !important;
   transition: box-shadow 0.2s ease;

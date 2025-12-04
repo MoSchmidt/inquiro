@@ -37,11 +37,10 @@ const emit = defineEmits<{
       :papers="outputs"
       :show-abstract="showAbstract"
       :show-add="showAdd"
-      :show-remove="false"
       title="Artikel"
       empty-message="Noch keine Ergebnisse vorhanden"
       :expand-all-on-change="true"
-      @add="(paper) => emit('add', paper)"
+      @add="paper => emit('add', paper)"
     />
   </v-container>
 </template>

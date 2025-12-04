@@ -4,37 +4,44 @@ import {
   VExpansionPanelText,
   VExpansionPanelTitle,
   VIcon,
+  VList,
+  VListItem,
+  VListItemTitle,
+  VMenu,
 } from 'vuetify/components';
-import { ChevronDown, ExternalLink, FolderPlus, Trash2 } from 'lucide-vue-next';
+import { ChevronDown, FolderPlus, MoreHorizontal } from 'lucide-vue-next';
 import { withDefaults } from 'vue';
-import type { Paper } from './types';
+import type { Paper, PaperMenuOption } from './types';
 
 const props = withDefaults(
   defineProps<{
     paper: Paper;
     showAbstract?: boolean;
     showAdd?: boolean;
-    showRemove?: boolean;
+    /**
+     * Optional per-card menu options.
+     * If non-empty, a 3-dots menu will be shown.
+     */
+    menuOptions?: PaperMenuOption[];
   }>(),
   {
     showAbstract: true,
     showAdd: false,
-    showRemove: false,
+    menuOptions: () => [] as PaperMenuOption[],
   }
 );
 
 const emit = defineEmits<{
   (e: 'add', paper: Paper): void;
-  (e: 'remove', paper: Paper): void;
+  (e: 'menu-select', payload: { option: PaperMenuOption; paper: Paper }): void;
 }>();
 </script>
 
 <template>
-  <!-- `expanded` comes from VExpansionPanel via slot props -->
   <v-expansion-panel-title v-slot="{ expanded }">
-    <div class="paper-header d-flex align-center w-100">
-      <!-- Expand icon on the left -->
-      <div class="expand-icon-wrapper d-flex align-center justify-center me-3">
+    <div class="paper-header w-100">
+      <!-- Expand icon -->
+      <div class="expand-icon-wrapper flex items-center justify-center">
         <v-icon
           :icon="ChevronDown"
           size="18"
@@ -68,8 +75,8 @@ const emit = defineEmits<{
         </div>
       </div>
 
-      <!-- Actions -->
-      <div class="d-flex align-center mt-2 mt-sm-0 action-buttons">
+      <!-- Right actions stay the same -->
+      <div class="action-buttons">
         <v-btn
           v-if="showAdd"
           icon
@@ -81,40 +88,47 @@ const emit = defineEmits<{
           <v-icon :icon="FolderPlus" size="16" />
         </v-btn>
 
-        <v-btn
-          v-if="showRemove"
-          icon
-          size="small"
-          variant="text"
-          color="error"
-          @click.stop="emit('remove', paper)"
+        <v-menu
+          v-if="menuOptions && menuOptions.length"
+          location="bottom end"
+          offset="4"
         >
-          <v-icon :icon="Trash2" size="16" />
-        </v-btn>
+          <template #activator="{ props: activatorProps }">
+            <v-btn
+              icon
+              size="small"
+              variant="text"
+              v-bind="activatorProps"
+              @click.stop
+            >
+              <v-icon :icon="MoreHorizontal" size="18" />
+            </v-btn>
+          </template>
+
+          <v-list density="compact">
+            <v-list-item
+              v-for="option in menuOptions"
+              :key="option.value"
+              @click.stop="emit('menu-select', { option, paper })"
+            >
+              <template v-if="option.icon" #prepend>
+                <component
+                  :is="option.icon"
+                  size="16"
+                  class="me-2 text-gray-500"
+                />
+              </template>
+              <v-list-item-title>{{ option.label }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </div>
     </div>
   </v-expansion-panel-title>
-
   <v-expansion-panel-text>
     <div class="text-body-2 text-medium-emphasis mb-3 paper-abstract">
-      <span v-if="showAbstract && paper.abstract">
-        {{ paper.abstract }}
-      </span>
+      <span v-if="showAbstract && paper.abstract"> {{ paper.abstract }} </span>
       <span v-else class="text-disabled"> Kein Abstract vorhanden. </span>
-    </div>
-
-    <div>
-      <a
-        v-if="paper.url"
-        :href="paper.url"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="text-decoration-none text-blue-darken-2 d-inline-flex align-center"
-      >
-        Zum Paper
-        <v-icon :icon="ExternalLink" size="14" class="ms-1" />
-      </a>
-      <span v-else class="text-disabled">Keine URL verfügbar.</span>
     </div>
   </v-expansion-panel-text>
 </template>
@@ -123,37 +137,46 @@ const emit = defineEmits<{
 .paper-header {
   padding-right: 4px;
   cursor: pointer;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  column-gap: 12px;
+  align-items: center;
 }
 
-.paper-title {
-  font-weight: 600;
+.title-meta {
+  min-width: 0;
+}
+
+.paper-year {
+  color: grey;
+  font-size: 0.85rem;
+  white-space: nowrap;
 }
 
 .paper-meta {
   font-size: 0.85rem;
 }
 
-/* Abstract styling */
-.paper-abstract {
-  line-height: 1.5;
+.expand-icon {
+  transition: transform 0.18s ease;
 }
 
-/* Expand icon behaviour */
-.expand-icon-wrapper {
-  width: 28px;
-  height: 28px;
-  border-radius: 999px;
+.action-buttons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .expand-icon {
   transition: transform 0.18s ease;
 }
-
 .expand-icon--expanded {
   transform: rotate(180deg);
 }
 
 .action-buttons :deep(.v-btn) {
-  margin-left: 4px;
+  margin-left: 0;
 }
 </style>
