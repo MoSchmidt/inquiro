@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { VLayout, VAppBar, VNavigationDrawer, VMain, VBtn, VIcon, VToolbarTitle, VContainer } from 'vuetify/components';
+import { VLayout, VAppBar, VNavigationDrawer, VMain, VBtn, VIcon, VToolbarTitle, VContainer, VSpacer, VApp, VDialog, VCard, VCardTitle, VCardText, VCardActions, VSelect } from 'vuetify/components';
 import { Menu as MenuIcon } from 'lucide-vue-next';
 import Sidebar from './Sidebar.vue';
 import InputSection from './InputSection.vue';
@@ -26,12 +26,12 @@ const authStore = useAuthStore();
 const projectsStore = useProjectsStore();
 
 const recentProjects = computed(() =>
-  projectsStore.projects.map((p) => ({
-    id: p.project_id,
-    name: p.project_name,
-    date: p.created_at.split('T')[0],
-    outputs: [] as Paper[],
-  })),
+    projectsStore.projects.map((p) => ({
+      id: p.project_id,
+      name: p.project_name,
+      date: p.created_at.split('T')[0],
+      outputs: [] as Paper[],
+    })),
 );
 
 onMounted(() => {
@@ -130,6 +130,17 @@ const handleNewProject = async (name: string) => {
   }
 };
 
+const handleRenameProject = async (newName: string) => {
+  if (!projectsStore.selectedProject) return;
+
+  const projectId = projectsStore.selectedProject.project.project_id;
+  await projectsStore.renameProject(projectId, newName);
+
+  if (projectsStore.selectedProject) {
+    currentQuery.value = projectsStore.selectedProject.project.project_name;
+  }
+};
+
 const handleRemovePaper = async (paper: Paper) => {
   if (!projectsStore.selectedProject || !paper.paper_id) {
     return;
@@ -181,20 +192,20 @@ const confirmAddToProject = async () => {
   <v-app>
     <v-layout>
       <v-navigation-drawer
-        v-model="sidebarOpen"
-        location="left"
-        temporary
-        width="320"
+          v-model="sidebarOpen"
+          location="left"
+          temporary
+          width="320"
       >
         <Sidebar
-          :is-open="sidebarOpen"
-          :recent-projects="recentProjects"
-          :is-logged-in="authStore.isAuthenticated"
-          @close="sidebarOpen = false"
-          @project-select="handleProjectSelect"
-          @new-project="handleNewProject"
-          @login="handleLogin"
-          @logout="handleLogout"
+            :is-open="sidebarOpen"
+            :recent-projects="recentProjects"
+            :is-logged-in="authStore.isAuthenticated"
+            @close="sidebarOpen = false"
+            @project-select="handleProjectSelect"
+            @new-project="handleNewProject"
+            @login="handleLogin"
+            @logout="handleLogout"
         />
       </v-navigation-drawer>
 
@@ -216,19 +227,20 @@ const confirmAddToProject = async () => {
           </div>
           <div v-else>
             <ProjectResultsSection
-              v-if="isProjectView"
-              :project-name="currentQuery || ''"
-              :papers="outputs"
-              :show-abstract="true"
-              @remove="handleRemovePaper"
+                v-if="isProjectView"
+                :project-name="currentQuery || ''"
+                :papers="outputs"
+                :show-abstract="true"
+                @remove="handleRemovePaper"
+                @rename="handleRenameProject"
             />
             <ResultsSection
-              v-else
-              :query="currentQuery"
-              :outputs="outputs"
-              :show-abstract="true"
-              :show-add="authStore.isAuthenticated"
-              @add="handleAddFromSearch"
+                v-else
+                :query="currentQuery"
+                :outputs="outputs"
+                :show-abstract="true"
+                :show-add="authStore.isAuthenticated"
+                @add="handleAddFromSearch"
             />
           </div>
         </v-container>
@@ -244,12 +256,12 @@ const confirmAddToProject = async () => {
             Wählen Sie ein Projekt aus, zu dem dieses Paper hinzugefügt werden soll.
           </p>
           <v-select
-            v-model="selectedProjectIdForAdd"
-            :items="projectOptions"
-            item-title="project_name"
-            item-value="project_id"
-            label="Projekt"
-            variant="outlined"
+              v-model="selectedProjectIdForAdd"
+              :items="projectOptions"
+              item-title="project_name"
+              item-value="project_id"
+              label="Projekt"
+              variant="outlined"
           />
         </v-card-text>
         <v-card-actions>
@@ -265,15 +277,3 @@ const confirmAddToProject = async () => {
     </v-dialog>
   </v-app>
 </template>
-<!--<script setup lang="ts">
-import { useAuthStore } from '@/stores/auth';
-
-const authStore = useAuthStore();
-</script>
-
-<template>
-  <h1>Hello, {{ authStore.user }}</h1>
-  <p>{{ authStore.accessToken }}</p>
-</template>
-
-<style scoped></style>-->

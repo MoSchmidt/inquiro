@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue';
 import {
   VCard,
   VCardText,
@@ -8,8 +9,14 @@ import {
   VExpansionPanelTitle,
   VExpansionPanelText,
   VBtn,
+  VContainer,
+  VDialog,
+  VTextField,
+  VCardActions,
+  VSpacer,
+  VTooltip
 } from 'vuetify/components';
-import { FileText, ExternalLink, Trash2 } from 'lucide-vue-next';
+import { FileText, ExternalLink, Trash2, Pencil } from 'lucide-vue-next';
 import type { Paper } from './types';
 
 const props = defineProps<{
@@ -20,7 +27,24 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'remove', paper: Paper): void;
+  (e: 'rename', newName: string): void;
 }>();
+
+const isRenameDialogOpen = ref(false);
+const tempNewName = ref('');
+
+const openRenameDialog = () => {
+  tempNewName.value = props.projectName;
+  isRenameDialogOpen.value = true;
+};
+
+const saveRename = () => {
+  if (tempNewName.value && tempNewName.value.trim() !== '') {
+    emit('rename', tempNewName.value);
+    isRenameDialogOpen.value = false;
+  }
+};
+
 </script>
 
 <template>
@@ -31,9 +55,23 @@ const emit = defineEmits<{
           <div class="project-icon d-flex align-center justify-center me-3">
             <v-icon :icon="FileText" size="20" />
           </div>
-          <h1 class="project-title">
+
+          <h1 class="project-title me-3">
             {{ projectName }}
           </h1>
+
+          <v-btn
+              icon
+              variant="text"
+              size="small"
+              color="medium-emphasis"
+              @click="openRenameDialog"
+          >
+            <v-icon :icon="Pencil" size="20" />
+            <v-tooltip activator="parent" location="top">
+              Rename project
+            </v-tooltip>
+          </v-btn>
         </div>
         <p class="text-caption text-medium-emphasis">
           {{ papers.length }} gespeicherte Paper
@@ -46,10 +84,10 @@ const emit = defineEmits<{
 
       <v-expansion-panels v-if="papers.length" multiple class="paper-panels">
         <v-expansion-panel
-          v-for="(paper, index) in papers"
-          :key="index"
-          elevation="1"
-          class="mb-3 paper-panel"
+            v-for="(paper, index) in papers"
+            :key="index"
+            elevation="1"
+            class="mb-3 paper-panel"
         >
           <v-expansion-panel-title>
             <div class="paper-header d-flex flex-column flex-sm-row w-100">
@@ -65,11 +103,11 @@ const emit = defineEmits<{
               </div>
               <div class="d-flex align-center mt-2 mt-sm-0">
                 <v-btn
-                  icon
-                  size="small"
-                  variant="text"
-                  color="error"
-                  @click.stop="emit('remove', paper)"
+                    icon
+                    size="small"
+                    variant="text"
+                    color="error"
+                    @click.stop="emit('remove', paper)"
                 >
                   <v-icon :icon="Trash2" size="16" />
                 </v-btn>
@@ -87,11 +125,11 @@ const emit = defineEmits<{
             </div>
             <div>
               <a
-                v-if="paper.url"
-                :href="paper.url"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="text-decoration-none text-blue-darken-2 d-inline-flex align-center"
+                  v-if="paper.url"
+                  :href="paper.url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-decoration-none text-blue-darken-2 d-inline-flex align-center"
               >
                 Zum Paper
                 <v-icon :icon="ExternalLink" size="14" class="ms-1"></v-icon>
@@ -106,6 +144,39 @@ const emit = defineEmits<{
         <p class="text-medium-emphasis">Dieses Projekt hat noch keine gespeicherten Paper.</p>
       </div>
     </div>
+
+    <v-dialog v-model="isRenameDialogOpen" max-width="500">
+      <v-card class="pa-4">
+        <h3 class="text-h6 mb-4">Rename Project</h3>
+
+        <v-text-field
+            v-model="tempNewName"
+            label="Project Name"
+            variant="outlined"
+            autofocus
+            @keyup.enter="saveRename"
+        ></v-text-field>
+
+        <v-card-actions class="px-0">
+          <v-spacer></v-spacer>
+          <v-btn
+              variant="text"
+              color="grey-darken-1"
+              @click="isRenameDialogOpen = false"
+          >
+            Cancel
+          </v-btn>
+          <v-btn
+              color="primary"
+              variant="flat"
+              :disabled="!tempNewName || tempNewName.trim() === ''"
+              @click="saveRename"
+          >
+            Save
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -164,5 +235,3 @@ const emit = defineEmits<{
   line-height: 1.5;
 }
 </style>
-
-
