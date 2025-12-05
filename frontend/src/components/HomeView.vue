@@ -54,7 +54,6 @@ const handleSubmitQuery = async (query: string) => {
       title: p.title,
       author: p.authors ? Object.values(p.authors).join(', ') : '',
       year: p.published_at ? new Date(p.published_at).getFullYear() : 0,
-      url: p.url ?? '',
       abstract: p.abstract ?? undefined,
     }));
   } catch (error) {
@@ -78,7 +77,6 @@ const handleProjectSelect = async (projectId: number) => {
     title: p.title,
     author: p.authors ? Object.values(p.authors).join(', ') : '',
     year: p.published_at ? new Date(p.published_at).getFullYear() : 0,
-    url: p.url ?? '',
     abstract: p.abstract ?? undefined,
   }));
 };
@@ -131,24 +129,38 @@ const handleNewProject = async (name: string) => {
 };
 
 const handleRemovePaper = async (paper: Paper) => {
-  if (!projectsStore.selectedProject || !paper.paper_id) {
+  const selectedProject = projectsStore.selectedProject;
+  if (!selectedProject || !paper.paper_id) {
     return;
   }
-  await projectsStore.removePaper(projectsStore.selectedProject.project.project_id, paper.paper_id);
-  const selected = projectsStore.selectedProject;
-  if (!selected) {
-    outputs.value = [];
+
+  const projectId = selectedProject.project.project_id;
+  const paperId = paper.paper_id;
+
+  const previousOutputs = [...outputs.value];
+  outputs.value = outputs.value.filter(p => p.paper_id !== paperId);
+
+  try {
+    await projectsStore.removePaper(projectId, paperId);
+
+    const confirmed = projectsStore.selectedProject?.papers ?? [];
+    outputs.value = confirmed.map((p) => ({
+      paper_id: p.paper_id,
+      title: p.title,
+      author: p.authors ? Object.values(p.authors).join(', ') : '',
+      year: p.published_at ? new Date(p.published_at).getFullYear() : 0,
+      abstract: p.abstract ?? undefined,
+    }));
+  } catch (err) {
+    console.error("Paper removal failed, rolling back", err);
+
+    outputs.value = previousOutputs;
+    projectsStore.error = "Paper konnte nicht entfernt werden.";
+  }
+
+  if (outputs.value.length === 0) {
     currentQuery.value = null;
-    return;
   }
-  outputs.value = selected.papers.map((p) => ({
-    paper_id: p.paper_id,
-    title: p.title,
-    author: p.authors ? Object.values(p.authors).join(', ') : '',
-    year: p.published_at ? new Date(p.published_at).getFullYear() : 0,
-    url: p.url ?? '',
-    abstract: p.abstract ?? undefined,
-  }));
 };
 
 const addToProjectDialogOpen = ref(false);
