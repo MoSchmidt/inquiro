@@ -62,23 +62,6 @@ async def update_project(
     return await ProjectService.update_project(db, current_user_id, project_id, payload)
 
 
-@router.patch(
-    "/{project_id}/rename",
-    response_model=ProjectResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Rename a project",
-)
-async def rename_project(
-    project_id: int,
-    new_name: str,
-    current_user_id: int = Depends(get_current_user_id),
-    db: AsyncSession = Depends(get_db),
-) -> ProjectResponse:
-    """Rename the project"""
-
-    return await ProjectService.rename_project(db, current_user_id, project_id, new_name)
-
-
 @router.delete(
     "/{project_id}",
     status_code=status.HTTP_204_NO_CONTENT,
