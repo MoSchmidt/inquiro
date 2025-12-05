@@ -1,18 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { VCard, VCardText, VContainer, VIcon } from 'vuetify/components';
-import { FileText, Trash2 } from 'lucide-vue-next';
 import PaperList from '@/components/PaperList.vue';
-import type { Paper, PaperMenuOption } from './types';
-import { ref } from 'vue';
 import {
   VCard,
   VCardText,
   VIcon,
-  VExpansionPanels,
-  VExpansionPanel,
-  VExpansionPanelTitle,
-  VExpansionPanelText,
   VBtn,
   VContainer,
   VDialog,
@@ -21,8 +13,8 @@ import {
   VSpacer,
   VTooltip
 } from 'vuetify/components';
-import { FileText, ExternalLink, Trash2, Pencil } from 'lucide-vue-next';
-import type { Paper } from './types';
+import { FileText, Trash2, Pencil } from 'lucide-vue-next';
+import type { Paper, PaperMenuOption } from './types';
 
 const props = defineProps<{
   projectName: string;
