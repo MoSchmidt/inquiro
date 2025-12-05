@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import {
+  VAlert,
   VBtn,
   VCard,
   VCardActions,
@@ -15,8 +16,8 @@ import {
 } from 'vuetify/components';
 import { Menu as MenuIcon } from 'lucide-vue-next';
 import type { AxiosError } from 'axios';
+import { useRouter } from 'vue-router';
 
-import ProjectResultsSection from '@/components/organisms/ProjectResultsSection.vue';
 import ResultsSection from '@/components/organisms/ResultsSection.vue';
 import Sidebar from '@/components/organisms/Sidebar.vue';
 import InputSection from '@/components/organisms/InputSection.vue';
@@ -26,16 +27,15 @@ import { useProjectsStore } from '@/stores/projects';
 import type { Paper } from '@/types/content';
 import { login } from '@/services/auth';
 import {
-  mapProjectPapers,
   mapSearchResultToPapers,
   performSearch,
   toSidebarProjects,
 } from '@/services/papers';
 
+const router = useRouter();
 const sidebarOpen = ref(false);
 const currentQuery = ref<string | null>(null);
 const outputs = ref<Paper[]>([]);
-const isProjectView = ref(false);
 
 const errorMessage = ref<string | null>(null);
 const isLoading = ref(false);
@@ -54,7 +54,6 @@ onMounted(() => {
 
 const handleSubmitQuery = async (query: string) => {
   currentQuery.value = query;
-  isProjectView.value = false;
   outputs.value = [];
   errorMessage.value = null;
   isLoading.value = true;
@@ -71,18 +70,11 @@ const handleSubmitQuery = async (query: string) => {
 };
 
 const handleProjectSelect = async (projectId: number) => {
-  await projectsStore.selectProject(projectId);
   sidebarOpen.value = false;
-  const selected = projectsStore.selectedProject;
-  if (!selected) return;
-
-  isProjectView.value = true;
-  currentQuery.value = selected.project.project_name;
-  outputs.value = mapProjectPapers(selected);
+  await router.push({ name: 'project-papers', params: { projectId } });
 };
 
 const handleNewQuery = () => {
-  isProjectView.value = false;
   currentQuery.value = null;
   outputs.value = [];
 };
@@ -124,34 +116,7 @@ const handleLogout = () => {
 const handleNewProject = async (name: string) => {
   const project = await projectsStore.createNewProject(name);
   if (project) {
-    await handleProjectSelect(project.project_id);
-  }
-};
-
-const handleRemovePaper = async (paper: Paper) => {
-  const selectedProject = projectsStore.selectedProject;
-  if (!selectedProject || !paper.paper_id) {
-    return;
-  }
-
-  const projectId = selectedProject.project.project_id;
-  const paperId = paper.paper_id;
-
-  const previousOutputs = [...outputs.value];
-  outputs.value = outputs.value.filter((p) => p.paper_id !== paperId);
-
-  try {
-    await projectsStore.removePaper(projectId, paperId);
-    outputs.value = mapProjectPapers(projectsStore.selectedProject);
-  } catch (err) {
-    console.error('Paper removal failed, rolling back', err);
-
-    outputs.value = previousOutputs;
-    projectsStore.error = 'Paper konnte nicht entfernt werden.';
-  }
-
-  if (outputs.value.length === 0) {
-    currentQuery.value = null;
+    await router.push({ name: 'project-papers', params: { projectId: project.project_id } });
   }
 };
 
@@ -216,15 +181,10 @@ const confirmAddToProject = async () => {
         <InputSection @submit="handleSubmitQuery" />
       </div>
       <div v-else>
-        <ProjectResultsSection
-          v-if="isProjectView"
-          :project-name="currentQuery || ''"
-          :papers="outputs"
-          :show-abstract="true"
-          @remove="handleRemovePaper"
-        />
+        <v-alert v-if="errorMessage" type="error" variant="tonal" class="mb-4">
+          {{ errorMessage }}
+        </v-alert>
         <ResultsSection
-          v-else
           :query="currentQuery"
           :outputs="outputs"
           :show-abstract="true"
