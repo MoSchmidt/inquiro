@@ -2,7 +2,6 @@ export * from './httpvalidation-error';
 export * from './login-request';
 export * from './login-response';
 export * from './paper-dto';
-export * from './paper-summary';
 export * from './project-create';
 export * from './project-response';
 export * from './project-update';

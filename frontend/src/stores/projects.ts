@@ -1,19 +1,18 @@
 import { defineStore } from 'pinia';
 import {
-  Project,
-  ProjectWithPapers,
-  listProjects,
-  createProject,
-  getProject,
-  deleteProject,
-  updateProject,
   addPaperToProject,
+  createProject,
+  deleteProject,
+  getProject,
+  listProjects,
   removePaperFromProject,
+  updateProject,
 } from '@/services/projects';
+import { ProjectResponse, ProjectWithPapersResponse } from '@/api';
 
 interface ProjectsState {
-  projects: Project[];
-  selectedProject: ProjectWithPapers | null;
+  projects: ProjectResponse[];
+  selectedProject: ProjectWithPapersResponse | null;
   loading: boolean;
   error: string | null;
 }

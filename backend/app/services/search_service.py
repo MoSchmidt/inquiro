@@ -2,11 +2,12 @@ import logging
 import re
 from typing import Any, Iterable, List
 
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_openai_provider, get_specter2_query_embedder
 from app.repositories.search_repository import SearchRepository
 from app.schemas.search_dto import PaperDto, SearchResponse
+from app.utils.author_utils import normalize_authors
 
 logger = logging.getLogger("inquiro")
 
@@ -19,11 +20,12 @@ class SearchService:
     MAX_KEYWORD_RETRIES = 2
 
     @staticmethod
-    def search_papers(query: str, db: Session) -> SearchResponse:
-        """
-        Returns a list of matching papers based on the query
-        """
+    async def search_papers(query: str, db: AsyncSession) -> SearchResponse:
+        """Returns a list of matching papers based on the query."""
+
         openai_provider = get_openai_provider()
+
+        # Extract + normalize keywords with retry
         keywords = SearchService._extract_keywords_with_retry(
             openai_provider=openai_provider,
             query=query,
@@ -31,27 +33,34 @@ class SearchService:
         )
         logger.info("Keywords: %s", keywords)
 
+        # Generate query embeddings
         embedder = get_specter2_query_embedder()
         embeddings = embedder.embed_batch(keywords)
 
-        # Perform vector search to find matching papers in DB
-        rows = SearchRepository.search_papers_by_embeddings(db=db, embeddings=embeddings, limit=5)
-        results = []
+        rows = await SearchRepository.search_papers_by_embeddings(
+            db=db, embeddings=embeddings, limit=5
+        )
 
+        results: List[PaperDto] = []
+
+        # Iterate over resolved results
         for doc, avg_dist in rows:
             logger.info("Match: %s... | Avg. Distance: %.4f", doc.title[:30], avg_dist)
 
-            paper = PaperDto(
-                paper_id=doc.paper_id,
-                doi=doc.doi,
-                source=doc.source,
-                paper_type=doc.paper_type,
-                title=doc.title,
-                authors=doc.authors,
-                abstract=doc.abstract,
-                published_at=doc.published_at,
+            authors_value = normalize_authors(doc.authors)
+
+            results.append(
+                PaperDto(
+                    paper_id=doc.paper_id,
+                    doi=doc.doi,
+                    source=str(doc.source),
+                    paper_type=str(doc.paper_type),
+                    title=doc.title,
+                    authors=authors_value,
+                    abstract=doc.abstract,
+                    published_at=doc.published_at,
+                )
             )
-            results.append(paper)
 
         logger.info("Found %d papers for query: '%s'", len(results), query)
 
@@ -59,9 +68,9 @@ class SearchService:
 
     @staticmethod
     def _extract_keywords_with_retry(
-        openai_provider: Any,
-        query: str,
-        max_retries: int = 2,
+            openai_provider: Any,
+            query: str,
+            max_retries: int = 2,
     ) -> List[str]:
         """
         Extract keywords from the provider with retries and format normalization

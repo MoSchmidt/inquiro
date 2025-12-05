@@ -23,7 +23,7 @@ export interface PaperDto {
     'source': string;
     'paper_type': string;
     'title': string;
-    'authors': Array<Array<string>> | null;
+    'authors': Array<string>;
     'abstract': string | null;
     'published_at': string | null;
 }

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.schemas.search_dto import SearchRequest, SearchResponse
@@ -14,7 +14,7 @@ router = APIRouter(prefix="/search", tags=["Search"])
     status_code=status.HTTP_200_OK,
     summary="Search for papers",
 )
-def search(request: SearchRequest, db: Session = Depends(get_db)) -> SearchResponse:
+async def search(request: SearchRequest, db: AsyncSession = Depends(get_db)) -> SearchResponse:
     """
     Returns a list of papers that match the search query.
 
@@ -22,5 +22,5 @@ def search(request: SearchRequest, db: Session = Depends(get_db)) -> SearchRespo
     of the query string.
     """
 
-    papers = SearchService.search_papers(request.query, db)
+    papers = await SearchService.search_papers(request.query, db)
     return SearchResponse.model_validate(papers)

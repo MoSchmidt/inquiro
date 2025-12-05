@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.security import get_current_user
+from app.core.security import get_current_user_id
 from app.schemas.project_dto import (
     ProjectCreate,
     ProjectResponse,
@@ -20,13 +20,13 @@ router = APIRouter(prefix="/projects", tags=["Projects"])
     status_code=status.HTTP_200_OK,
     summary="List projects of the current user",
 )
-def list_projects(
-    current_username: str = Depends(get_current_user),
-    db: Session = Depends(get_db),
+async def list_projects(
+        current_user_id: int = Depends(get_current_user_id),
+        db: AsyncSession = Depends(get_db),
 ) -> list[ProjectResponse]:
     """Return all projects for the authenticated user."""
 
-    return ProjectService.list_projects(db, current_username)
+    return await ProjectService.list_projects(db, current_user_id)
 
 
 @router.post(
@@ -35,30 +35,14 @@ def list_projects(
     status_code=status.HTTP_201_CREATED,
     summary="Create a new project",
 )
-def create_project(
-    payload: ProjectCreate,
-    current_username: str = Depends(get_current_user),
-    db: Session = Depends(get_db),
+async def create_project(
+        payload: ProjectCreate,
+        current_user_id: int = Depends(get_current_user_id),
+        db: AsyncSession = Depends(get_db),
 ) -> ProjectResponse:
     """Create a new project for the authenticated user."""
 
-    return ProjectService.create_project(db, current_username, payload)
-
-
-@router.get(
-    "/{project_id}",
-    response_model=ProjectWithPapersResponse,
-    status_code=status.HTTP_200_OK,
-    summary="Get a project with its stored papers",
-)
-def get_project(
-    project_id: int,
-    current_username: str = Depends(get_current_user),
-    db: Session = Depends(get_db),
-) -> ProjectWithPapersResponse:
-    """Return a single project and all papers stored in it."""
-
-    return ProjectService.get_project_with_papers(db, current_username, project_id)
+    return await ProjectService.create_project(db, current_user_id, payload)
 
 
 @router.patch(
@@ -67,15 +51,15 @@ def get_project(
     status_code=status.HTTP_200_OK,
     summary="Update a project",
 )
-def update_project(
-    project_id: int,
-    payload: ProjectUpdate,
-    current_username: str = Depends(get_current_user),
-    db: Session = Depends(get_db),
+async def update_project(
+        project_id: int,
+        payload: ProjectUpdate,
+        current_user_id: int = Depends(get_current_user_id),
+        db: AsyncSession = Depends(get_db),
 ) -> ProjectResponse:
     """Update the metadata of a project (e.g., name)."""
 
-    return ProjectService.update_project(db, current_username, project_id, payload)
+    return await ProjectService.update_project(db, current_user_id, project_id, payload)
 
 
 @router.delete(
@@ -83,14 +67,32 @@ def update_project(
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a project",
 )
-def delete_project(
-    project_id: int,
-    current_username: str = Depends(get_current_user),
-    db: Session = Depends(get_db),
+async def delete_project(
+        project_id: int,
+        current_user_id: int = Depends(get_current_user_id),
+        db: AsyncSession = Depends(get_db),
 ) -> None:
     """Delete a project and its stored paper links."""
 
-    ProjectService.delete_project(db, current_username, project_id)
+    await ProjectService.delete_project(db, current_user_id, project_id)
+
+
+# ------------------------------
+# Papers of Project
+# ------------------------------
+@router.get("/{project_id}/papers", summary="Get the paper for a project.",
+            response_model=ProjectWithPapersResponse)
+async def get_papers_for_project(
+        project_id: int,
+        db: AsyncSession = Depends(get_db),
+        current_user_id: int = Depends(get_current_user_id),
+) -> ProjectWithPapersResponse:
+    """Retrieve all papers for a project."""
+    return await ProjectService.list_project_papers(
+        session=db,
+        user_id=current_user_id,
+        project_id=project_id,
+    )
 
 
 @router.post(
@@ -99,15 +101,15 @@ def delete_project(
     status_code=status.HTTP_200_OK,
     summary="Add a paper to a project",
 )
-def add_paper_to_project(
-    project_id: int,
-    paper_id: int,
-    current_username: str = Depends(get_current_user),
-    db: Session = Depends(get_db),
+async def add_paper_to_project(
+        project_id: int,
+        paper_id: int,
+        current_user_id: int = Depends(get_current_user_id),
+        db: AsyncSession = Depends(get_db),
 ) -> ProjectWithPapersResponse:
     """Store a reference to an existing paper in the given project."""
 
-    return ProjectService.add_paper_to_project(db, current_username, project_id, paper_id)
+    return await ProjectService.add_paper_to_project(db, current_user_id, project_id, paper_id)
 
 
 @router.delete(
@@ -116,12 +118,12 @@ def add_paper_to_project(
     status_code=status.HTTP_200_OK,
     summary="Remove a paper from a project",
 )
-def remove_paper_from_project(
-    project_id: int,
-    paper_id: int,
-    current_username: str = Depends(get_current_user),
-    db: Session = Depends(get_db),
+async def remove_paper_from_project(
+        project_id: int,
+        paper_id: int,
+        current_user_id: int = Depends(get_current_user_id),
+        db: AsyncSession = Depends(get_db),
 ) -> ProjectWithPapersResponse:
     """Remove a stored paper reference from the given project."""
 
-    return ProjectService.remove_paper_from_project(db, current_username, project_id, paper_id)
+    return await ProjectService.remove_paper_from_project(db, current_user_id, project_id, paper_id)
