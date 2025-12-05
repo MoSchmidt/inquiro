@@ -218,5 +218,5 @@ class ProjectService:
         if not name_pattern.fullmatch(name):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid project name.",
+                detail="Project name must be 1-100 characters and can only contain letters, numbers, spaces, underscores, and hyphens.",
             )
