@@ -36,8 +36,9 @@ const openRenameDialog = () => {
 };
 
 const saveRename = () => {
-  if (tempNewName.value && tempNewName.value.trim() !== '') {
-    emit('rename', tempNewName.value);
+  const trimmedName = tempNewName.value.trim();
+  if (trimmedName) {
+    emit('rename', trimmedName);
     isRenameDialogOpen.value = false;
   }
 };
