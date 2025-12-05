@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { VLayout, VAppBar, VNavigationDrawer, VMain, VBtn, VIcon, VToolbarTitle, VContainer } from 'vuetify/components';
+import { VLayout, VAppBar, VNavigationDrawer, VMain, VBtn, VIcon, VToolbarTitle, VContainer, VSpacer, VApp, VDialog, VCard, VCardTitle, VCardText, VCardActions, VSelect } from 'vuetify/components';
 import { Menu as MenuIcon } from 'lucide-vue-next';
 import Sidebar from './Sidebar.vue';
 import InputSection from './InputSection.vue';
@@ -146,6 +146,17 @@ const handleNewProject = async (name: string) => {
   }
 };
 
+const handleRenameProject = async (newName: string) => {
+  if (!projectsStore.selectedProject) return;
+
+  const projectId = projectsStore.selectedProject.project.project_id;
+  await projectsStore.renameProject(projectId, newName);
+
+  if (projectsStore.selectedProject) {
+    currentQuery.value = projectsStore.selectedProject.project.project_name;
+  }
+};
+
 const handleRemovePaper = async (paper: Paper) => {
   const selectedProject = projectsStore.selectedProject;
   if (!selectedProject || !paper.paper_id) {
@@ -264,6 +275,7 @@ const confirmAddToProject = async () => {
                 :papers="outputs"
                 :show-abstract="true"
                 @remove="handleRemovePaper"
+                @rename="handleRenameProject"
             />
             <ResultsSection
                 v-else

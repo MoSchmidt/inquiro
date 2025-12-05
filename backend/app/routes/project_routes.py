@@ -21,8 +21,8 @@ router = APIRouter(prefix="/projects", tags=["Projects"])
     summary="List projects of the current user",
 )
 async def list_projects(
-        current_user_id: int = Depends(get_current_user_id),
-        db: AsyncSession = Depends(get_db),
+    current_user_id: int = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
 ) -> list[ProjectResponse]:
     """Return all projects for the authenticated user."""
 
@@ -36,9 +36,9 @@ async def list_projects(
     summary="Create a new project",
 )
 async def create_project(
-        payload: ProjectCreate,
-        current_user_id: int = Depends(get_current_user_id),
-        db: AsyncSession = Depends(get_db),
+    payload: ProjectCreate,
+    current_user_id: int = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
 ) -> ProjectResponse:
     """Create a new project for the authenticated user."""
 
@@ -52,10 +52,10 @@ async def create_project(
     summary="Update a project",
 )
 async def update_project(
-        project_id: int,
-        payload: ProjectUpdate,
-        current_user_id: int = Depends(get_current_user_id),
-        db: AsyncSession = Depends(get_db),
+    project_id: int,
+    payload: ProjectUpdate,
+    current_user_id: int = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
 ) -> ProjectResponse:
     """Update the metadata of a project (e.g., name)."""
 
@@ -68,9 +68,9 @@ async def update_project(
     summary="Delete a project",
 )
 async def delete_project(
-        project_id: int,
-        current_user_id: int = Depends(get_current_user_id),
-        db: AsyncSession = Depends(get_db),
+    project_id: int,
+    current_user_id: int = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
 ) -> None:
     """Delete a project and its stored paper links."""
 
@@ -80,12 +80,15 @@ async def delete_project(
 # ------------------------------
 # Papers of Project
 # ------------------------------
-@router.get("/{project_id}/papers", summary="Get the paper for a project.",
-            response_model=ProjectWithPapersResponse)
+@router.get(
+    "/{project_id}/papers",
+    summary="Get the paper for a project.",
+    response_model=ProjectWithPapersResponse,
+)
 async def get_papers_for_project(
-        project_id: int,
-        db: AsyncSession = Depends(get_db),
-        current_user_id: int = Depends(get_current_user_id),
+    project_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user_id: int = Depends(get_current_user_id),
 ) -> ProjectWithPapersResponse:
     """Retrieve all papers for a project."""
     return await ProjectService.list_project_papers(
@@ -102,10 +105,10 @@ async def get_papers_for_project(
     summary="Add a paper to a project",
 )
 async def add_paper_to_project(
-        project_id: int,
-        paper_id: int,
-        current_user_id: int = Depends(get_current_user_id),
-        db: AsyncSession = Depends(get_db),
+    project_id: int,
+    paper_id: int,
+    current_user_id: int = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
 ) -> ProjectWithPapersResponse:
     """Store a reference to an existing paper in the given project."""
 
@@ -119,10 +122,10 @@ async def add_paper_to_project(
     summary="Remove a paper from a project",
 )
 async def remove_paper_from_project(
-        project_id: int,
-        paper_id: int,
-        current_user_id: int = Depends(get_current_user_id),
-        db: AsyncSession = Depends(get_db),
+    project_id: int,
+    paper_id: int,
+    current_user_id: int = Depends(get_current_user_id),
+    db: AsyncSession = Depends(get_db),
 ) -> ProjectWithPapersResponse:
     """Remove a stored paper reference from the given project."""
 
