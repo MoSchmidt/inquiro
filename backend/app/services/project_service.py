@@ -60,20 +60,6 @@ class ProjectService:
         return ProjectResponse.model_validate(project)
 
     @staticmethod
-    async def rename_project(
-        session: AsyncSession,
-        user_id: int,
-        project_id: int,
-        new_name: str,
-    ) -> ProjectResponse:
-        """Rename a project"""
-        ProjectService._validate_project_name(new_name)
-        await ProjectService._validate_project_access(session, project_id, user_id)
-        project = await ProjectRepository.get(session, project_id)
-        project = await ProjectRepository.update_name(session, project, new_name)
-        return ProjectResponse.model_validate(project)
-
-    @staticmethod
     async def delete_project(
         session: AsyncSession,
         user_id: int,
@@ -218,5 +204,6 @@ class ProjectService:
         if not name_pattern.fullmatch(name):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Project name must be 1-100 characters and can only contain letters, numbers, spaces, underscores, and hyphens.",
+                detail="Project name must be 1-100 characters and can only contain letters,"
+                " numbers, spaces, underscores, and hyphens.",
             )
