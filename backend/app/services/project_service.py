@@ -39,7 +39,9 @@ class ProjectService:
     ) -> ProjectResponse:
         """Create a new project for the given user."""
         ProjectService._validate_project_name(payload.project_name)
+
         project = await ProjectRepository.create_for_user(session, user_id, payload.project_name)
+
         return ProjectResponse.model_validate(project)
 
     @staticmethod
@@ -55,6 +57,7 @@ class ProjectService:
         project = await ProjectRepository.get(session, project_id)
 
         if payload.project_name is not None:
+            ProjectService._validate_project_name(payload.project_name)
             project = await ProjectRepository.update_name(session, project, payload.project_name)
 
         return ProjectResponse.model_validate(project)
