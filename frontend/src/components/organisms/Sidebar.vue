@@ -14,7 +14,7 @@ import {
   VCardTitle,
 } from 'vuetify/components';
 import { X, LogOut, FolderOpen, Clock, LogIn, Plus, CheckCircle } from 'lucide-vue-next';
-import type { Project } from './types';
+import type { Project } from '@/types/content';
 
 const props = defineProps<{
   isOpen: boolean;

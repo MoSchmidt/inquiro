@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { VCard, VCardText, VContainer, VIcon } from 'vuetify/components';
 import { FileText, Trash2 } from 'lucide-vue-next';
-import PaperList from '@/components/PaperList.vue';
-import type { Paper, PaperMenuOption } from './types';
+import PaperList from '@/components/molecules/PaperList.vue';
+import type { Paper, PaperMenuOption } from '@/types/content';
 
 const props = defineProps<{
   projectName: string;
