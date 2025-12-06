@@ -1,3 +1,4 @@
+import re
 from typing import List
 
 from fastapi import HTTPException, status
@@ -37,9 +38,10 @@ class ProjectService:
         payload: ProjectCreate,
     ) -> ProjectResponse:
         """Create a new project for the given user."""
-        project = await ProjectRepository.create_for_user(
-            session, user_id, payload.project_name
-        )
+        ProjectService._validate_project_name(payload.project_name)
+
+        project = await ProjectRepository.create_for_user(session, user_id, payload.project_name)
+
         return ProjectResponse.model_validate(project)
 
     @staticmethod
@@ -55,9 +57,8 @@ class ProjectService:
         project = await ProjectRepository.get(session, project_id)
 
         if payload.project_name is not None:
-            project = await ProjectRepository.update_name(
-                session, project, payload.project_name
-            )
+            ProjectService._validate_project_name(payload.project_name)
+            project = await ProjectRepository.update_name(session, project, payload.project_name)
 
         return ProjectResponse.model_validate(project)
 
@@ -72,7 +73,6 @@ class ProjectService:
         await ProjectService._validate_project_access(session, project_id, user_id)
 
         await ProjectRepository.delete(session, project_id)
-
 
     # ------------------------------------------------------------------
     # Project papers: listing / paging / search
@@ -160,9 +160,7 @@ class ProjectService:
                 detail="Project not found.",
             )
 
-        is_owner = await ProjectRepository.is_user_project_owner(
-            session, project_id, user_id
-        )
+        is_owner = await ProjectRepository.is_user_project_owner(session, project_id, user_id)
         if not is_owner:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -201,3 +199,14 @@ class ProjectService:
                 )
             )
         return summaries
+
+    @staticmethod
+    def _validate_project_name(name: str) -> None:
+        """Ensure valid project name."""
+        name_pattern = re.compile(r"^(?=.{1,100}$)[A-Za-z0-9 _-]+$")
+        if not name_pattern.fullmatch(name):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Project name must be 1-100 characters and can only contain letters,"
+                " numbers, spaces, underscores, and hyphens.",
+            )
