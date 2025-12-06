@@ -26,7 +26,7 @@ class SearchService:
         openai_provider = get_openai_provider()
 
         # Extract + normalize keywords with retry
-        keywords = SearchService._extract_keywords_with_retry(
+        keywords = await SearchService._extract_keywords_with_retry(
             openai_provider=openai_provider,
             query=query,
             max_retries=SearchService.MAX_KEYWORD_RETRIES,
@@ -67,7 +67,7 @@ class SearchService:
         return SearchResponse(papers=results)
 
     @staticmethod
-    def _extract_keywords_with_retry(
+    async def _extract_keywords_with_retry(
             openai_provider: Any,
             query: str,
             max_retries: int = 2,
@@ -80,7 +80,7 @@ class SearchService:
 
         for attempt in range(max_retries + 1):
             try:
-                raw = openai_provider.extract_keywords(query)
+                raw = await openai_provider.extract_keywords(query)
                 keywords = SearchService._normalize_keywords(raw)
             except Exception as exc:  # pylint: disable=broad-exception-caught
                 # We intentionally catch all Exceptions here. Any failure triggers a fallback.
