@@ -1,10 +1,10 @@
 import json
-from typing import List
+from typing import List, Optional
 
-from openai import OpenAI
+from openai import AsyncOpenAI
 
 from app.core.config import settings
-from app.llm.openai.prompts import KEYWORD_PROMPT
+from app.llm.openai.prompts import KEYWORD_PROMPT, PDF_KEYWORD_PROMPT, SUMMARIZATION_PROMPT
 
 
 class OpenAIProvider:
@@ -18,16 +18,16 @@ class OpenAIProvider:
                 "OPENAI_API_KEY is not set. Please configure it in your environment."
             )
 
-        self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
+        self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
         self._model = "gpt-5-nano-2025-08-07"
 
-    def extract_keywords(self, user_text: str) -> List[str]:
+    async def extract_keywords(self, user_text: str) -> List[str]:
         """
         Extracts a list of keywords from a given user text using the OpenAI model.
         Returns a list of strings. If parsing fails, returns an empty list.
         """
 
-        response = self.client.responses.create(
+        response = await self.client.responses.create(
             model=self._model,
             reasoning={"effort": "low"},
             input=[
@@ -48,3 +48,61 @@ class OpenAIProvider:
             keyword_list = []
 
         return keyword_list
+
+    async def extract_keywords_from_pdf(
+        self,
+        pdf_text: str,
+        query: Optional[str] = None,
+    ) -> List[str]:
+        """
+        Extracts a list of search queries from the full text of a paper and an optional query.
+        Returns a list of strings.
+        """
+        user_focus = query or "N/A"
+
+        user_content = f"User focus (optional): {user_focus}\n\n" f"Paper text: \n{pdf_text}"
+
+        response = await self.client.responses.create(
+            model=self._model,
+            reasoning={"effort": "medium"},
+            input=[
+                {
+                    "role": "developer",
+                    "content": PDF_KEYWORD_PROMPT,
+                },
+                {
+                    "role": "user",
+                    "content": user_content,
+                },
+            ],
+        )
+
+        try:
+            keyword_list = json.loads(response.output_text)
+        except json.decoder.JSONDecodeError:
+            keyword_list = []
+
+        return keyword_list
+
+    async def summarise_paper(self, paper_text: str, query: str) -> str:
+        """
+        Creates a summary of a scientific paper using the query for context using the OpenAI model.
+        Returns a string. If parsing fails, returns an empty string.
+        """
+
+        response = await self.client.responses.create(
+            model=self._model,
+            reasoning={"effort": "medium"},
+            input=[
+                {
+                    "role": "developer",
+                    "content": f"{SUMMARIZATION_PROMPT}\n\nUser query: {query}",
+                },
+                {
+                    "role": "user",
+                    "content": paper_text,
+                },
+            ],
+        )
+
+        return response.output_text

@@ -1,13 +1,16 @@
 import logging
 import re
-from typing import Any, Iterable, List
+from typing import Any, Iterable, List, Optional
 
+from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_openai_provider, get_specter2_query_embedder
 from app.repositories.search_repository import SearchRepository
 from app.schemas.search_dto import PaperDto, SearchResponse
 from app.utils.author_utils import normalize_authors
+from app.utils.pdf_utils import pdf_bytes_to_text
+from app.utils.token_utils import ensure_fits_token_limit
 
 logger = logging.getLogger("inquiro")
 
@@ -18,37 +21,102 @@ class SearchService:
     """
 
     MAX_KEYWORD_RETRIES = 2
+    MAX_PDF_KEYWORD_INPUT_TOKENS = 280_000
 
     @staticmethod
     async def search_papers(query: str, db: AsyncSession) -> SearchResponse:
-        """Returns a list of matching papers based on the query."""
-
+        """
+        Search using a free-text query
+        """
         openai_provider = get_openai_provider()
 
         # Extract + normalize keywords with retry
-        keywords = SearchService._extract_keywords_with_retry(
+        keywords = await SearchService._extract_keywords_with_retry(
             openai_provider=openai_provider,
             query=query,
             max_retries=SearchService.MAX_KEYWORD_RETRIES,
         )
-        logger.info("Keywords: %s", keywords)
+        logger.info("Text search keywords: %s", keywords)
+
+        return await SearchService._search_with_keywords(
+            keywords=keywords,
+            db=db,
+            user_query=query,
+        )
+
+    @staticmethod
+    async def search_papers_from_pdf(
+        pdf_file: UploadFile,
+        db: AsyncSession,
+        query: Optional[str] = None,
+        original_filename: Optional[str] = None,
+    ) -> SearchResponse:
+        """
+        Search using a PDF as the primary signal.
+        1. Extract text from PDF.
+        2. Optionally combine with user query.
+        3. Let the LLM derive search keywords from this context.
+        4. Use keywords for vector search.
+        """
+        content = await pdf_file.read()
+        if not content:
+            logger.warning("Empty PDF uploaded for search")
+            return SearchResponse(papers=[])
+
+        pdf_text = pdf_bytes_to_text(content)
+
+        ensure_fits_token_limit(
+            pdf_text,
+            max_tokens=SearchService.MAX_PDF_KEYWORD_INPUT_TOKENS,
+            error_status=413,
+            error_detail=(
+                "PDF is too large to be used directly for semantic search. "
+                "Please try a shorter document or a cropped version."
+            ),
+        )
+
+        openai_provider = get_openai_provider()
+        keywords = await SearchService._extract_pdf_keywords_with_retry(
+            openai_provider=openai_provider,
+            pdf_text=pdf_text,
+            query=query,
+            max_retries=SearchService.MAX_KEYWORD_RETRIES,
+        )
+        logger.info("PDF search keywords: %s", keywords)
+
+        label = query or original_filename or "pdf-search"
+        return await SearchService._search_with_keywords(keywords=keywords, db=db, user_query=label)
+
+    # ---------- Shared search pipeline ----------
+
+    @staticmethod
+    async def _search_with_keywords(
+        keywords: List[str],
+        db: AsyncSession,
+        user_query: str,
+    ) -> SearchResponse:
+        """
+        Core embedding + vector-search + DTO mapping pipeline.
+        """
+        if not keywords:
+            logger.warning("No keywords provided for query '%s'", user_query)
+            return SearchResponse(papers=[])
 
         # Generate query embeddings
         embedder = get_specter2_query_embedder()
         embeddings = embedder.embed_batch(keywords)
 
         rows = await SearchRepository.search_papers_by_embeddings(
-            db=db, embeddings=embeddings, limit=5
+            db=db,
+            embeddings=embeddings,
+            limit=10,
         )
 
         results: List[PaperDto] = []
-
         # Iterate over resolved results
         for doc, avg_dist in rows:
             logger.info("Match: %s... | Avg. Distance: %.4f", doc.title[:30], avg_dist)
-
             authors_value = normalize_authors(doc.authors)
-
             results.append(
                 PaperDto(
                     paper_id=doc.paper_id,
@@ -62,15 +130,20 @@ class SearchService:
                 )
             )
 
-        logger.info("Found %d papers for query: '%s'", len(results), query)
-
+        logger.info(
+            "Found %d papers for query: '%s'",
+            len(results),
+            user_query,
+        )
         return SearchResponse(papers=results)
 
+    # ---------- Helper functions ----------
+
     @staticmethod
-    def _extract_keywords_with_retry(
-            openai_provider: Any,
-            query: str,
-            max_retries: int = 2,
+    async def _extract_keywords_with_retry(
+        openai_provider: Any,
+        query: str,
+        max_retries: int = 2,
     ) -> List[str]:
         """
         Extract keywords from the provider with retries and format normalization
@@ -80,7 +153,7 @@ class SearchService:
 
         for attempt in range(max_retries + 1):
             try:
-                raw = openai_provider.extract_keywords(query)
+                raw = await openai_provider.extract_keywords(query)
                 keywords = SearchService._normalize_keywords(raw)
             except Exception as exc:  # pylint: disable=broad-exception-caught
                 # We intentionally catch all Exceptions here. Any failure triggers a fallback.
@@ -111,6 +184,48 @@ class SearchService:
             )
 
         return [query]
+
+    @staticmethod
+    async def _extract_pdf_keywords_with_retry(
+        openai_provider: Any,
+        pdf_text: str,
+        query: Optional[str],
+        max_retries: int = 2,
+    ) -> List[str]:
+        """
+        Extract keywords from PDF text and optional user query with retries.
+        """
+        last_error: Exception | None = None
+
+        for attempt in range(max_retries + 1):
+            try:
+                raw = await openai_provider.extract_keywords_from_pdf(
+                    pdf_text=pdf_text,
+                    query=query,
+                )
+                keywords = SearchService._normalize_keywords(raw)
+            except Exception as exc:  # pylint: disable=broad-exception-caught
+                last_error = exc
+                logger.exception(
+                    "PDF keyword extraction failed on attempt %d/%d", attempt + 1, max_retries + 1
+                )
+                keywords = []
+
+            if keywords:
+                return keywords
+
+        if last_error:
+            logger.warning(
+                "PDF keyword extraction failed after %d attempts. Last error: %s",
+                max_retries + 1,
+                last_error,
+            )
+        else:
+            logger.warning(
+                "PDF keyword extraction returned empty/invalid data after %d attempts.", max_retries
+            )
+
+        return []
 
     @staticmethod
     def _normalize_keywords(raw: Any) -> List[str]:
