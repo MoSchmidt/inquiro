@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
-import { signup, login } from '@/services/auth';
-import { useAuthStore } from '@/stores/auth';
+import { useAuthService } from '@/services/authService';
 
 const props = defineProps<{ open: boolean }>();
 
@@ -22,7 +21,7 @@ const password = ref('');
 const confirmPassword = ref('');
 const error = ref('');
 const loading = ref(false);
-const auth = useAuthStore();
+const { signupUser } = useAuthService();
 
 const submit = async () => {
 	error.value = '';
@@ -39,17 +38,7 @@ const submit = async () => {
 	try {
 		const username = email.value || name.value;
 		// create user (backend currently expects `username`)
-		await signup(username);
-
-		// immediately login to receive tokens
-		const resp = await login(username, password.value);
-		if (resp && resp.access_token) {
-			auth.setAuth({
-				accessToken: resp.access_token,
-				refreshToken: resp.refresh_token,
-				user: resp.user,
-			});
-		}
+                await signupUser(username, password.value);
 
 		// keep backward compatibility: emit create event
 		emit('create', { name: name.value, email: email.value, password: password.value });

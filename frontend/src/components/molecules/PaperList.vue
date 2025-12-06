@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref, watch, nextTick, computed, withDefaults } from 'vue';
 import { VExpansionPanel, VExpansionPanels } from 'vuetify/components';
-import type { Paper, PaperMenuOption } from './types';
-import PaperCard from './PaperCard.vue';
+import type { Paper, PaperMenuOption } from '@/types/content';
+import PaperCard from '@/components/atoms/PaperCard.vue';
 
 interface Props {
   papers: Paper[];

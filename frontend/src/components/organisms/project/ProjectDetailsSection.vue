@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import PaperList from '@/components/PaperList.vue';
+import PaperList from '@/components/molecules/PaperList.vue';
 import {
   VCard,
   VCardText,
@@ -14,7 +14,7 @@ import {
   VTooltip
 } from 'vuetify/components';
 import { FileText, Trash2, Pencil } from 'lucide-vue-next';
-import type { Paper, PaperMenuOption } from './types';
+import type { Paper, PaperMenuOption } from '@/types/content';
 
 const props = defineProps<{
   projectName: string;

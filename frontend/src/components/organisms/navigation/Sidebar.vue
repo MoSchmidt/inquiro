@@ -1,7 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useAuthStore } from '@/stores/auth';
-import { login } from '@/services/auth';
 import {
   VList,
   VListItem,
@@ -16,11 +14,12 @@ import {
   VCardTitle,
 } from 'vuetify/components';
 import { X, LogOut, FolderOpen, Clock, LogIn, Plus, CheckCircle } from 'lucide-vue-next';
-import type { Project } from './types';
+import type { Project } from '@/types/content';
+import { useAuthService } from '@/services/authService';
 
 const props = defineProps<{
   isOpen: boolean;
-  recentProjects: Project[];
+  projects: Project[];
   isLoggedIn: boolean;
 }>();
 
@@ -28,9 +27,9 @@ const emit = defineEmits<{
   (e: 'close'): void;
   (e: 'projectSelect', projectId: number): void;
   (e: 'newProject', name: string): void;
-  (e: 'login', username: string): void;
   (e: 'logout'): void;
   (e: 'newQuery'): void;
+  (e: 'loginSuccess'): void;
 }>();
 
 const username = ref('');
@@ -38,9 +37,9 @@ const password = ref('');
 const loginDialogOpen = ref(false);
 const loginError = ref<string | null>(null);
 const loginLoading = ref(false);
-const authStore = useAuthStore();
 const newProjectDialogOpen = ref(false);
 const newProjectName = ref('');
+const { loginUser } = useAuthService();
 
 const handleNewQueryClick = () => {
   emit('newQuery');
@@ -55,24 +54,13 @@ const handleLoginSubmit = async () => {
 
   loginLoading.value = true;
   try {
-    const resp = await login(username.value, password.value);
-    if (resp && resp.access_token) {
-      authStore.setAuth({
-        accessToken: resp.access_token,
-        refreshToken: resp.refresh_token,
-        user: resp.user,
-      });
-      // notify parent (so it can load projects) then clear/close
-      emit('login', username.value);
-      username.value = '';
-      password.value = '';
-      loginDialogOpen.value = false;
-      emit('close');
-    } else {
-      loginError.value = 'Login failed';
-    }
+    await loginUser(username.value, password.value);
+    emit('loginSuccess');
+    username.value = '';
+    password.value = '';
+    loginDialogOpen.value = false;
+    emit('close');
   } catch (err: unknown) {
-    // try to read axios error message
     try {
       // @ts-ignore
       const message = err?.response?.data?.detail || err?.message;
@@ -147,7 +135,7 @@ const handleNewProjectSubmit = () => {
         </h3>
         <v-list density="compact" nav class="pa-0">
           <v-list-item
-            v-for="project in recentProjects"
+            v-for="project in projects"
             :key="project.id"
             @click="emit('projectSelect', project.id)"
             class="mb-2 rounded-lg"
