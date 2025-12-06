@@ -124,7 +124,7 @@ const emit = defineEmits<{
   <v-expansion-panel-text>
     <div class="text-body-2 text-medium-emphasis mb-3 paper-abstract">
       <span v-if="showAbstract && paper.abstract"> {{ paper.abstract }} </span>
-      <span v-else class="text-disabled"> Kein Abstract vorhanden. </span>
+      <span v-else class="text-disabled"> No abstract available. </span>
     </div>
   </v-expansion-panel-text>
 </template>

@@ -20,21 +20,21 @@ const handleSubmit = () => {
     <v-container fluid class="fill-height align-center justify-center">
       <div class="w-100" style="max-width: 900px;">
         <div class="text-center mb-10">
-          <h2 class="text-h4 mb-2">Willkommen beim AI Text Processor</h2>
+          <h2 class="text-h4 mb-2">Welcome to the AI Text Processor</h2>
           <p class="text-medium-emphasis">
-            Geben Sie Ihre Texteingabe unten ein und lassen Sie unsere KI leistungsstarke Ergebnisse für Sie generieren
+            Enter your text input below and let our AI generate powerful results for you
           </p>
         </div>
 
         <v-form @submit.prevent="handleSubmit">
-          <v-textarea
+            <v-textarea
               v-model="input"
-              label="Geben Sie Ihren Text hier ein..."
+              label="Enter your text here..."
               variant="outlined"
               auto-grow
               rows="8"
               class="mb-4"
-          ></v-textarea>
+            ></v-textarea>
           <v-btn
               type="submit"
               color="primary"
@@ -43,7 +43,7 @@ const handleSubmit = () => {
               :disabled="!input.trim()"
           >
             <v-icon :icon="Send" start></v-icon>
-            Ergebnis generieren
+            Generate results
           </v-btn>
         </v-form>
 
@@ -53,9 +53,9 @@ const handleSubmit = () => {
               <div class="d-flex align-center justify-center mx-auto mb-4 bg-blue-lighten-4 rounded-circle" style="width: 48px; height: 48px;">
                 <span class="text-blue-darken-2 text-h6">1</span>
               </div>
-              <v-card-title class="text-h6 mb-2 pa-0">Eingabe</v-card-title>
+              <v-card-title class="text-h6 mb-2 pa-0">Input</v-card-title>
               <v-card-text class="text-medium-emphasis pa-0 text-body-2">
-                Geben Sie Ihre Textabfrage oder Anfrage ein
+                Enter your text query or request
               </v-card-text>
             </v-card>
           </v-col>
@@ -64,9 +64,9 @@ const handleSubmit = () => {
               <div class="d-flex align-center justify-center mx-auto mb-4 bg-blue-lighten-4 rounded-circle" style="width: 48px; height: 48px;">
                 <span class="text-blue-darken-2 text-h6">2</span>
               </div>
-              <v-card-title class="text-h6 mb-2 pa-0">KI-Verarbeitung</v-card-title>
+              <v-card-title class="text-h6 mb-2 pa-0">AI Processing</v-card-title>
               <v-card-text class="text-medium-emphasis pa-0 text-body-2">
-                Unsere KI wertet Ihre Eingabe aus und verarbeitet sie
+                Our AI evaluates and processes your input
               </v-card-text>
             </v-card>
           </v-col>
@@ -75,9 +75,9 @@ const handleSubmit = () => {
               <div class="d-flex align-center justify-center mx-auto mb-4 bg-blue-lighten-4 rounded-circle" style="width: 48px; height: 48px;">
                 <span class="text-blue-darken-2 text-h6">3</span>
               </div>
-              <v-card-title class="text-h6 mb-2 pa-0">Ergebnisse</v-card-title>
+              <v-card-title class="text-h6 mb-2 pa-0">Results</v-card-title>
               <v-card-text class="text-medium-emphasis pa-0 text-body-2">
-                Erhalten Sie organisierte Ergebnisordner
+                Receive organized results
               </v-card-text>
             </v-card>
           </v-col>
@@ -89,20 +89,14 @@ const handleSubmit = () => {
 </template>
 
 <style scoped>
-/* Vuetify-Klassen werden bevorzugt, aber einige benutzerdefinierte Stile für die Kreise */
+/* Prefer Vuetify classes, but include a few custom styles for the circles */
 .bg-blue-lighten-4 {
-  background-color: #E3F2FD !important; /* Vuetify's light blue */
+  background-color: var(--blue-lighten-4) !important;
 }
 .text-blue-darken-2 {
-  color: #1976D2 !important; /* Vuetify's darker blue */
+  color: var(--blue-darken-2) !important;
 }
 .border-sm {
-  border: 1px solid #E0E0E0; /* Light border similar to tailwind's gray-200 */
+  border: 1px solid var(--border-sm-color);
 }
-.input-wrapper {
-  max-height: 85vh;
-  overflow-y: auto;
-  padding-right: 6px;
-}
-
 </style>

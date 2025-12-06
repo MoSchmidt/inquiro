@@ -17,8 +17,8 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   showAbstract: true,
   showAdd: false,
-  title: 'Artikel',
-  emptyMessage: 'Keine Ergebnisse vorhanden.',
+  title: 'Articles',
+  emptyMessage: 'This project has no saved papers yet.',
   expandAllOnChange: false,
   menuOptions: () => [] as PaperMenuOption[],
 });

@@ -6,6 +6,7 @@ import { useAuthStore } from '@/stores/auth';
 import { login } from '@/services/auth';
 
 const username = ref('');
+const password = ref('');
 const errorMessage = ref<string | null>(null);
 const isLoading = ref(false);
 
@@ -17,7 +18,7 @@ const handleLogin = async () => {
   errorMessage.value = null;
 
   try {
-    const { access_token, refresh_token, user } = await login(username.value);
+    const { access_token, refresh_token, user } = await login(username.value, password.value);
 
     authStore.setAuth({
       accessToken: access_token,
@@ -59,6 +60,13 @@ const handleLogin = async () => {
         <v-text-field
           v-model="username"
           label="Username"
+          variant="outlined"
+          density="comfortable"
+        />
+        <v-text-field
+          v-model="password"
+          label="Password"
+          type="password"
           variant="outlined"
           density="comfortable"
         />

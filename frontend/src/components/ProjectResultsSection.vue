@@ -90,7 +90,7 @@ const handleMenuSelect = ({
           </v-btn>
         </div>
         <p class="text-caption text-medium-emphasis">
-          {{ papers.length }} gespeicherte Paper
+          {{ papers.length }} saved papers
         </p>
       </v-card-text>
     </v-card>

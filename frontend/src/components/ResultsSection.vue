@@ -1,6 +1,14 @@
 <script setup lang="ts">
-import { VCard, VCardText, VContainer, VIcon } from 'vuetify/components';
-import { FileText } from 'lucide-vue-next';
+import {computed, ref, watch} from 'vue';
+import {
+  VCard,
+  VCardText,
+  VIcon,
+  VContainer,
+  VBtn,
+  VTextField,
+} from 'vuetify/components';
+import { FileText, Edit3 } from 'lucide-vue-next';
 import PaperList from '@/components/PaperList.vue';
 import type { Paper } from './types';
 
@@ -13,32 +21,59 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'add', paper: Paper): void;
+  (e: 'updateQuery', newQuery: string): void;
 }>();
+
+const expanded = ref<number[]>([]);
+const editableQuery = ref(props.query);
+const isQueryChanged = computed(() => editableQuery.value.trim() !== props.query.trim());
+const handleQueryUpdate = () => {
+  if (editableQuery.value.trim()) {
+    emit('updateQuery', editableQuery.value.trim());
+  }
+};
+watch(
+  () => props.outputs,
+  (newOutputs) => {
+    // Expand all panels whenever a new result set arrives
+    expanded.value = newOutputs.map((_, index) => index);
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
-  <v-container class="py-6" style="max-width: 1200px">
-    <!-- Query header card stays specific to this page -->
-    <v-card flat class="mb-8 pa-4 bg-blue-lighten-5 border-sm">
-      <v-card-text class="d-flex align-start pa-0">
-        <v-icon
-          :icon="FileText"
-          color="blue-darken-2"
-          class="mt-1 me-3"
-        ></v-icon>
-        <div>
-          <h3 class="text-h6 text-blue-darken-4 mb-2">Ihre Abfrage</h3>
-          <p class="text-blue-darken-3">{{ query }}</p>
-        </div>
-      </v-card-text>
-    </v-card>
+    <v-container class="results-section">
+      <v-card flat class="mb-8 pa-4 bg-blue-lighten-5 border-sm">
+        <v-card-text class="d-flex align-start pa-0">
+          <v-icon :icon="FileText" color="blue-darken-2" class="mt-1 me-3"></v-icon>
+          <div class="flex-grow-1">
+            <v-text-field
+                v-model="editableQuery"
+                label="Your Query"
+                variant="outlined"
+                dense
+                class="mb-2"
+            ></v-text-field>
+            <v-btn
+                v-if="isQueryChanged"
+                color="primary"
+                variant="outlined"
+                size="small"
+                @click="handleQueryUpdate">
+              <v-icon :icon="Edit3" start size="18"/>
+              Update query
+            </v-btn>
+          </div>
+        </v-card-text>
+      </v-card>
 
     <PaperList
       :papers="outputs"
       :show-abstract="showAbstract"
       :show-add="showAdd"
-      title="Artikel"
-      empty-message="Noch keine Ergebnisse vorhanden"
+      title="Articles"
+      empty-message="No results yet"
       :expand-all-on-change="true"
       @add="paper => emit('add', paper)"
     />
@@ -47,9 +82,9 @@ const emit = defineEmits<{
 
 <style scoped>
 .bg-blue-lighten-5 {
-  background-color: #e9f2ff !important;
+  background-color: var(--blue-lighten-5) !important;
 }
 .border-sm {
-  border: 1px solid #bbdefb;
+  border: 1px solid var(--border-sm-color-result);
 }
 </style>
