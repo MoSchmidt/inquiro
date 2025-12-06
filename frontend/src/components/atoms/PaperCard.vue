@@ -11,7 +11,7 @@ import {
 } from 'vuetify/components';
 import { ChevronDown, FolderPlus, MoreHorizontal } from 'lucide-vue-next';
 import { withDefaults } from 'vue';
-import type { Paper, PaperMenuOption } from './types';
+import type { Paper, PaperMenuOption } from '@/types/content';
 
 const props = withDefaults(
   defineProps<{
