@@ -19,7 +19,7 @@ const emit = defineEmits<{
     <v-btn icon variant="text" @click="emit('toggleSidebar')">
       <v-icon :icon="MenuIcon" />
     </v-btn>
-    <v-toolbar-title class="text-h6">AI Text Processor</v-toolbar-title>
+    <v-toolbar-title class="text-h6">Inquiro</v-toolbar-title>
     <v-spacer></v-spacer>
 
     <v-btn

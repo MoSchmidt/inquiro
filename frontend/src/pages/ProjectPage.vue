@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
-import { VAlert, VProgressLinear } from 'vuetify/components';
+import { VAlert } from 'vuetify/components';
 import ProjectDetailsSection from '@/components/organisms/project/ProjectDetailsSection.vue';
 import type { Paper } from '@/types/content';
 import { useProjectsService } from '@/services/projectsService';
@@ -14,7 +14,6 @@ const {
   selectProject,
   renameProject,
   removePaperFromProject,
-  loading,
 } = useProjectsService();
 
 const papers = computed<Paper[]>(() => {
@@ -57,8 +56,6 @@ const handleRemovePaper = async (paper: Paper) => {
 
 <template>
   <div class="project-page">
-    <v-progress-linear v-if="loading" indeterminate color="primary" class="mb-4" />
-
     <ProjectDetailsSection
       v-if="selectedProject"
       :project-name="projectName"
