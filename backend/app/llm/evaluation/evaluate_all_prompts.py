@@ -5,7 +5,7 @@ import asyncio
 import json
 import logging
 from pathlib import Path
-from typing import Dict, List
+from typing import List
 
 from app.core.config import settings
 from app.llm.evaluation.prompt_evaluator import evaluate_prompt, load_dataset, load_prompt
@@ -18,7 +18,7 @@ logging.basicConfig(
 )
 
 
-async def evaluate_all_prompts(
+async def evaluate_all_prompts(  # pylint: disable=too-many-locals
     prompt_files: List[Path],
     dataset_path: Path,
     output_dir: Path,
@@ -26,7 +26,7 @@ async def evaluate_all_prompts(
 ) -> None:
     """
     Evaluate multiple prompts and generate a comparison report.
-    
+
     Args:
         prompt_files: List of paths to prompt files
         dataset_path: Path to evaluation dataset
@@ -36,35 +36,37 @@ async def evaluate_all_prompts(
     if settings.OPENAI_API_KEY is None:
         logger.error("OPENAI_API_KEY is not set. Please configure it in your environment.")
         return
-    
+
     # Load dataset once
     logger.info("Loading dataset from %s...", dataset_path)
     dataset = load_dataset(dataset_path)
     logger.info("Loaded %d test cases", len(dataset))
-    
+
     # Initialize provider
     provider = OpenAIProvider()
-    
+
     # Evaluate each prompt
     all_results = []
-    
+
     for i, prompt_file in enumerate(prompt_files, 1):
-        logger.info("\n" + "=" * 60)
+        logger.info("\n" + "=" * 60)  # pylint: disable=logging-not-lazy
         logger.info("Evaluating prompt %d/%d: %s", i, len(prompt_files), prompt_file.name)
         logger.info("=" * 60)
-        
+
         try:
             prompt = load_prompt(prompt_file)
-            
+
             # Evaluate
-            results = await evaluate_prompt(provider, prompt, dataset, delay_seconds=delay_seconds)
-            
+            results = await evaluate_prompt(
+                provider, prompt, dataset, delay_seconds=delay_seconds
+            )
+
             # Save individual results
             output_file = output_dir / f"results_{prompt_file.stem}.json"
             output_dir.mkdir(parents=True, exist_ok=True)
-            with output_file.open("w", encoding="utf-8") as f:
-                json.dump(results, f, indent=2, ensure_ascii=False)
-            
+            with output_file.open("w", encoding="utf-8") as file:
+                json.dump(results, file, indent=2, ensure_ascii=False)
+
             all_results.append({
                 "prompt_file": str(prompt_file),
                 "prompt_name": prompt_file.stem,
@@ -74,20 +76,20 @@ async def evaluate_all_prompts(
                 "max_jaccard": results["max_jaccard"],
                 "num_test_cases": results["num_test_cases"],
             })
-            
+
             logger.info("✓ Saved results to %s", output_file)
-            
-        except Exception as e:
-            logger.error("Failed to evaluate %s: %s", prompt_file, e)
+
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            logger.error("Failed to evaluate %s: %s", prompt_file, exc)
             continue
-    
+
     # Generate comparison report
     if all_results:
         # Sort by mean Jaccard score (descending)
         all_results.sort(key=lambda x: x["mean_jaccard"], reverse=True)
-        
+
         comparison_file = output_dir / "comparison_report.json"
-        with comparison_file.open("w", encoding="utf-8") as f:
+        with comparison_file.open("w", encoding="utf-8") as file:
             json.dump(
                 {
                     "dataset": str(dataset_path),
@@ -95,18 +97,18 @@ async def evaluate_all_prompts(
                     "prompts_evaluated": len(all_results),
                     "results": all_results,
                 },
-                f,
+                file,
                 indent=2,
                 ensure_ascii=False,
             )
-        
+
         # Print summary
-        logger.info("\n" + "=" * 60)
+        logger.info("\n" + "=" * 60)  # pylint: disable=logging-not-lazy
         logger.info("COMPARISON SUMMARY")
-        logger.info("=" * 60)
+        logger.info("=" * 60)  # pylint: disable=logging-not-lazy
         logger.info("%-30s %10s %10s %10s %10s", "Prompt", "Mean", "Std", "Min", "Max")
         logger.info("-" * 60)
-        
+
         for result in all_results:
             logger.info(
                 "%-30s %10.4f %10.4f %10.4f %10.4f",
@@ -116,11 +118,11 @@ async def evaluate_all_prompts(
                 result["min_jaccard"],
                 result["max_jaccard"],
             )
-        
+
         logger.info("=" * 60)
-        logger.info("Best performing prompt: %s (Mean Jaccard: %.4f)", 
-                   all_results[0]["prompt_name"], 
-                   all_results[0]["mean_jaccard"])
+        best_name = all_results[0]["prompt_name"]
+        best_score = all_results[0]["mean_jaccard"]
+        logger.info("Best performing prompt: %s (Mean Jaccard: %.4f)", best_name, best_score)
         logger.info("✓ Comparison report saved to %s", comparison_file)
 
 
@@ -151,7 +153,8 @@ async def main() -> None:
         "--output-dir",
         type=str,
         default="evaluation_results",
-        help="Directory to save results and comparison report (default: evaluation_results/)",
+        help="Directory to save results and comparison report "
+        "(default: evaluation_results/)",
     )
     parser.add_argument(
         "--delay",
@@ -164,36 +167,39 @@ async def main() -> None:
         action="store_true",
         help="Include the baseline prompt from app/llm/openai/prompts.py",
     )
-    
+
     args = parser.parse_args()
-    
+
     # Find prompt files
     prompts_dir = Path(args.prompts_dir)
     if not prompts_dir.exists():
         logger.error("Prompts directory not found: %s", prompts_dir)
         return
-    
+
     prompt_files = list(prompts_dir.glob(args.prompt_pattern))
-    
+
     if args.include_baseline:
         baseline_prompt = Path("app/llm/openai/prompts.py")
         if baseline_prompt.exists():
             prompt_files.insert(0, baseline_prompt)
             logger.info("Including baseline prompt: %s", baseline_prompt)
-    
+
     if not prompt_files:
-        logger.error("No prompt files found matching pattern '%s' in %s", 
-                    args.prompt_pattern, prompts_dir)
+        logger.error(
+            "No prompt files found matching pattern '%s' in %s",
+            args.prompt_pattern,
+            prompts_dir,
+        )
         return
-    
+
     logger.info("Found %d prompt files to evaluate:", len(prompt_files))
-    for pf in prompt_files:
-        logger.info("  - %s", pf)
-    
+    for prompt_file_path in prompt_files:
+        logger.info("  - %s", prompt_file_path)
+
     # Evaluate all prompts
     dataset_path = Path(args.dataset)
     output_dir = Path(args.output_dir)
-    
+
     await evaluate_all_prompts(
         prompt_files=prompt_files,
         dataset_path=dataset_path,
