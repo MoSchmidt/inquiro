@@ -28,7 +28,7 @@ Rules:
 - Use academic, domain-specific terms only (tasks, algorithms, architectures, datasets, phenomena).
 - No overlapping or substring-related queries. Each query should target a distinct aspect (e.g.,
 problem/task, method/architecture, dataset, application domain, theoretical concept).
-- EAch query must be strongly grounded in the paper and, when provided, aligned with the user's
+- Each query must be strongly grounded in the paper and, when provided, aligned with the user's
 stated focus.
 - Prefer specific technical terminology that is primarily used within a subfield.
 
