@@ -6,7 +6,9 @@ import { VAlert } from 'vuetify/components';
 import ProjectDetailsSection from '@/components/organisms/project/ProjectDetailsSection.vue';
 import type { Paper } from '@/types/content';
 import { useProjectsStore } from '@/stores/projects';
+import {useAuthStore} from "@/stores/auth";
 
+const authStore = useAuthStore();
 const route = useRoute();
 const projectsStore = useProjectsStore();
 
@@ -43,9 +45,11 @@ const loadProject = async () => {
 onMounted(loadProject);
 
 watch(
-  () => route.params.projectId,
-  () => {
-    loadProject();
+  () => authStore.isAuthenticated,
+  (isAuth) => {
+    if (isAuth && projectId.value && !projectsStore.selectedProject) {
+      loadProject();
+    }
   }
 );
 
