@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, File, Form, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -45,6 +45,12 @@ async def search_by_pdf(
     Returns a list of papers that are relevant to the uploaded PDF
     The PDF is analyzed, turned into semantic search queries, and used for vector search on our DB.
     """
+    if pdf.content_type != "application/pdf":
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid file type: Only PDF files are supported.",
+        )
+
     papers = await SearchService.search_papers_from_pdf(
         pdf_file=pdf,
         db=db,

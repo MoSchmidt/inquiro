@@ -2,7 +2,7 @@ import logging
 import re
 from typing import Any, Iterable, List, Optional
 
-from fastapi import UploadFile
+from fastapi import HTTPException, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_openai_provider, get_specter2_query_embedder
@@ -49,7 +49,6 @@ class SearchService:
         pdf_file: UploadFile,
         db: AsyncSession,
         query: Optional[str] = None,
-        original_filename: Optional[str] = None,
     ) -> SearchResponse:
         """
         Search using a PDF as the primary signal.
@@ -63,7 +62,20 @@ class SearchService:
             logger.warning("Empty PDF uploaded for search")
             return SearchResponse(papers=[])
 
-        pdf_text = pdf_bytes_to_text(content)
+        try:
+            pdf_text = pdf_bytes_to_text(content)
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            filename = pdf_file.filename or "<unknown>"
+            logger.warning(
+                "Invalid or corrupted PDF uploaded for search: %s; error: %s",
+                filename,
+                exc,
+            )
+            # Return a client error instead of 500
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid or corrupted PDF file.",
+            ) from exc
 
         ensure_fits_token_limit(
             pdf_text,
@@ -84,7 +96,7 @@ class SearchService:
         )
         logger.info("PDF search keywords: %s", keywords)
 
-        label = query or original_filename or "pdf-search"
+        label = query or pdf_file.filename or "pdf-search"
         return await SearchService._search_with_keywords(keywords=keywords, db=db, user_query=label)
 
     # ---------- Shared search pipeline ----------
@@ -222,7 +234,8 @@ class SearchService:
             )
         else:
             logger.warning(
-                "PDF keyword extraction returned empty/invalid data after %d attempts.", max_retries + 1
+                "PDF keyword extraction returned empty/invalid data after %d attempts.",
+                max_retries + 1,
             )
 
         return []
