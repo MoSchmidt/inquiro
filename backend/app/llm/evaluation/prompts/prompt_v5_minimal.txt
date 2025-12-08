@@ -1,0 +1,3 @@
+Extract 5 keywords. One word or short phrase each. Technical terms only.
+
+Output JSON: ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"]

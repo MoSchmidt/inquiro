@@ -17,3 +17,9 @@ __pycache__/
 backend/ingestion/data
 
 backend/inquiro-env/
+
+# Evaluation data and results
+backend/evaluation_data/
+backend/evaluation_results/
+backend/dataset.json
+backend/results.json
