@@ -1,21 +1,29 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import {
-  VList,
-  VListItem,
-  VDivider,
   VBtn,
-  VIcon,
   VCard,
-  VTextField,
-  VDialog,
   VCardActions,
   VCardText,
   VCardTitle,
+  VDialog,
+  VDivider,
+  VIcon,
+  VList,
+  VListItem,
+  VTextField,
 } from 'vuetify/components';
-import { X, LogOut, FolderOpen, Clock, LogIn, Plus, CheckCircle } from 'lucide-vue-next';
+import {
+  CheckCircle,
+  Clock,
+  FolderOpen,
+  LogIn,
+  LogOut,
+  Plus,
+  X,
+} from 'lucide-vue-next';
 import type { Project } from '@/types/content';
-import { useAuthService } from '@/services/authService';
+import { useAuthStore } from '@/stores/auth';
 
 const props = defineProps<{
   isOpen: boolean;
@@ -39,7 +47,7 @@ const loginError = ref<string | null>(null);
 const loginLoading = ref(false);
 const newProjectDialogOpen = ref(false);
 const newProjectName = ref('');
-const { loginUser } = useAuthService();
+const { login } = useAuthStore();
 
 const handleNewQueryClick = () => {
   emit('newQuery');
@@ -54,7 +62,7 @@ const handleLoginSubmit = async () => {
 
   loginLoading.value = true;
   try {
-    await loginUser(username.value, password.value);
+    await login(username.value, password.value);
     emit('loginSuccess');
     username.value = '';
     password.value = '';
@@ -62,7 +70,7 @@ const handleLoginSubmit = async () => {
     emit('close');
   } catch (err: unknown) {
     try {
-      // @ts-ignore
+      // @ts-expect-error
       const message = err?.response?.data?.detail || err?.message;
       loginError.value = message ?? 'Login failed';
     } catch {
@@ -92,7 +100,10 @@ const handleNewProjectSubmit = () => {
 
 <template>
   <div class="d-flex flex-column h-100">
-    <v-card flat class="pa-4 d-flex align-center justify-space-between border-b-sm">
+    <v-card
+      flat
+      class="pa-4 d-flex align-center justify-space-between border-b-sm"
+    >
       <h2 class="text-h6">Menu</h2>
       <v-btn icon variant="text" @click="emit('close')">
         <v-icon :icon="X" size="24" />
@@ -102,11 +113,11 @@ const handleNewProjectSubmit = () => {
     <div class="flex-grow-1 overflow-y-auto">
       <div class="pa-4 pb-2">
         <v-btn
-            color="secondary"
-            variant="outlined"
-            block
-            class="aligned-button"
-            @click="handleNewQueryClick"
+          color="secondary"
+          variant="outlined"
+          block
+          class="aligned-button"
+          @click="handleNewQueryClick"
         >
           <v-icon :icon="Plus" start size="18" />
           New Query
@@ -115,11 +126,11 @@ const handleNewProjectSubmit = () => {
 
       <div class="pa-4 pb-2">
         <v-btn
-            color="secondary"
-            variant="outlined"
-            block
-            class="aligned-button"
-            @click="handleNewProjectClick"
+          color="secondary"
+          variant="outlined"
+          block
+          class="aligned-button"
+          @click="handleNewProjectClick"
         >
           <v-icon :icon="Plus" start size="18" />
           New Project
@@ -156,9 +167,7 @@ const handleNewProjectSubmit = () => {
     </div>
 
     <div class="border-t-sm pa-4">
-      <h3 class="text-subtitle-1 mb-3 d-flex align-center">
-        Account
-      </h3>
+      <h3 class="text-subtitle-1 mb-3 d-flex align-center">Account</h3>
       <div v-if="!isLoggedIn">
         <v-btn block color="primary" @click="loginDialogOpen = true">
           <v-icon :icon="LogIn" start size="18" />
@@ -168,11 +177,21 @@ const handleNewProjectSubmit = () => {
       <div v-else>
         <v-card flat class="pa-3 mb-3 bg-green-lighten-5 border-success">
           <div class="d-flex align-center">
-            <v-icon :icon="CheckCircle" color="success" class="me-2" size="18"></v-icon>
+            <v-icon
+              :icon="CheckCircle"
+              color="success"
+              class="me-2"
+              size="18"
+            ></v-icon>
             <p class="text-success text-body-2">Successfully logged in</p>
           </div>
         </v-card>
-        <v-btn block variant="outlined" color="secondary" @click="emit('logout')">
+        <v-btn
+          block
+          variant="outlined"
+          color="secondary"
+          @click="emit('logout')"
+        >
           <v-icon :icon="LogOut" start size="18" />
           Logout
         </v-btn>
@@ -203,13 +222,25 @@ const handleNewProjectSubmit = () => {
               required
               class="mb-4"
             ></v-text-field>
-            <v-btn type="submit" color="primary" block :loading="loginLoading">Login</v-btn>
-            <div v-if="loginError" class="mt-2" style="color:var(--v-theme-error)">{{ loginError }}</div>
+            <v-btn type="submit" color="primary" block :loading="loginLoading"
+              >Login</v-btn
+            >
+            <div
+              v-if="loginError"
+              class="mt-2"
+              style="color: var(--v-theme-error)"
+            >
+              {{ loginError }}
+            </div>
           </v-form>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="secondary" variant="text" @click="loginDialogOpen = false">
+          <v-btn
+            color="secondary"
+            variant="text"
+            @click="loginDialogOpen = false"
+          >
             Close
           </v-btn>
         </v-card-actions>
@@ -237,7 +268,11 @@ const handleNewProjectSubmit = () => {
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="secondary" variant="text" @click="newProjectDialogOpen = false">
+          <v-btn
+            color="secondary"
+            variant="text"
+            @click="newProjectDialogOpen = false"
+          >
             Close
           </v-btn>
         </v-card-actions>

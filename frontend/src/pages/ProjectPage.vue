@@ -2,22 +2,23 @@
 import { computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { VAlert } from 'vuetify/components';
+
 import ProjectDetailsSection from '@/components/organisms/project/ProjectDetailsSection.vue';
 import type { Paper } from '@/types/content';
-import { useProjectsService } from '@/services/projectsService';
+import { useProjectsStore } from '@/stores/projects';
 
 const route = useRoute();
+const projectsStore = useProjectsStore();
+
 const projectId = computed(() => Number(route.params.projectId));
 
-const {
-  selectedProject,
-  selectProject,
-  renameProject,
-  removePaperFromProject,
-} = useProjectsService();
+// ----- derived state -----
+
+const selectedProject = computed(() => projectsStore.selectedProject);
 
 const papers = computed<Paper[]>(() => {
   if (!selectedProject.value) return [];
+
   return selectedProject.value.papers.map((p) => ({
     paper_id: p.paper_id,
     title: p.title,
@@ -27,30 +28,37 @@ const papers = computed<Paper[]>(() => {
   }));
 });
 
-const projectName = computed(() => selectedProject.value?.project.project_name ?? '');
+const projectName = computed(
+  () => selectedProject.value?.project.project_name ?? ''
+);
+
+// ----- lifecycle -----
 
 const loadProject = async () => {
   if (Number.isFinite(projectId.value)) {
-    await selectProject(projectId.value);
+    await projectsStore.selectProject(projectId.value);
   }
 };
 
 onMounted(loadProject);
+
 watch(
   () => route.params.projectId,
   () => {
     loadProject();
-  },
+  }
 );
+
+// ----- handlers -----
 
 const handleRenameProject = async (newName: string) => {
   if (!projectId.value) return;
-  await renameProject(projectId.value, newName);
+  await projectsStore.renameProject(projectId.value, newName);
 };
 
 const handleRemovePaper = async (paper: Paper) => {
   if (!paper.paper_id || !projectId.value) return;
-  await removePaperFromProject(projectId.value, paper.paper_id);
+  await projectsStore.removePaper(projectId.value, paper.paper_id);
 };
 </script>
 

@@ -1,36 +1,47 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue';
-import { RouterView, useRoute, useRouter } from 'vue-router';
-import { VApp, VLayout, VNavigationDrawer, VMain } from 'vuetify/components';
-import AppHeader from '@/components/organisms/layout/AppHeader.vue';
-import Sidebar from '@/components/organisms/navigation/Sidebar.vue';
-import CreateAccount from '@/components/organisms/auth/CreateAccount.vue';
-import { useAuthService } from '@/services/authService';
-import { useProjectsService } from '@/services/projectsService';
-import type { Project } from '@/types/content';
+import { computed, onMounted, ref, watch } from 'vue'
+import { RouterView, useRoute, useRouter } from 'vue-router'
+import { VApp, VLayout, VNavigationDrawer, VMain } from 'vuetify/components'
 
-const sidebarOpen = ref(false);
-const createAccountOpen = ref(false);
+import AppHeader from '@/components/organisms/layout/AppHeader.vue'
+import Sidebar from '@/components/organisms/navigation/Sidebar.vue'
+import CreateAccount from '@/components/organisms/auth/CreateAccount.vue'
 
-const route = useRoute();
-const router = useRouter();
+import { useAuthStore } from '@/stores/auth'
+import { useProjectsStore } from '@/stores/projects'
+import type { Project } from '@/types/content'
 
-const { isAuthenticated, logoutUser } = useAuthService();
-const { projects, loadProjects, selectProject, createProject, resetProjects } = useProjectsService();
+const sidebarOpen = ref(false)
+const createAccountOpen = ref(false)
+
+const route = useRoute()
+const router = useRouter()
+
+const authStore = useAuthStore()
+const projectsStore = useProjectsStore()
+
+// ----- derived store state -----
+
+const isAuthenticated = computed(() => authStore.isAuthenticated)
+const projects = computed(() => projectsStore.projects)
+
+// ----- lifecycle -----
 
 onMounted(() => {
   if (isAuthenticated.value) {
-    loadProjects();
+    projectsStore.loadProjects()
   }
-});
+})
 
 watch(isAuthenticated, (loggedIn) => {
   if (loggedIn) {
-    loadProjects();
+    projectsStore.loadProjects()
   } else {
-    resetProjects();
+    projectsStore.$reset()
   }
-});
+})
+
+// ----- computed UI state -----
 
 const projectLinks = computed<Project[]>(() =>
   projects.value.map((project) => ({
@@ -39,51 +50,53 @@ const projectLinks = computed<Project[]>(() =>
     date: project.created_at?.split('T')[0] ?? '',
     outputs: [],
   })),
-);
+)
 
-const showNewQuery = computed(() => route.name !== 'search');
+const showNewQuery = computed(() => route.name !== 'search')
+
+// ----- handlers -----
 
 const toggleSidebar = () => {
-  sidebarOpen.value = !sidebarOpen.value;
-};
+  sidebarOpen.value = !sidebarOpen.value
+}
 
-const goToSearch = () => router.push({ name: 'search' });
+const goToSearch = () => router.push({ name: 'search' })
 
 const handleNewQuery = () => {
-  goToSearch();
-  sidebarOpen.value = false;
-};
+  goToSearch()
+  sidebarOpen.value = false
+}
 
 const handleProjectSelect = async (projectId: number) => {
-  await selectProject(projectId);
-  await router.push({ name: 'project', params: { projectId } });
-  sidebarOpen.value = false;
-};
+  await projectsStore.selectProject(projectId)
+  await router.push({ name: 'project', params: { projectId } })
+  sidebarOpen.value = false
+}
 
 const handleNewProject = async (name: string) => {
-  const project = await createProject(name);
+  const project = await projectsStore.createNewProject(name)
   if (project) {
-    await handleProjectSelect(project.project_id);
+    await handleProjectSelect(project.project_id)
   }
-};
+}
 
 const handleLoginSuccess = async () => {
-  await loadProjects();
-  sidebarOpen.value = true;
-};
+  await projectsStore.loadProjects()
+  sidebarOpen.value = true
+}
 
 const handleLogout = () => {
-  logoutUser();
-  resetProjects();
-  handleNewQuery();
-};
+  authStore.logout()
+  projectsStore.$reset()
+  handleNewQuery()
+}
 
 const handleAccountCreated = async () => {
-  createAccountOpen.value = false;
+  createAccountOpen.value = false
   if (isAuthenticated.value) {
-    await loadProjects();
+    await projectsStore.loadProjects()
   }
-};
+}
 </script>
 
 <template>

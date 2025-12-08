@@ -1,32 +1,51 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { VBtn, VCard, VCardActions, VCardText, VCardTitle, VDialog, VSelect, VSpacer, VAlert, VProgressLinear } from 'vuetify/components';
+import {
+  VAlert,
+  VBtn,
+  VCard,
+  VCardActions,
+  VCardText,
+  VCardTitle,
+  VDialog,
+  VProgressLinear,
+  VSelect,
+  VSpacer,
+} from 'vuetify/components';
+
 import SearchInputSection from '@/components/organisms/search/SearchInputSection.vue';
 import SearchResultsSection from '@/components/organisms/search/SearchResultsSection.vue';
 import type { Paper } from '@/types/content';
+
 import { searchPapers } from '@/services/search';
-import { useAuthService } from '@/services/authService';
-import { useProjectsService } from '@/services/projectsService';
+import { useAuthStore } from '@/stores/auth';
+import { useProjectsStore } from '@/stores/projects';
+
+const authStore = useAuthStore();
+const projectsStore = useProjectsStore();
 
 const currentQuery = ref<string | null>(null);
 const outputs = ref<Paper[]>([]);
 const isLoading = ref(false);
 const errorMessage = ref<string | null>(null);
 
+// add-to-project dialog state
 const addToProjectDialogOpen = ref(false);
 const paperToAdd = ref<Paper | null>(null);
 const selectedProjectIdForAdd = ref<number | null>(null);
 
-const { isAuthenticated } = useAuthService();
-const { projects, addPaperToProject, loadProjects } = useProjectsService();
+// derived state
+const isAuthenticated = computed(() => authStore.isAuthenticated);
+const projects = computed(() => projectsStore.projects);
+const projectOptions = computed(() => projectsStore.projects);
 
 onMounted(() => {
   if (isAuthenticated.value) {
-    loadProjects();
+    projectsStore.loadProjects();
   }
 });
 
-const projectOptions = computed(() => projects.value);
+// ----- search flow -----
 
 const handleSubmitQuery = async (query: string) => {
   currentQuery.value = query;
@@ -43,29 +62,37 @@ const handleSubmitQuery = async (query: string) => {
       year: p.published_at ? new Date(p.published_at).getFullYear() : 0,
       abstract: p.abstract ?? undefined,
     }));
-  } catch (error) {
-    console.error('Search failed', error);
+  } catch (err) {
+    console.error('Search failed', err);
     errorMessage.value = 'Search failed.';
   } finally {
     isLoading.value = false;
   }
 };
 
+// ----- add-from-search flow -----
+
 const handleAddFromSearch = (paper: Paper) => {
   if (!isAuthenticated.value || !projects.value.length) {
     return;
   }
+
   paperToAdd.value = paper;
   selectedProjectIdForAdd.value = projects.value[0]?.project_id ?? null;
   addToProjectDialogOpen.value = true;
 };
 
 const confirmAddToProject = async () => {
-  if (!paperToAdd.value || !paperToAdd.value.paper_id || !selectedProjectIdForAdd.value) {
+  if (!paperToAdd.value?.paper_id || !selectedProjectIdForAdd.value) {
     addToProjectDialogOpen.value = false;
     return;
   }
-  await addPaperToProject(selectedProjectIdForAdd.value, paperToAdd.value.paper_id);
+
+  await projectsStore.addPaper(
+    selectedProjectIdForAdd.value,
+    paperToAdd.value.paper_id
+  );
+
   addToProjectDialogOpen.value = false;
   paperToAdd.value = null;
 };
@@ -97,9 +124,7 @@ const confirmAddToProject = async () => {
 
     <v-dialog v-model="addToProjectDialogOpen" max-width="500">
       <v-card>
-        <v-card-title class="text-h5">
-          Add paper to project
-        </v-card-title>
+        <v-card-title class="text-h5"> Add paper to project </v-card-title>
         <v-card-text>
           <p class="mb-4 text-medium-emphasis">
             Choose a project to add this paper to.
@@ -118,9 +143,7 @@ const confirmAddToProject = async () => {
           <v-btn variant="text" @click="addToProjectDialogOpen = false">
             Cancel
           </v-btn>
-          <v-btn color="primary" @click="confirmAddToProject">
-            Add
-          </v-btn>
+          <v-btn color="primary" @click="confirmAddToProject"> Add </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
