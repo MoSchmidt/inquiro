@@ -222,7 +222,7 @@ class SearchService:
             )
         else:
             logger.warning(
-                "PDF keyword extraction returned empty/invalid data after %d attempts.", max_retries
+                "PDF keyword extraction returned empty/invalid data after %d attempts.", max_retries + 1
             )
 
         return []
