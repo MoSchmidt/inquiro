@@ -113,13 +113,10 @@ class SearchService:
         )
 
         results: List[PaperDto] = []
-
         # Iterate over resolved results
         for doc, avg_dist in rows:
             logger.info("Match: %s... | Avg. Distance: %.4f", doc.title[:30], avg_dist)
-
             authors_value = normalize_authors(doc.authors)
-
             results.append(
                 PaperDto(
                     paper_id=doc.paper_id,
