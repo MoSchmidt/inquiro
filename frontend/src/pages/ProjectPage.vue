@@ -7,6 +7,7 @@ import ProjectDetailsSection from '@/components/organisms/project/ProjectDetails
 import type { Paper } from '@/types/content';
 import { useProjectsStore } from '@/stores/projects';
 import {useAuthStore} from "@/stores/auth";
+import { mapProjectWithPapersResponseToPapers } from '@/mappers/paper-mapper';
 
 const authStore = useAuthStore();
 const route = useRoute();
@@ -21,13 +22,7 @@ const selectedProject = computed(() => projectsStore.selectedProject);
 const papers = computed<Paper[]>(() => {
   if (!selectedProject.value) return [];
 
-  return selectedProject.value.papers.map((p) => ({
-    paper_id: p.paper_id,
-    title: p.title,
-    author: p.authors ? Object.values(p.authors).join(', ') : '',
-    year: p.published_at ? new Date(p.published_at).getFullYear() : 0,
-    abstract: p.abstract ?? undefined,
-  }));
+  return mapProjectWithPapersResponseToPapers(selectedProject.value);
 });
 
 const projectName = computed(

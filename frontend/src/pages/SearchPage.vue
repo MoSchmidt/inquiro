@@ -20,6 +20,7 @@ import type { Paper } from '@/types/content';
 import { searchPapers } from '@/services/search';
 import { useAuthStore } from '@/stores/auth';
 import { useProjectsStore } from '@/stores/projects';
+import { mapSearchResponseToPapers } from '@/mappers/paper-mapper';
 
 const authStore = useAuthStore();
 const projectsStore = useProjectsStore();
@@ -55,13 +56,7 @@ const handleSubmitQuery = async (query: string) => {
 
   try {
     const response = await searchPapers(query);
-    outputs.value = response.papers.map((p) => ({
-      paper_id: p.paper_id,
-      title: p.title,
-      author: p.authors ? Object.values(p.authors).join(', ') : '',
-      year: p.published_at ? new Date(p.published_at).getFullYear() : 0,
-      abstract: p.abstract ?? undefined,
-    }));
+    outputs.value = mapSearchResponseToPapers(response);
   } catch (err) {
     console.error('Search failed', err);
     errorMessage.value = 'Search failed.';
