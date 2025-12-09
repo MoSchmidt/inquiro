@@ -213,7 +213,7 @@ const handleMenuSelect = (payload: {
     >
       <v-icon :icon="ArrowUp" size="18" />
       <v-tooltip activator="parent" location="left">
-          Go to top
+          Back to top
       </v-tooltip>
     </v-btn>
   </section>
