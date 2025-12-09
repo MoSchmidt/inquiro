@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, ref, watch} from 'vue';
+import { computed, ref } from 'vue';
 import {
   VCard,
   VCardText,
@@ -9,8 +9,8 @@ import {
   VTextField,
 } from 'vuetify/components';
 import { FileText, Edit3 } from 'lucide-vue-next';
-import PaperList from '@/components/PaperList.vue';
-import type { Paper } from './types';
+import PaperList from '@/components/molecules/PaperList.vue';
+import type { Paper } from '@/types/content';
 
 const props = defineProps<{
   query: string;
@@ -24,7 +24,6 @@ const emit = defineEmits<{
   (e: 'updateQuery', newQuery: string): void;
 }>();
 
-const expanded = ref<number[]>([]);
 const editableQuery = ref(props.query);
 const isQueryChanged = computed(() => editableQuery.value.trim() !== props.query.trim());
 const handleQueryUpdate = () => {
@@ -32,14 +31,6 @@ const handleQueryUpdate = () => {
     emit('updateQuery', editableQuery.value.trim());
   }
 };
-watch(
-  () => props.outputs,
-  (newOutputs) => {
-    // Expand all panels whenever a new result set arrives
-    expanded.value = newOutputs.map((_, index) => index);
-  },
-  { immediate: true },
-);
 </script>
 
 <template>

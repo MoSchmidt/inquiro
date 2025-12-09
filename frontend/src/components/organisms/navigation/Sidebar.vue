@@ -1,26 +1,33 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useAuthStore } from '@/stores/auth';
-import { login } from '@/services/auth';
 import {
-  VList,
-  VListItem,
-  VDivider,
   VBtn,
-  VIcon,
   VCard,
-  VTextField,
-  VDialog,
   VCardActions,
   VCardText,
   VCardTitle,
+  VDialog,
+  VDivider,
+  VIcon,
+  VList,
+  VListItem,
+  VTextField,
 } from 'vuetify/components';
-import { X, LogOut, FolderOpen, Clock, LogIn, Plus, CheckCircle } from 'lucide-vue-next';
-import type { Project } from './types';
+import {
+  CheckCircle,
+  Clock,
+  FolderOpen,
+  LogIn,
+  LogOut,
+  Plus,
+  X,
+} from 'lucide-vue-next';
+import type { Project } from '@/types/content';
+import { useAuthStore } from '@/stores/auth';
 
 const props = defineProps<{
   isOpen: boolean;
-  recentProjects: Project[];
+  projects: Project[];
   isLoggedIn: boolean;
 }>();
 
@@ -28,9 +35,9 @@ const emit = defineEmits<{
   (e: 'close'): void;
   (e: 'projectSelect', projectId: number): void;
   (e: 'newProject', name: string): void;
-  (e: 'login', username: string): void;
   (e: 'logout'): void;
   (e: 'newQuery'): void;
+  (e: 'loginSuccess'): void;
 }>();
 
 const username = ref('');
@@ -38,9 +45,9 @@ const password = ref('');
 const loginDialogOpen = ref(false);
 const loginError = ref<string | null>(null);
 const loginLoading = ref(false);
-const authStore = useAuthStore();
 const newProjectDialogOpen = ref(false);
 const newProjectName = ref('');
+const { login } = useAuthStore();
 
 const handleNewQueryClick = () => {
   emit('newQuery');
@@ -55,26 +62,15 @@ const handleLoginSubmit = async () => {
 
   loginLoading.value = true;
   try {
-    const resp = await login(username.value, password.value);
-    if (resp && resp.access_token) {
-      authStore.setAuth({
-        accessToken: resp.access_token,
-        refreshToken: resp.refresh_token,
-        user: resp.user,
-      });
-      // notify parent (so it can load projects) then clear/close
-      emit('login', username.value);
-      username.value = '';
-      password.value = '';
-      loginDialogOpen.value = false;
-      emit('close');
-    } else {
-      loginError.value = 'Login failed';
-    }
+    await login(username.value, password.value);
+    emit('loginSuccess');
+    username.value = '';
+    password.value = '';
+    loginDialogOpen.value = false;
+    emit('close');
   } catch (err: unknown) {
-    // try to read axios error message
     try {
-      // @ts-ignore
+      // @ts-expect-error
       const message = err?.response?.data?.detail || err?.message;
       loginError.value = message ?? 'Login failed';
     } catch {
@@ -104,7 +100,10 @@ const handleNewProjectSubmit = () => {
 
 <template>
   <div class="d-flex flex-column h-100">
-    <v-card flat class="pa-4 d-flex align-center justify-space-between border-b-sm">
+    <v-card
+      flat
+      class="pa-4 d-flex align-center justify-space-between border-b-sm"
+    >
       <h2 class="text-h6">Menu</h2>
       <v-btn icon variant="text" @click="emit('close')">
         <v-icon :icon="X" size="24" />
@@ -114,11 +113,11 @@ const handleNewProjectSubmit = () => {
     <div class="flex-grow-1 overflow-y-auto">
       <div class="pa-4 pb-2">
         <v-btn
-            color="secondary"
-            variant="outlined"
-            block
-            class="aligned-button"
-            @click="handleNewQueryClick"
+          color="secondary"
+          variant="outlined"
+          block
+          class="aligned-button"
+          @click="handleNewQueryClick"
         >
           <v-icon :icon="Plus" start size="18" />
           New Query
@@ -127,11 +126,11 @@ const handleNewProjectSubmit = () => {
 
       <div class="pa-4 pb-2">
         <v-btn
-            color="secondary"
-            variant="outlined"
-            block
-            class="aligned-button"
-            @click="handleNewProjectClick"
+          color="secondary"
+          variant="outlined"
+          block
+          class="aligned-button"
+          @click="handleNewProjectClick"
         >
           <v-icon :icon="Plus" start size="18" />
           New Project
@@ -147,7 +146,7 @@ const handleNewProjectSubmit = () => {
         </h3>
         <v-list density="compact" nav class="pa-0">
           <v-list-item
-            v-for="project in recentProjects"
+            v-for="project in projects"
             :key="project.id"
             @click="emit('projectSelect', project.id)"
             class="mb-2 rounded-lg"
@@ -168,9 +167,7 @@ const handleNewProjectSubmit = () => {
     </div>
 
     <div class="border-t-sm pa-4">
-      <h3 class="text-subtitle-1 mb-3 d-flex align-center">
-        Account
-      </h3>
+      <h3 class="text-subtitle-1 mb-3 d-flex align-center">Account</h3>
       <div v-if="!isLoggedIn">
         <v-btn block color="primary" @click="loginDialogOpen = true">
           <v-icon :icon="LogIn" start size="18" />
@@ -180,11 +177,21 @@ const handleNewProjectSubmit = () => {
       <div v-else>
         <v-card flat class="pa-3 mb-3 bg-green-lighten-5 border-success">
           <div class="d-flex align-center">
-            <v-icon :icon="CheckCircle" color="success" class="me-2" size="18"></v-icon>
+            <v-icon
+              :icon="CheckCircle"
+              color="success"
+              class="me-2"
+              size="18"
+            ></v-icon>
             <p class="text-success text-body-2">Successfully logged in</p>
           </div>
         </v-card>
-        <v-btn block variant="outlined" color="secondary" @click="emit('logout')">
+        <v-btn
+          block
+          variant="outlined"
+          color="secondary"
+          @click="emit('logout')"
+        >
           <v-icon :icon="LogOut" start size="18" />
           Logout
         </v-btn>
@@ -215,13 +222,25 @@ const handleNewProjectSubmit = () => {
               required
               class="mb-4"
             ></v-text-field>
-            <v-btn type="submit" color="primary" block :loading="loginLoading">Login</v-btn>
-            <div v-if="loginError" class="mt-2" style="color:var(--v-theme-error)">{{ loginError }}</div>
+            <v-btn type="submit" color="primary" block :loading="loginLoading"
+              >Login</v-btn
+            >
+            <div
+              v-if="loginError"
+              class="mt-2"
+              style="color: var(--v-theme-error)"
+            >
+              {{ loginError }}
+            </div>
           </v-form>
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="secondary" variant="text" @click="loginDialogOpen = false">
+          <v-btn
+            color="secondary"
+            variant="text"
+            @click="loginDialogOpen = false"
+          >
             Close
           </v-btn>
         </v-card-actions>
@@ -249,7 +268,11 @@ const handleNewProjectSubmit = () => {
         </v-card-text>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="secondary" variant="text" @click="newProjectDialogOpen = false">
+          <v-btn
+            color="secondary"
+            variant="text"
+            @click="newProjectDialogOpen = false"
+          >
             Close
           </v-btn>
         </v-card-actions>
