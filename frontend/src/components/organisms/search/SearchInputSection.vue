@@ -20,7 +20,7 @@ const handleSubmit = () => {
     <v-container fluid class="fill-height align-center justify-center">
       <div class="w-100" style="max-width: 900px;">
         <div class="text-center mb-10">
-          <h2 class="text-h4 mb-2">Welcome to the AI Text Processor</h2>
+          <h2 class="text-h4 mb-2">Welcome to Inquiro</h2>
           <p class="text-medium-emphasis">
             Enter your text input below and let our AI generate powerful results for you
           </p>
@@ -34,6 +34,7 @@ const handleSubmit = () => {
               auto-grow
               rows="8"
               class="mb-4"
+              bg-color="white"
             ></v-textarea>
           <v-btn
               type="submit"

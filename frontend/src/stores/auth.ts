@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { login as loginApi, signup as signupApi } from '@/services/auth';
 
 interface User {
   user_id: number;
@@ -9,6 +10,8 @@ interface AuthState {
   accessToken: string | null;
   refreshToken: string | null;
   user: User | null;
+  loading: boolean;
+  error: string | null;
 }
 
 export const useAuthStore = defineStore('auth', {
@@ -16,6 +19,8 @@ export const useAuthStore = defineStore('auth', {
     accessToken: null,
     refreshToken: null,
     user: null,
+    loading: false,
+    error: null,
   }),
 
   getters: {
@@ -23,21 +28,56 @@ export const useAuthStore = defineStore('auth', {
   },
 
   actions: {
-    setAuth(payload: {
-      accessToken: string;
-      refreshToken: string;
-      user: User;
-    }) {
-      const { accessToken, refreshToken, user } = payload;
-      this.accessToken = accessToken;
-      this.refreshToken = refreshToken;
-      this.user = user;
+    async login(username: string, password: string) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        const { access_token, refresh_token, user } = await loginApi(
+          username,
+          password
+        );
+
+        this.accessToken = access_token;
+        this.refreshToken = refresh_token;
+        this.user = user;
+
+        return user;
+      } catch (err) {
+        this.error = 'Login failed.';
+        console.error(err);
+        throw err;
+      } finally {
+        this.loading = false;
+      }
     },
 
-    clearAuth() {
+    async signup(username: string, password: string) {
+      this.loading = true;
+      this.error = null;
+
+      try {
+        await signupApi(username);
+        // domain decision: auto-login after signup
+        return await this.login(username, password);
+      } catch (err) {
+        this.error = 'Signup failed.';
+        console.error(err);
+        throw err;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    logout() {
       this.accessToken = null;
       this.refreshToken = null;
       this.user = null;
+      this.error = null;
+    },
+
+    reset() {
+      this.$reset();
     },
   },
 });

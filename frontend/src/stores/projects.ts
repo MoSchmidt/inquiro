@@ -8,7 +8,7 @@ import {
   removePaperFromProject,
   updateProject,
 } from '@/services/projects';
-import { ProjectResponse, ProjectWithPapersResponse } from '@/api';
+import type { ProjectResponse, ProjectWithPapersResponse } from '@/api';
 
 interface ProjectsState {
   projects: ProjectResponse[];
@@ -31,9 +31,10 @@ export const useProjectsStore = defineStore('projects', {
       this.error = null;
       try {
         this.projects = await listProjects();
-      } catch (error) {
+      } catch (err) {
         this.error = 'Failed to load projects.';
-        console.error(error);
+        console.error(err);
+        throw err;
       } finally {
         this.loading = false;
       }
@@ -44,9 +45,11 @@ export const useProjectsStore = defineStore('projects', {
       this.error = null;
       try {
         this.selectedProject = await getProject(projectId);
-      } catch (error) {
+        return this.selectedProject;
+      } catch (err) {
         this.error = 'Failed to load project.';
-        console.error(error);
+        console.error(err);
+        throw err;
       } finally {
         this.loading = false;
       }
@@ -59,10 +62,10 @@ export const useProjectsStore = defineStore('projects', {
         const project = await createProject({ project_name: name });
         this.projects.unshift(project);
         return project;
-      } catch (error) {
+      } catch (err) {
         this.error = 'Failed to create project.';
-        console.error(error);
-        return null;
+        console.error(err);
+        throw err;
       } finally {
         this.loading = false;
       }
@@ -72,19 +75,26 @@ export const useProjectsStore = defineStore('projects', {
       this.loading = true;
       this.error = null;
       try {
-        const updated = await updateProject(projectId, { project_name: newName });
+        const updated = await updateProject(projectId, {
+          project_name: newName,
+        });
+
         this.projects = this.projects.map((p) =>
-          p.project_id === projectId ? updated : p,
+          p.project_id === projectId ? updated : p
         );
-        if (this.selectedProject && this.selectedProject.project.project_id === projectId) {
+
+        if (this.selectedProject?.project.project_id === projectId) {
           this.selectedProject = {
             ...this.selectedProject,
             project: updated,
           };
         }
-      } catch (error) {
+
+        return updated;
+      } catch (err) {
         this.error = 'Failed to update project.';
-        console.error(error);
+        console.error(err);
+        throw err;
       } finally {
         this.loading = false;
       }
@@ -95,13 +105,16 @@ export const useProjectsStore = defineStore('projects', {
       this.error = null;
       try {
         await deleteProject(projectId);
+
         this.projects = this.projects.filter((p) => p.project_id !== projectId);
-        if (this.selectedProject && this.selectedProject.project.project_id === projectId) {
+
+        if (this.selectedProject?.project.project_id === projectId) {
           this.selectedProject = null;
         }
-      } catch (error) {
+      } catch (err) {
         this.error = 'Failed to delete project.';
-        console.error(error);
+        console.error(err);
+        throw err;
       } finally {
         this.loading = false;
       }
@@ -111,13 +124,17 @@ export const useProjectsStore = defineStore('projects', {
       this.loading = true;
       this.error = null;
       try {
-        const projectWithPapers = await addPaperToProject(projectId, paperId);
-        if (this.selectedProject && this.selectedProject.project.project_id === projectId) {
-          this.selectedProject = projectWithPapers;
+        const updated = await addPaperToProject(projectId, paperId);
+
+        if (this.selectedProject?.project.project_id === projectId) {
+          this.selectedProject = updated;
         }
-      } catch (error) {
-        this.error = 'Failed to add paper to project.';
-        console.error(error);
+
+        return updated;
+      } catch (err) {
+        this.error = 'Failed to add paper.';
+        console.error(err);
+        throw err;
       } finally {
         this.loading = false;
       }
@@ -127,18 +144,20 @@ export const useProjectsStore = defineStore('projects', {
       this.loading = true;
       this.error = null;
       try {
-        const projectWithPapers = await removePaperFromProject(projectId, paperId);
-        if (this.selectedProject && this.selectedProject.project.project_id === projectId) {
-          this.selectedProject = projectWithPapers;
+        const updated = await removePaperFromProject(projectId, paperId);
+
+        if (this.selectedProject?.project.project_id === projectId) {
+          this.selectedProject = updated;
         }
-      } catch (error) {
-        this.error = 'Failed to remove paper from project.';
-        console.error(error);
+
+        return updated;
+      } catch (err) {
+        this.error = 'Failed to remove paper.';
+        console.error(err);
+        throw err;
       } finally {
         this.loading = false;
       }
     },
   },
 });
-
-
