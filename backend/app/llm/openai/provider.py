@@ -1,10 +1,10 @@
 import json
-from typing import List
+from typing import List, Optional
 
 from openai import AsyncOpenAI
 
 from app.core.config import settings
-from app.llm.openai.prompts import KEYWORD_PROMPT, SUMMARIZATION_PROMPT
+from app.llm.openai.prompts import KEYWORD_PROMPT, PDF_KEYWORD_PROMPT, SUMMARIZATION_PROMPT
 
 
 class OpenAIProvider:
@@ -27,7 +27,7 @@ class OpenAIProvider:
         Returns a list of strings. If parsing fails, returns an empty list.
         """
 
-        response = self.client.responses.create(
+        response = await self.client.responses.create(
             model=self._model,
             reasoning={"effort": "low"},
             input=[
@@ -38,6 +38,41 @@ class OpenAIProvider:
                 {
                     "role": "user",
                     "content": user_text,
+                },
+            ],
+        )
+
+        try:
+            keyword_list = json.loads(response.output_text)
+        except json.decoder.JSONDecodeError:
+            keyword_list = []
+
+        return keyword_list
+
+    async def extract_keywords_from_pdf(
+        self,
+        pdf_text: str,
+        query: Optional[str] = None,
+    ) -> List[str]:
+        """
+        Extracts a list of search queries from the full text of a paper and an optional query.
+        Returns a list of strings.
+        """
+        user_focus = query or "N/A"
+
+        user_content = f"User focus (optional): {user_focus}\n\n" f"Paper text: \n{pdf_text}"
+
+        response = await self.client.responses.create(
+            model=self._model,
+            reasoning={"effort": "medium"},
+            input=[
+                {
+                    "role": "developer",
+                    "content": PDF_KEYWORD_PROMPT,
+                },
+                {
+                    "role": "user",
+                    "content": user_content,
                 },
             ],
         )

@@ -1,13 +1,38 @@
 KEYWORD_PROMPT = """
 You are an expert in academic information retrieval. Extract 5 short search queries suitable for
 searching scientific databases (arXiv, IEEE, ACL).
+
 Rules:
 - Short queries only.
 - Academic, domain-specific terms only (tasks, algorithms, architectures, datasets, phenomena).
-- No overlapping or substring-related keywords.
-- Each sentence should be relevant to the overall query and narrow the search space - prefer
-specific technical terminology used mainly within a subfield.
+- No overlapping or substring-related queries. Each query should target a distinct aspect (e.g.,
+problem/task, method/architecture, dataset, application domain, theoretical concept).
+- Each sentence should be relevant to the overall query and narrow the search space
+- Prefer specific technical terminology used mainly within a subfield.
+
 Output only a JSON list: ["keyword1", ...].
+"""
+
+PDF_KEYWORD_PROMPT = """
+You are an expert in academic information retrieval.
+
+The user has provided:
+- The full text (or large excerpt) of a scientific paper.
+- Optionally, a short description of what they are looking for in relation to this paper.
+
+From this information, extract 5 short search queries suitable for searching scientific databases
+(arXiv, IEEE, ACL).
+
+Rules:
+- Short queries only.
+- Use academic, domain-specific terms only (tasks, algorithms, architectures, datasets, phenomena).
+- No overlapping or substring-related queries. Each query should target a distinct aspect (e.g.,
+problem/task, method/architecture, dataset, application domain, theoretical concept).
+- Each query must be strongly grounded in the paper and, when provided, aligned with the user's
+stated focus.
+- Prefer specific technical terminology that is primarily used within a subfield.
+
+Output only a JSON list: ["query1", "query2", ...].
 """
 
 SUMMARIZATION_PROMPT = """
