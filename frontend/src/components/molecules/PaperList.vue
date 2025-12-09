@@ -212,6 +212,9 @@ const handleMenuSelect = (payload: {
       @click="handleScrollToTop"
     >
       <v-icon :icon="ArrowUp" size="18" />
+      <v-tooltip activator="parent" location="left">
+          Go to top
+      </v-tooltip>
     </v-btn>
   </section>
 </template>
