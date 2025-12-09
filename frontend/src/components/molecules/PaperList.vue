@@ -1,8 +1,13 @@
 <script setup lang="ts">
-import { ref, watch, nextTick, computed, withDefaults } from 'vue';
-import { VExpansionPanel, VExpansionPanels } from 'vuetify/components';
+import { computed, nextTick, ref, watch, withDefaults } from 'vue';
+import {
+  VExpansionPanel,
+  VExpansionPanels,
+  VTextField,
+} from 'vuetify/components';
 import type { Paper, PaperMenuOption } from '@/types/content';
 import PaperCard from '@/components/atoms/PaperCard.vue';
+import { Search, X } from 'lucide-vue-next';
 
 interface Props {
   papers: Paper[];
@@ -28,17 +33,58 @@ const emit = defineEmits<{
   'menu-select': [{ option: PaperMenuOption; paper: Paper }];
 }>();
 
+// ----- expansion state -----
+
 const expanded = ref<(number | string)[]>([]);
 
+// ----- search (debounced) -----
+
+const rawSearch = ref('');
+const searchQuery = ref('');
+
+let searchDebounce: number | undefined;
+
+watch(rawSearch, (value) => {
+  window.clearTimeout(searchDebounce);
+  searchDebounce = window.setTimeout(() => {
+    if (value) {
+      searchQuery.value = value.trim().toLowerCase();
+    } else {
+      searchQuery.value = '';
+    }
+  }, 300);
+});
+
+// ----- filtered papers -----
+
+const filteredPapers = computed(() => {
+  if (!searchQuery.value) return props.papers;
+
+  return props.papers.filter((paper) => {
+    const haystack = [
+      paper.title,
+      paper.author,
+      paper.abstract,
+      paper.year?.toString(),
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+
+    return haystack.includes(searchQuery.value);
+  });
+});
+
+// ----- keep expansion state in sync -----
+
 watch(
-  () => props.papers,
+  () => filteredPapers.value,
   (newPapers) => {
     if (props.expandAllOnChange && newPapers.length > 0) {
       nextTick(() => {
         expanded.value = newPapers.map((p) => p.paper_id);
       });
     } else if (!props.expandAllOnChange) {
-
       expanded.value = expanded.value.filter((id) =>
         newPapers.some((p) => p.paper_id === id)
       );
@@ -47,7 +93,8 @@ watch(
   { immediate: props.expandAllOnChange }
 );
 
-// Event handlers
+// ----- event handlers -----
+
 const handleAdd = (paper: Paper) => emit('add', paper);
 const handleMenuSelect = (payload: { option: PaperMenuOption; paper: Paper }) =>
   emit('menu-select', payload);
@@ -57,18 +104,31 @@ const handleMenuSelect = (payload: { option: PaperMenuOption; paper: Paper }) =>
   <section class="paper-list">
     <h3 class="text-h6 mb-4">
       {{ title }}
-      <span class="text-medium-emphasis">({{ papers.length }})</span>
+      <span class="text-medium-emphasis"> ({{ filteredPapers.length }}) </span>
     </h3>
 
+    <v-text-field
+      v-model="rawSearch"
+      placeholder="Search papers"
+      variant="outlined"
+      clearable
+      :clear-icon="X"
+      class="mb-4"
+    >
+      <template #prepend-inner>
+        <v-icon :icon="Search" size="18" />
+      </template>
+    </v-text-field>
+
     <v-expansion-panels
-      v-if="papers.length"
+      v-if="filteredPapers.length"
       v-model="expanded"
       multiple
       class="paper-panels"
       :rounded="false"
     >
       <v-expansion-panel
-        v-for="paper in papers"
+        v-for="paper in filteredPapers"
         :key="paper.paper_id"
         :value="paper.paper_id"
         elevation="1"
@@ -90,7 +150,7 @@ const handleMenuSelect = (payload: { option: PaperMenuOption; paper: Paper }) =>
 
     <div v-else class="empty-state text-center py-12">
       <p class="text-medium-emphasis">
-        {{ emptyMessage }}
+        {{ searchQuery ? 'No papers match your search.' : emptyMessage }}
       </p>
     </div>
   </section>
