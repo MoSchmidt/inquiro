@@ -73,6 +73,7 @@ const handleMenuSelect = ({
         variant="text"
         size="small"
         color="medium-emphasis"
+        :ripple="false"
         @click="openRenameDialog"
       >
         <v-icon :icon="Pencil" size="20" />
