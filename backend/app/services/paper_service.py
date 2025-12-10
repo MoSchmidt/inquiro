@@ -109,10 +109,25 @@ class PaperService:
 
         try:
             return await PaperService._fetch_arxiv_pdf(arxiv_id=paper.paper_id_external)
-        except Exception as exc:
-            # Re-raise the specific HTTP exceptions from _fetch_arxiv_pdf or catch generic ones
-            # In a real app, you might want to log this context here as well.
-            raise exc
+        except httpx.HTTPStatusError as exc:
+            logger.warning(
+                "Failed to fetch arXiv paper %s: %s",
+                paper.paper_id_external,
+                exc,
+                exc_info=True,
+            )
+            raise HTTPException(status_code=404, detail="Paper not found") from exc
+        except httpx.RequestError as exc:
+            logger.warning(
+                "Network error while fetching arXiv paper %s: %s",
+                paper.paper_id_external,
+                exc,
+                exc_info=True,
+            )
+            raise HTTPException(
+                status_code=503,
+                detail="Upstream arXiv service unavailable, please try again later.",
+            ) from exc
 
     @staticmethod
     async def _fetch_arxiv_pdf(arxiv_id: str) -> bytes:
