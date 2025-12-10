@@ -167,10 +167,9 @@
             </v-list-item-title>
 
             <template #append>
-              <ActionMenu
-                  :items="getProjectActions(project)"
-                  class="project-action-btn"
-              />
+              <div class="project-action-btn">
+                <ActionMenu :items="getProjectActions(project)" />
+              </div>
             </template>
           </v-list-item>
         </v-list>
@@ -225,14 +224,26 @@
     text-align: left;
   }
 
-  .project-item .project-action-btn {
+  /* --- Action Button Opacity Logic --- */
+
+  /* 1. Hide by default */
+  .project-action-btn {
     opacity: 0;
     transition: opacity 0.2s ease-in-out;
+    /* Ensure the wrapper doesn't collapse */
+    display: flex;
+    align-items: center;
   }
 
+  /* 2. Show when hovering over the row (.project-item) */
   .project-item:hover .project-action-btn,
-  .project-item:focus-within .project-action-btn,
-  .project-action-btn:deep(.v-btn[aria-expanded="true"]) {
+  .project-item:focus-within .project-action-btn {
+    opacity: 1;
+  }
+
+  /* 3. Keep visible when menu is open (button is expanded)
+     using :has() to check if the child button has aria-expanded="true" */
+  .project-action-btn:has(.v-btn[aria-expanded="true"]) {
     opacity: 1;
   }
 
