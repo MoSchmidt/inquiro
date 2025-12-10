@@ -104,7 +104,10 @@ class PaperService:
 
         if paper.source != PaperSource.ARXIV:
             logger.warning("Unsupported paper source for PDF retrieval: %s", paper.source)
-            raise HTTPException(...)
+            raise HTTPException(
+                status_code=422,
+                detail=f"Unsupported paper source '{paper.source}'. Only ARXIV is supported.",
+            )
 
         try:
             return await PaperService._fetch_arxiv_pdf(arxiv_id=paper.paper_id_external)
