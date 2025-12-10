@@ -27,13 +27,13 @@ async def summary(
 
 @router.get(
     "/{paper_id}/pdf",
-    response_class=Response,  # <--- Changed: Uses generic Response for bytes
+    response_class=Response,
     status_code=status.HTTP_200_OK,
     summary="Get the PDF of the specified paper",
 )
 async def get_paper_pdf(
     paper_id: int,
-    db: AsyncSession = Depends(get_db),  # <--- Changed: Removed BackgroundTasks
+    db: AsyncSession = Depends(get_db),
 ) -> Response:
     """
     Returns the PDF bytes of the specified paper.
