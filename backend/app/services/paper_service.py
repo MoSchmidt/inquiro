@@ -99,13 +99,12 @@ class PaperService:
         paper = await PaperRepository.get_paper_by_id(session, paper_id)
 
         if not paper:
+            logger.warning("Failed to find specified paper in DB: %s", paper_id)
             raise HTTPException(status_code=404, detail=f"Paper {paper_id} not found")
 
         if paper.source != PaperSource.ARXIV:
-            raise HTTPException(
-                status_code=422,
-                detail=f"Unsupported source '{paper.source}'. Only ARXIV is supported.",
-            )
+            logger.warning("Unsupported paper source for PDF retrieval: %s", paper.source)
+            raise HTTPException(...)
 
         try:
             return await PaperService._fetch_arxiv_pdf(arxiv_id=paper.paper_id_external)
