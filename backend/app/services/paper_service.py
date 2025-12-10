@@ -1,7 +1,7 @@
 import logging
 
 import httpx
-from fastapi import HTTPException, Path
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.constants.database_constants import PaperSource
@@ -91,6 +91,30 @@ class PaperService:
             ) from exc
 
     @staticmethod
+    async def get_paper_pdf(paper_id: int, session: AsyncSession) -> bytes:
+        """
+        Retrieves the PDF bytes for the specified paper.
+        Used by the frontend PDF viewer.
+        """
+        paper = await PaperRepository.get_paper_by_id(session, paper_id)
+
+        if not paper:
+            raise HTTPException(status_code=404, detail=f"Paper {paper_id} not found")
+
+        if paper.source != PaperSource.ARXIV:
+            raise HTTPException(
+                status_code=422,
+                detail=f"Unsupported source '{paper.source}'. Only ARXIV is supported.",
+            )
+
+        try:
+            return await PaperService._fetch_arxiv_pdf(arxiv_id=paper.paper_id_external)
+        except Exception as exc:
+            # Re-raise the specific HTTP exceptions from _fetch_arxiv_pdf or catch generic ones
+            # In a real app, you might want to log this context here as well.
+            raise exc
+
+    @staticmethod
     async def _fetch_arxiv_pdf(arxiv_id: str) -> bytes:
         """
         Fetch arXiv PDF and return its raw bytes.
@@ -100,47 +124,3 @@ class PaperService:
             resp = await client.get(url)
             resp.raise_for_status()
             return resp.content
-
-    @staticmethod
-    async def get_paper_pdf(paper_id: int, session: AsyncSession) -> Path:
-        """
-        Retrieves the local path to the PDF of the specified paper.
-        Fetches from ArXiv if necessary.
-        """
-        paper = await PaperRepository.get_paper_by_id(session, paper_id)
-
-        if not paper:
-            logger.warning("Failed to find specified paper in DB: %s", paper_id)
-            raise HTTPException(status_code=404, detail=f"Paper {paper_id} not found")
-
-        external_id = paper.paper_id_external
-        paper_source = paper.source
-
-        if paper_source != PaperSource.ARXIV:
-            logger.warning("Unsupported paper source for PDF retrieval: %s", paper.source)
-            raise HTTPException(
-                status_code=422,
-                detail=f"Unsupported paper source '{paper_source}'. Only ARXIV is supported.",
-            )
-
-        try:
-            # We use the existing helper to download the PDF to a temporary file
-            pdf_path = await PaperService._fetch_arxiv_pdf(arxiv_id=external_id)
-            return pdf_path
-
-        except httpx.HTTPStatusError as exc:
-            logger.warning("Failed to fetch arXiv paper %s: %s", external_id, exc, exc_info=True)
-            raise HTTPException(status_code=404, detail="Paper PDF not found on source") from exc
-        except httpx.RequestError as exc:
-            logger.warning(
-                "Network error while fetching arXiv paper %s: %s", external_id, exc, exc_info=True
-            )
-            raise HTTPException(
-                status_code=503,
-                detail="Upstream PDF service unavailable, please try again later.",
-            ) from exc
-        except Exception as exc:
-            logger.exception("Unexpected error fetching PDF for paper %s", external_id)
-            raise HTTPException(
-                status_code=500, detail="An unexpected error occurred while fetching the PDF."
-            ) from exc

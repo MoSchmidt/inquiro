@@ -1,5 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, status
-from fastapi.responses import FileResponse
+from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -28,30 +27,24 @@ async def summary(
 
 @router.get(
     "/{paper_id}/pdf",
-    response_class=FileResponse,
+    response_class=Response,  # <--- Changed: Uses generic Response for bytes
     status_code=status.HTTP_200_OK,
     summary="Get the PDF of the specified paper",
 )
 async def get_paper_pdf(
-    paper_id: int, background_tasks: BackgroundTasks, db: AsyncSession = Depends(get_db)
-) -> FileResponse:
+    paper_id: int,
+    db: AsyncSession = Depends(get_db),  # <--- Changed: Removed BackgroundTasks
+) -> Response:
     """
-    Stream the PDF file of the specified paper.
+    Returns the PDF bytes of the specified paper.
     This URL can be used directly as the source for frontend PDF viewers.
     """
-    # 1. Get path to the temp file from service
-    file_path = await PaperService.get_paper_pdf(paper_id=paper_id, session=db)
+    # 1. Get raw bytes from service
+    pdf_bytes = await PaperService.get_paper_pdf(paper_id=paper_id, session=db)
 
-    # 2. Schedule file deletion to run AFTER the response is sent
-    # This prevents the tmp folder from filling up with PDFs
-    background_tasks.add_task(
-        lambda p: p.unlink(missing_ok=True) if p.exists() else None, file_path
-    )
-
-    # 3. Return the file with correct MIME type
-    # 'inline' allows it to be displayed in the browser/viewer rather than forcing a download
-    return FileResponse(
-        path=file_path,
+    # 2. Return bytes with correct MIME type
+    return Response(
+        content=pdf_bytes,
         media_type="application/pdf",
         headers={"Content-Disposition": f"inline; filename=paper_{paper_id}.pdf"},
     )
