@@ -1,4 +1,7 @@
-from fastapi import APIRouter, Depends, Response, status
+import io
+
+from fastapi import APIRouter, Depends, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -27,24 +30,22 @@ async def summary(
 
 @router.get(
     "/{paper_id}/pdf",
-    response_class=Response,
+    response_class=StreamingResponse,
     status_code=status.HTTP_200_OK,
     summary="Get the PDF of the specified paper",
 )
-async def get_paper_pdf(
-    paper_id: int,
-    db: AsyncSession = Depends(get_db),
-) -> Response:
+async def get_paper_pdf(paper_id: int, db: AsyncSession = Depends(get_db)) -> StreamingResponse:
     """
-    Returns the PDF bytes of the specified paper.
+    Stream the PDF file of the specified paper.
     This URL can be used directly as the source for frontend PDF viewers.
     """
     # 1. Get raw bytes from service
     pdf_bytes = await PaperService.get_paper_pdf(paper_id=paper_id, session=db)
 
-    # 2. Return bytes with correct MIME type
-    return Response(
-        content=pdf_bytes,
+    # 2. Wrap bytes in a stream and return StreamingResponse
+    # io.BytesIO turns the bytes into a file-like object that StreamingResponse can read
+    return StreamingResponse(
+        io.BytesIO(pdf_bytes),
         media_type="application/pdf",
         headers={"Content-Disposition": f"inline; filename=paper_{paper_id}.pdf"},
     )
