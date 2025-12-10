@@ -1,36 +1,18 @@
 <script setup lang="ts">
   import { ref } from 'vue';
   import {
-    VBtn,
-    VCard,
-    VCardActions,
-    VCardText,
-    VCardTitle,
-    VDialog,
-    VDivider,
-    VIcon,
-    VList,
-    VListItem,
-    VListItemTitle,
-    VMenu,
-    VTextField,
-    VForm,
-    VSpacer,
+    VBtn, VCard, VDivider, VIcon, VList, VListItem,
+    VListItemTitle, VMenu
   } from 'vuetify/components';
   import {
-    CheckCircle,
-    Clock,
-    FolderOpen,
-    LogIn,
-    LogOut,
-    Plus,
-    X,
-    MoreHorizontal,
-    Trash2, // Icon für Löschen
+    CheckCircle, Clock, FolderOpen, LogIn, LogOut,
+    Plus, X, MoreHorizontal, Trash2
   } from 'lucide-vue-next';
   import type { Project } from '@/types/content';
-  import { useAuthStore } from '@/stores/auth';
 
+  // Import Dialogs
+  import LoginDialog from '@/components/dialogs/LoginDialog.vue';
+  import NewProjectDialog from '@/components/dialogs/NewProjectDialog.vue';
   import RenameProjectDialog from '@/components/dialogs/RenameProjectDialog.vue';
   import DeleteProjectDialog from '@/components/dialogs/DeleteProjectDialog.vue';
 
@@ -51,19 +33,15 @@
     (e: 'renameProject', projectId: number, newName: string): void;
   }>();
 
-  const username = ref('');
-  const password = ref('');
+  // Dialog State
   const loginDialogOpen = ref(false);
-  const loginError = ref<string | null>(null);
-  const loginLoading = ref(false);
   const newProjectDialogOpen = ref(false);
-  const newProjectName = ref('');
-  const { login } = useAuthStore();
-
   const renameDialogOpen = ref(false);
   const deleteDialogOpen = ref(false);
+
   const projectToAction = ref<Project | null>(null);
 
+  // Actions
   const openRenameDialog = (project: Project) => {
     projectToAction.value = project;
     renameDialogOpen.value = true;
@@ -72,6 +50,24 @@
   const openDeleteDialog = (project: Project) => {
     projectToAction.value = project;
     deleteDialogOpen.value = true;
+  };
+
+  const handleNewProjectClick = () => {
+    if (!props.isLoggedIn) {
+      loginDialogOpen.value = true;
+      return;
+    }
+    newProjectDialogOpen.value = true;
+  };
+
+  const onNewProjectSubmit = (name: string) => {
+    emit('newProject', name);
+    emit('close');
+  };
+
+  const onLoginSuccess = () => {
+    emit('loginSuccess');
+    emit('close');
   };
 
   const onRenameSubmit = (newName: string) => {
@@ -90,58 +86,11 @@
     emit('newQuery');
     emit('close');
   };
-
-  const handleLoginSubmit = async () => {
-    loginError.value = null;
-    if (!username.value || !password.value) {
-      loginError.value = 'Username and password are required';
-      return;
-    }
-
-    loginLoading.value = true;
-    try {
-      await login(username.value, password.value);
-      emit('loginSuccess');
-      username.value = '';
-      password.value = '';
-      loginDialogOpen.value = false;
-      emit('close');
-    } catch (err: unknown) {
-      try {
-        // @ts-expect-error
-        const message = err?.response?.data?.detail || err?.message;
-        loginError.value = message ?? 'Login failed';
-      } catch {
-        loginError.value = 'Login failed';
-      }
-    } finally {
-      loginLoading.value = false;
-    }
-  };
-
-  const handleNewProjectClick = () => {
-    if (!props.isLoggedIn) {
-      loginDialogOpen.value = true;
-      return;
-    }
-    newProjectDialogOpen.value = true;
-  };
-
-  const handleNewProjectSubmit = () => {
-    if (!newProjectName.value) return;
-    emit('newProject', newProjectName.value);
-    newProjectName.value = '';
-    newProjectDialogOpen.value = false;
-    emit('close');
-  };
 </script>
 
 <template>
   <div class="d-flex flex-column h-100">
-    <v-card
-        flat
-        class="pa-4 d-flex align-center justify-space-between border-b-sm"
-    >
+    <v-card flat class="pa-4 d-flex align-center justify-space-between border-b-sm">
       <h2 class="text-h6">Menu</h2>
       <v-btn icon variant="text" @click="emit('close')">
         <v-icon :icon="X" size="24" />
@@ -191,7 +140,7 @@
               class="mb-2 rounded-lg project-item"
           >
             <template #prepend>
-              <v-icon :icon="FolderOpen" color="blue-darken-2" class="me-1"></v-icon>
+              <v-icon :icon="FolderOpen" color="blue-darken-2" class="me-1" />
             </template>
 
             <v-list-item-title class="font-weight-medium">
@@ -218,7 +167,7 @@
                       value="rename"
                       title="Rename"
                       @click="openRenameDialog(project)"
-                  ></v-list-item>
+                  />
                   <v-list-item
                       value="delete"
                       title="Delete"
@@ -239,116 +188,37 @@
 
     <div class="border-t-sm pa-4">
       <h3 class="text-subtitle-1 mb-3 d-flex align-center">Account</h3>
+
       <div v-if="!isLoggedIn">
         <v-btn block color="primary" @click="loginDialogOpen = true">
           <v-icon :icon="LogIn" start size="18" />
           Login
         </v-btn>
       </div>
+
       <div v-else>
         <v-card flat class="pa-3 mb-3 bg-green-lighten-5 border-success">
           <div class="d-flex align-center">
-            <v-icon
-                :icon="CheckCircle"
-                color="success"
-                class="me-2"
-                size="18"
-            ></v-icon>
+            <v-icon :icon="CheckCircle" color="success" class="me-2" size="18" />
             <p class="text-success text-body-2">Successfully logged in</p>
           </div>
         </v-card>
-        <v-btn
-            block
-            variant="outlined"
-            color="secondary"
-            @click="emit('logout')"
-        >
+        <v-btn block variant="outlined" color="secondary" @click="emit('logout')">
           <v-icon :icon="LogOut" start size="18" />
           Logout
         </v-btn>
       </div>
     </div>
 
-    <v-dialog v-model="loginDialogOpen" max-width="500">
-      <v-card>
-        <v-card-title class="text-h5">Login to your account</v-card-title>
-        <v-card-text>
-          <p class="mb-4 text-medium-emphasis">
-            Enter your username to access your projects.
-          </p>
-          <v-form @submit.prevent="handleLoginSubmit">
-            <v-text-field
-                v-model="username"
-                label="Username"
-                type="text"
-                variant="outlined"
-                required
-                class="mb-4"
-            ></v-text-field>
-            <v-text-field
-                v-model="password"
-                label="Password"
-                type="password"
-                variant="outlined"
-                required
-                class="mb-4"
-            ></v-text-field>
-            <v-btn type="submit" color="primary" block :loading="loginLoading">
-              Login
-            </v-btn>
-            <div
-                v-if="loginError"
-                class="mt-2"
-                style="color: var(--v-theme-error)"
-            >
-              {{ loginError }}
-            </div>
-          </v-form>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-              color="secondary"
-              variant="text"
-              @click="loginDialogOpen = false"
-          >
-            Close
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <LoginDialog
+        v-model="loginDialogOpen"
+        @success="onLoginSuccess"
+    />
 
-    <v-dialog v-model="newProjectDialogOpen" max-width="500">
-      <v-card>
-        <v-card-title class="text-h5">New Project</v-card-title>
-        <v-card-text>
-          <p class="mb-4 text-medium-emphasis">
-            Enter a name for your new project.
-          </p>
-          <v-form @submit.prevent="handleNewProjectSubmit">
-            <v-text-field
-                v-model="newProjectName"
-                label="Project name"
-                type="text"
-                variant="outlined"
-                required
-                class="mb-4"
-            ></v-text-field>
-            <v-btn type="submit" color="primary" block>Create Project</v-btn>
-          </v-form>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-              color="secondary"
-              variant="text"
-              @click="newProjectDialogOpen = false"
-          >
-            Close
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+    <NewProjectDialog
+        v-model="newProjectDialogOpen"
+        @submit="onNewProjectSubmit"
+    />
 
     <RenameProjectDialog
         v-model="renameDialogOpen"
