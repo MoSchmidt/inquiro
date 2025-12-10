@@ -1,108 +1,146 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import {
-  VBtn,
-  VCard,
-  VCardActions,
-  VCardText,
-  VCardTitle,
-  VDialog,
-  VDivider,
-  VIcon,
-  VList,
-  VListItem,
-  VTextField,
-} from 'vuetify/components';
-import {
-  CheckCircle,
-  Clock,
-  FolderOpen,
-  LogIn,
-  LogOut,
-  Plus,
-  X,
-} from 'lucide-vue-next';
-import type { Project } from '@/types/content';
-import { useAuthStore } from '@/stores/auth';
+  import { ref } from 'vue';
+  import {
+    VBtn,
+    VCard,
+    VCardActions,
+    VCardText,
+    VCardTitle,
+    VDialog,
+    VDivider,
+    VIcon,
+    VList,
+    VListItem,
+    VListItemTitle,
+    VMenu,
+    VTextField,
+    VForm,
+    VSpacer,
+  } from 'vuetify/components';
+  import {
+    CheckCircle,
+    Clock,
+    FolderOpen,
+    LogIn,
+    LogOut,
+    Plus,
+    X,
+    MoreHorizontal,
+    Trash2, // Icon für Löschen
+  } from 'lucide-vue-next';
+  import type { Project } from '@/types/content';
+  import { useAuthStore } from '@/stores/auth';
 
-const props = defineProps<{
-  isOpen: boolean;
-  projects: Project[];
-  isLoggedIn: boolean;
-}>();
+  import RenameProjectDialog from '@/components/dialogs/RenameProjectDialog.vue';
+  import DeleteProjectDialog from '@/components/dialogs/DeleteProjectDialog.vue';
 
-const emit = defineEmits<{
-  (e: 'close'): void;
-  (e: 'projectSelect', projectId: number): void;
-  (e: 'newProject', name: string): void;
-  (e: 'logout'): void;
-  (e: 'newQuery'): void;
-  (e: 'loginSuccess'): void;
-}>();
+  const props = defineProps<{
+    isOpen: boolean;
+    projects: Project[];
+    isLoggedIn: boolean;
+  }>();
 
-const username = ref('');
-const password = ref('');
-const loginDialogOpen = ref(false);
-const loginError = ref<string | null>(null);
-const loginLoading = ref(false);
-const newProjectDialogOpen = ref(false);
-const newProjectName = ref('');
-const { login } = useAuthStore();
+  const emit = defineEmits<{
+    (e: 'close'): void;
+    (e: 'projectSelect', projectId: number): void;
+    (e: 'newProject', name: string): void;
+    (e: 'logout'): void;
+    (e: 'newQuery'): void;
+    (e: 'loginSuccess'): void;
+    (e: 'deleteProject', projectId: number): void;
+    (e: 'renameProject', projectId: number, newName: string): void;
+  }>();
 
-const handleNewQueryClick = () => {
-  emit('newQuery');
-  emit('close');
-};
-const handleLoginSubmit = async () => {
-  loginError.value = null;
-  if (!username.value || !password.value) {
-    loginError.value = 'Username and password are required';
-    return;
-  }
+  const username = ref('');
+  const password = ref('');
+  const loginDialogOpen = ref(false);
+  const loginError = ref<string | null>(null);
+  const loginLoading = ref(false);
+  const newProjectDialogOpen = ref(false);
+  const newProjectName = ref('');
+  const { login } = useAuthStore();
 
-  loginLoading.value = true;
-  try {
-    await login(username.value, password.value);
-    emit('loginSuccess');
-    username.value = '';
-    password.value = '';
-    loginDialogOpen.value = false;
-    emit('close');
-  } catch (err: unknown) {
-    try {
-      // @ts-expect-error
-      const message = err?.response?.data?.detail || err?.message;
-      loginError.value = message ?? 'Login failed';
-    } catch {
-      loginError.value = 'Login failed';
+  const renameDialogOpen = ref(false);
+  const deleteDialogOpen = ref(false);
+  const projectToAction = ref<Project | null>(null);
+
+  const openRenameDialog = (project: Project) => {
+    projectToAction.value = project;
+    renameDialogOpen.value = true;
+  };
+
+  const openDeleteDialog = (project: Project) => {
+    projectToAction.value = project;
+    deleteDialogOpen.value = true;
+  };
+
+  const onRenameSubmit = (newName: string) => {
+    if (projectToAction.value) {
+      emit('renameProject', projectToAction.value.id, newName);
     }
-  } finally {
-    loginLoading.value = false;
-  }
-};
+  };
 
-const handleNewProjectClick = () => {
-  if (!props.isLoggedIn) {
-    loginDialogOpen.value = true;
-    return;
-  }
-  newProjectDialogOpen.value = true;
-};
+  const onDeleteSubmit = () => {
+    if (projectToAction.value) {
+      emit('deleteProject', projectToAction.value.id);
+    }
+  };
 
-const handleNewProjectSubmit = () => {
-  if (!newProjectName.value) return;
-  emit('newProject', newProjectName.value);
-  newProjectName.value = '';
-  newProjectDialogOpen.value = false;
-  emit('close');
-};
+  const handleNewQueryClick = () => {
+    emit('newQuery');
+    emit('close');
+  };
+
+  const handleLoginSubmit = async () => {
+    loginError.value = null;
+    if (!username.value || !password.value) {
+      loginError.value = 'Username and password are required';
+      return;
+    }
+
+    loginLoading.value = true;
+    try {
+      await login(username.value, password.value);
+      emit('loginSuccess');
+      username.value = '';
+      password.value = '';
+      loginDialogOpen.value = false;
+      emit('close');
+    } catch (err: unknown) {
+      try {
+        // @ts-expect-error
+        const message = err?.response?.data?.detail || err?.message;
+        loginError.value = message ?? 'Login failed';
+      } catch {
+        loginError.value = 'Login failed';
+      }
+    } finally {
+      loginLoading.value = false;
+    }
+  };
+
+  const handleNewProjectClick = () => {
+    if (!props.isLoggedIn) {
+      loginDialogOpen.value = true;
+      return;
+    }
+    newProjectDialogOpen.value = true;
+  };
+
+  const handleNewProjectSubmit = () => {
+    if (!newProjectName.value) return;
+    emit('newProject', newProjectName.value);
+    newProjectName.value = '';
+    newProjectDialogOpen.value = false;
+    emit('close');
+  };
 </script>
 
 <template>
   <div class="d-flex flex-column h-100">
     <v-card
-      flat
-      class="pa-4 d-flex align-center justify-space-between border-b-sm"
+        flat
+        class="pa-4 d-flex align-center justify-space-between border-b-sm"
     >
       <h2 class="text-h6">Menu</h2>
       <v-btn icon variant="text" @click="emit('close')">
@@ -113,11 +151,11 @@ const handleNewProjectSubmit = () => {
     <div class="flex-grow-1 overflow-y-auto">
       <div class="pa-4 pb-2">
         <v-btn
-          color="secondary"
-          variant="outlined"
-          block
-          class="aligned-button"
-          @click="handleNewQueryClick"
+            color="secondary"
+            variant="outlined"
+            block
+            class="aligned-button"
+            @click="handleNewQueryClick"
         >
           <v-icon :icon="Plus" start size="18" />
           New Query
@@ -126,11 +164,11 @@ const handleNewProjectSubmit = () => {
 
       <div class="pa-4 pb-2">
         <v-btn
-          color="secondary"
-          variant="outlined"
-          block
-          class="aligned-button"
-          @click="handleNewProjectClick"
+            color="secondary"
+            variant="outlined"
+            block
+            class="aligned-button"
+            @click="handleNewProjectClick"
         >
           <v-icon :icon="Plus" start size="18" />
           New Project
@@ -144,22 +182,55 @@ const handleNewProjectSubmit = () => {
           <v-icon :icon="Clock" size="16" class="me-2" />
           Your Projects
         </h3>
+
         <v-list density="compact" nav class="pa-0">
           <v-list-item
-            v-for="project in projects"
-            :key="project.id"
-            @click="emit('projectSelect', project.id)"
-            class="mb-2 rounded-lg"
-            :title="project.name"
-            lines="three"
+              v-for="project in projects"
+              :key="project.id"
+              @click="emit('projectSelect', project.id)"
+              class="mb-2 rounded-lg project-item"
           >
             <template #prepend>
-              <v-icon :icon="FolderOpen" color="blue-darken-2"></v-icon>
+              <v-icon :icon="FolderOpen" color="blue-darken-2" class="me-1"></v-icon>
             </template>
+
+            <v-list-item-title class="font-weight-medium">
+              {{ project.name }}
+            </v-list-item-title>
+
             <template #append>
-              <span class="text-caption text-medium-emphasis me-2">
-                {{ project.date }}
-              </span>
+              <v-menu location="bottom end">
+                <template #activator="{ props: menuProps }">
+                  <v-btn
+                      icon
+                      size="small"
+                      variant="text"
+                      v-bind="menuProps"
+                      class="project-action-btn"
+                      @click.stop
+                  >
+                    <v-icon :icon="MoreHorizontal" size="18" />
+                  </v-btn>
+                </template>
+
+                <v-list density="compact">
+                  <v-list-item
+                      value="rename"
+                      title="Rename"
+                      @click="openRenameDialog(project)"
+                  ></v-list-item>
+                  <v-list-item
+                      value="delete"
+                      title="Delete"
+                      base-color="error"
+                      @click="openDeleteDialog(project)"
+                  >
+                    <template #prepend>
+                      <v-icon :icon="Trash2" size="18" class="me-2" />
+                    </template>
+                  </v-list-item>
+                </v-list>
+              </v-menu>
             </template>
           </v-list-item>
         </v-list>
@@ -178,19 +249,19 @@ const handleNewProjectSubmit = () => {
         <v-card flat class="pa-3 mb-3 bg-green-lighten-5 border-success">
           <div class="d-flex align-center">
             <v-icon
-              :icon="CheckCircle"
-              color="success"
-              class="me-2"
-              size="18"
+                :icon="CheckCircle"
+                color="success"
+                class="me-2"
+                size="18"
             ></v-icon>
             <p class="text-success text-body-2">Successfully logged in</p>
           </div>
         </v-card>
         <v-btn
-          block
-          variant="outlined"
-          color="secondary"
-          @click="emit('logout')"
+            block
+            variant="outlined"
+            color="secondary"
+            @click="emit('logout')"
         >
           <v-icon :icon="LogOut" start size="18" />
           Logout
@@ -207,28 +278,28 @@ const handleNewProjectSubmit = () => {
           </p>
           <v-form @submit.prevent="handleLoginSubmit">
             <v-text-field
-              v-model="username"
-              label="Username"
-              type="text"
-              variant="outlined"
-              required
-              class="mb-4"
+                v-model="username"
+                label="Username"
+                type="text"
+                variant="outlined"
+                required
+                class="mb-4"
             ></v-text-field>
             <v-text-field
-              v-model="password"
-              label="Password"
-              type="password"
-              variant="outlined"
-              required
-              class="mb-4"
+                v-model="password"
+                label="Password"
+                type="password"
+                variant="outlined"
+                required
+                class="mb-4"
             ></v-text-field>
-            <v-btn type="submit" color="primary" block :loading="loginLoading"
-              >Login</v-btn
-            >
+            <v-btn type="submit" color="primary" block :loading="loginLoading">
+              Login
+            </v-btn>
             <div
-              v-if="loginError"
-              class="mt-2"
-              style="color: var(--v-theme-error)"
+                v-if="loginError"
+                class="mt-2"
+                style="color: var(--v-theme-error)"
             >
               {{ loginError }}
             </div>
@@ -237,9 +308,9 @@ const handleNewProjectSubmit = () => {
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
-            color="secondary"
-            variant="text"
-            @click="loginDialogOpen = false"
+              color="secondary"
+              variant="text"
+              @click="loginDialogOpen = false"
           >
             Close
           </v-btn>
@@ -256,12 +327,12 @@ const handleNewProjectSubmit = () => {
           </p>
           <v-form @submit.prevent="handleNewProjectSubmit">
             <v-text-field
-              v-model="newProjectName"
-              label="Project name"
-              type="text"
-              variant="outlined"
-              required
-              class="mb-4"
+                v-model="newProjectName"
+                label="Project name"
+                type="text"
+                variant="outlined"
+                required
+                class="mb-4"
             ></v-text-field>
             <v-btn type="submit" color="primary" block>Create Project</v-btn>
           </v-form>
@@ -269,37 +340,61 @@ const handleNewProjectSubmit = () => {
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
-            color="secondary"
-            variant="text"
-            @click="newProjectDialogOpen = false"
+              color="secondary"
+              variant="text"
+              @click="newProjectDialogOpen = false"
           >
             Close
           </v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <RenameProjectDialog
+        v-model="renameDialogOpen"
+        :current-name="projectToAction?.name || ''"
+        @submit="onRenameSubmit"
+    />
+
+    <DeleteProjectDialog
+        v-model="deleteDialogOpen"
+        :project-name="projectToAction?.name || ''"
+        @submit="onDeleteSubmit"
+    />
+
   </div>
 </template>
 
 <style scoped>
-.aligned-button {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-  text-align: left;
-}
+  .aligned-button {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    text-align: left;
+  }
 
-.border-b-sm {
-  border-bottom: 1px solid var(--border-sm-color);
-}
-.border-t-sm {
-  border-top: 1px solid var(--border-sm-color);
-}
-.bg-green-lighten-5 {
-  background-color: var(--green-lighten-5) !important;
-}
-.border-success {
-  border: 1px solid var(--border-sucess) !important;
-}
+  .project-item .project-action-btn {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+  }
+
+  .project-item:hover .project-action-btn,
+  .project-item:focus-within .project-action-btn,
+  .project-action-btn[aria-expanded="true"] {
+    opacity: 1;
+  }
+
+  .border-b-sm {
+    border-bottom: 1px solid var(--border-sm-color);
+  }
+  .border-t-sm {
+    border-top: 1px solid var(--border-sm-color);
+  }
+  .bg-green-lighten-5 {
+    background-color: var(--green-lighten-5) !important;
+  }
+  .border-success {
+    border: 1px solid var(--border-sucess) !important;
+  }
 </style>

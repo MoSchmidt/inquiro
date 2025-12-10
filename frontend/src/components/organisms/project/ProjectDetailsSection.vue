@@ -7,14 +7,12 @@ import {
   VIcon,
   VBtn,
   VContainer,
-  VDialog,
-  VTextField,
-  VCardActions,
-  VSpacer,
   VTooltip
 } from 'vuetify/components';
 import { FileText, Trash2, Pencil } from 'lucide-vue-next';
 import type { Paper, PaperMenuOption } from '@/types/content';
+
+import RenameProjectDialog from '@/components/dialogs/RenameProjectDialog.vue';
 
 const props = defineProps<{
   projectName: string;
@@ -28,21 +26,11 @@ const emit = defineEmits<{
 }>();
 
 const isRenameDialogOpen = ref(false);
-const tempNewName = ref('');
 
-const openRenameDialog = () => {
-  tempNewName.value = props.projectName;
-  isRenameDialogOpen.value = true;
+const handleRenameSubmit = (newName: string) => {
+  emit('rename', newName);
+  isRenameDialogOpen.value = false;
 };
-
-const saveRename = () => {
-  const trimmedName = tempNewName.value.trim();
-  if (trimmedName) {
-    emit('rename', trimmedName);
-    isRenameDialogOpen.value = false;
-  }
-};
-
 
 const menuOptions: PaperMenuOption[] = [
   { label: 'Remove from Project', value: 'remove', icon: Trash2 },
@@ -81,7 +69,7 @@ const handleMenuSelect = ({
               variant="text"
               size="small"
               color="medium-emphasis"
-              @click="openRenameDialog"
+              @click="isRenameDialogOpen = true"
           >
             <v-icon :icon="Pencil" size="20" />
             <v-tooltip activator="parent" location="top">
@@ -105,38 +93,13 @@ const handleMenuSelect = ({
       :expand-all-on-change="false"
       @menu-select="handleMenuSelect"
     />
-    <v-dialog v-model="isRenameDialogOpen" max-width="500">
-      <v-card class="pa-4">
-        <h3 class="text-h6 mb-4">Rename Project</h3>
 
-        <v-text-field
-            v-model="tempNewName"
-            label="Project Name"
-            variant="outlined"
-            autofocus
-            @keyup.enter="saveRename"
-        ></v-text-field>
+    <RenameProjectDialog
+        v-model="isRenameDialogOpen"
+        :current-name="projectName"
+        @submit="handleRenameSubmit"
+    />
 
-        <v-card-actions class="px-0">
-          <v-spacer></v-spacer>
-          <v-btn
-              variant="text"
-              color="grey-darken-1"
-              @click="isRenameDialogOpen = false"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-              color="primary"
-              variant="flat"
-              :disabled="!tempNewName || tempNewName.trim() === ''"
-              @click="saveRename"
-          >
-            Save
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
   </v-container>
 </template>
 
