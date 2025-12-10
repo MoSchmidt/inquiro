@@ -82,7 +82,6 @@ const handleNewProject = async (name: string) => {
 
 const handleRenameProject = async (projectId: number, newName: string) => {
   await projectsStore.renameProject(projectId, newName)
-  await projectsStore.loadProjects()
 }
 
 const handleDeleteProject = async (projectId: number) => {
@@ -90,9 +89,8 @@ const handleDeleteProject = async (projectId: number) => {
 
   if (route.name === 'project' && Number(route.params.projectId) === projectId) {
     await goToSearch()
+    sidebarOpen.value = true
   }
-
-  await projectsStore.loadProjects()
 }
 
 const handleLoginSuccess = async () => {

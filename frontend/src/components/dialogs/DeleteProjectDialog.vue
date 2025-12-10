@@ -16,7 +16,7 @@ const confirmationInput = ref('');
 
 watch(() => props.modelValue, (isOpen) => {
   if (isOpen) {
-    confirmationInput.value = ''; // Reset bei jedem Öffnen
+    confirmationInput.value = '';
   }
 });
 

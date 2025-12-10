@@ -17,12 +17,13 @@ const emit = defineEmits<{
 const projectName = ref('');
 
 const close = () => {
+  projectName.value = '';
   emit('update:modelValue', false);
 };
 
 const handleSubmit = () => {
   if (!projectName.value) return;
-  emit('submit', projectName.value);
+  emit('submit', projectName.value.trim());
   projectName.value = '';
   close();
 };
