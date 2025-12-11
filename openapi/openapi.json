@@ -201,6 +201,48 @@
         }
       }
     },
+    "/search/pdf": {
+      "post": {
+        "tags": [
+          "Search"
+        ],
+        "summary": "Search for papers using a PDF",
+        "description": "Returns a list of papers that are relevant to the uploaded PDF\nThe PDF is analyzed, turned into semantic search queries, and used for vector search on our DB.",
+        "operationId": "search_by_pdf_search_pdf_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_search_by_pdf_search_pdf_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/projects": {
       "get": {
         "tags": [
@@ -533,10 +575,126 @@
           }
         }
       }
+    },
+    "/papers{paper_id}/summary": {
+      "post": {
+        "tags": [
+          "Paper"
+        ],
+        "summary": "Summarise the specified paper",
+        "description": "Returns the summary of the specified paper.",
+        "operationId": "summary_papers_paper_id__summary_post",
+        "parameters": [
+          {
+            "name": "paper_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Paper Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaperSummaryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaperSummaryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/papers{paper_id}/pdf": {
+      "get": {
+        "tags": [
+          "Paper"
+        ],
+        "summary": "Get the PDF of the specified paper",
+        "description": "Stream the PDF file of the specified paper.\nThis URL can be used directly as the source for frontend PDF viewers.",
+        "operationId": "get_paper_pdf_papers_paper_id__pdf_get",
+        "parameters": [
+          {
+            "name": "paper_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Paper Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "Body_search_by_pdf_search_pdf_post": {
+        "properties": {
+          "pdf": {
+            "type": "string",
+            "format": "binary",
+            "title": "Pdf",
+            "description": "Research paper PDF"
+          },
+          "query": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Query",
+            "description": "Optional: query specifying what you want to find in relation to the paper"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pdf"
+        ],
+        "title": "Body_search_by_pdf_search_pdf_post"
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -665,6 +823,34 @@
         ],
         "title": "PaperDto",
         "description": "Representation of a paper (as specified in the DB)"
+      },
+      "PaperSummaryRequest": {
+        "properties": {
+          "query": {
+            "type": "string",
+            "title": "Query"
+          }
+        },
+        "type": "object",
+        "required": [
+          "query"
+        ],
+        "title": "PaperSummaryRequest",
+        "description": "Request to summarise a specified paper"
+      },
+      "PaperSummaryResponse": {
+        "properties": {
+          "summary": {
+            "type": "string",
+            "title": "Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "summary"
+        ],
+        "title": "PaperSummaryResponse",
+        "description": "Response to summary request for a specified paper"
       },
       "ProjectCreate": {
         "properties": {

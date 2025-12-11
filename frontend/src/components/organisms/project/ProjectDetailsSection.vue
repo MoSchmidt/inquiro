@@ -25,6 +25,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'remove', paper: Paper): void;
   (e: 'rename', newName: string): void;
+  (e: 'view', paper: Paper): void;
 }>();
 
 const isRenameDialogOpen = ref(false);
@@ -96,14 +97,15 @@ const handleMenuSelect = ({
     </v-card>
 
     <PaperList
-      :papers="papers"
-      :show-abstract="showAbstract"
-      :show-add="false"
-      :menu-options="menuOptions"
-      title="Artikel"
-      empty-message="Dieses Projekt hat noch keine gespeicherten Paper."
-      :expand-all-on-change="false"
-      @menu-select="handleMenuSelect"
+        :papers="papers"
+        :show-abstract="showAbstract"
+        :show-add="false"
+        :menu-options="menuOptions"
+        title="Artikel"
+        empty-message="Dieses Projekt hat noch keine gespeicherten Paper."
+        :expand-all-on-change="false"
+        @menu-select="handleMenuSelect"
+        @view="(p) => emit('view', p)"
     />
     <v-dialog v-model="isRenameDialogOpen" max-width="500">
       <v-card class="pa-4">

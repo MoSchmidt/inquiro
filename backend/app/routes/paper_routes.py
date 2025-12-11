@@ -12,7 +12,7 @@ router = APIRouter(prefix="/papers", tags=["Paper"])
 
 
 @router.post(
-    "{paper_id}/summary",
+    "/{paper_id}/summary",
     response_model=PaperSummaryResponse,
     status_code=status.HTTP_200_OK,
     summary="Summarise the specified paper",
@@ -29,7 +29,7 @@ async def summary(
 
 
 @router.get(
-    "{paper_id}/pdf",
+    "/{paper_id}/pdf",
     response_class=StreamingResponse,
     status_code=status.HTTP_200_OK,
     summary="Get the PDF of the specified paper",

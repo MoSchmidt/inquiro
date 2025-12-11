@@ -9,7 +9,7 @@ import {
   VListItemTitle,
   VMenu,
 } from 'vuetify/components';
-import { ChevronDown, FolderPlus, MoreHorizontal } from 'lucide-vue-next';
+import { ChevronDown, FolderPlus, MoreHorizontal, Eye } from 'lucide-vue-next';
 import { withDefaults } from 'vue';
 import type { Paper, PaperMenuOption } from '@/types/content';
 
@@ -30,6 +30,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   (e: 'add', paper: Paper): void;
   (e: 'menu-select', payload: { option: PaperMenuOption; paper: Paper }): void;
+  (e: 'view', paper: Paper): void;
 }>();
 </script>
 
@@ -73,6 +74,17 @@ const emit = defineEmits<{
 
       <!-- Right actions stay the same -->
       <div class="action-buttons">
+        <v-btn
+            icon
+            size="small"
+            variant="text"
+            color="primary"
+            class="me-1"
+            @click.stop="emit('view', paper)"
+        >
+          <v-icon :icon="Eye" size="18" />
+          <v-tooltip activator="parent" location="top">Read Paper</v-tooltip>
+        </v-btn>
         <v-btn
           v-if="showAdd"
           icon
