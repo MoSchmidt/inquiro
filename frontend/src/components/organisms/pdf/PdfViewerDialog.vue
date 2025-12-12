@@ -51,6 +51,9 @@ const loadPdf = async () => {
 watch(() => props.open, (isOpen) => {
     if (isOpen && props.paperId) {
         loadPdf();
+    } else if (!isOpen && pdfSource.value) {
+        URL.revokeObjectURL(pdfSource.value);
+        pdfSource.value = null;
     }
 });
 
