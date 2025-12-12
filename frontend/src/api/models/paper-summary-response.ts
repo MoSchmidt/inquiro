@@ -14,9 +14,10 @@
 
 
 
-export * from './apis/authentication-api';
-export * from './apis/paper-api';
-export * from './apis/projects-api';
-export * from './apis/search-api';
-export * from './apis/users-api';
+/**
+ * Response to summary request for a specified paper
+ */
+export interface PaperSummaryResponse {
+    'summary': string;
+}
 

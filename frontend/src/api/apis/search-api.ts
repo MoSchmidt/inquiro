@@ -33,6 +33,51 @@ import type { SearchResponse } from '../models';
 export const SearchApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
         /**
+         * Returns a list of papers that are relevant to the uploaded PDF The PDF is analyzed, turned into semantic search queries, and used for vector search on our DB.
+         * @summary Search for papers using a PDF
+         * @param {File} pdf Research paper PDF
+         * @param {string | null} [query] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        searchByPdfSearchPdfPost: async (pdf: File, query?: string | null, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'pdf' is not null or undefined
+            assertParamExists('searchByPdfSearchPdfPost', 'pdf', pdf)
+            const localVarPath = `/search/pdf`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+            const localVarFormParams = new ((configuration && configuration.formDataCtor) || FormData)();
+
+
+            if (pdf !== undefined) { 
+                localVarFormParams.append('pdf', pdf as any);
+            }
+
+            if (query !== undefined) { 
+                localVarFormParams.append('query', query as any);
+            }
+            localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = localVarFormParams;
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
          * Returns a list of papers that match the search query.  Currently, this returns the 5 most recently fetched papers, regardless of the query string.
          * @summary Search for papers
          * @param {SearchRequest} searchRequest 
@@ -77,6 +122,20 @@ export const SearchApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = SearchApiAxiosParamCreator(configuration)
     return {
         /**
+         * Returns a list of papers that are relevant to the uploaded PDF The PDF is analyzed, turned into semantic search queries, and used for vector search on our DB.
+         * @summary Search for papers using a PDF
+         * @param {File} pdf Research paper PDF
+         * @param {string | null} [query] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async searchByPdfSearchPdfPost(pdf: File, query?: string | null, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.searchByPdfSearchPdfPost(pdf, query, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['SearchApi.searchByPdfSearchPdfPost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Returns a list of papers that match the search query.  Currently, this returns the 5 most recently fetched papers, regardless of the query string.
          * @summary Search for papers
          * @param {SearchRequest} searchRequest 
@@ -99,6 +158,17 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
     const localVarFp = SearchApiFp(configuration)
     return {
         /**
+         * Returns a list of papers that are relevant to the uploaded PDF The PDF is analyzed, turned into semantic search queries, and used for vector search on our DB.
+         * @summary Search for papers using a PDF
+         * @param {File} pdf Research paper PDF
+         * @param {string | null} [query] 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        searchByPdfSearchPdfPost(pdf: File, query?: string | null, options?: RawAxiosRequestConfig): AxiosPromise<SearchResponse> {
+            return localVarFp.searchByPdfSearchPdfPost(pdf, query, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Returns a list of papers that match the search query.  Currently, this returns the 5 most recently fetched papers, regardless of the query string.
          * @summary Search for papers
          * @param {SearchRequest} searchRequest 
@@ -115,6 +185,18 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
  * SearchApi - object-oriented interface
  */
 export class SearchApi extends BaseAPI {
+    /**
+     * Returns a list of papers that are relevant to the uploaded PDF The PDF is analyzed, turned into semantic search queries, and used for vector search on our DB.
+     * @summary Search for papers using a PDF
+     * @param {File} pdf Research paper PDF
+     * @param {string | null} [query] 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public searchByPdfSearchPdfPost(pdf: File, query?: string | null, options?: RawAxiosRequestConfig) {
+        return SearchApiFp(this.configuration).searchByPdfSearchPdfPost(pdf, query, options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * Returns a list of papers that match the search query.  Currently, this returns the 5 most recently fetched papers, regardless of the query string.
      * @summary Search for papers
