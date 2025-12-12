@@ -42,7 +42,7 @@ export const PaperApiAxiosParamCreator = function (configuration?: Configuration
         getPaperPdfPapersPaperIdPdfGet: async (paperId: number, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'paperId' is not null or undefined
             assertParamExists('getPaperPdfPapersPaperIdPdfGet', 'paperId', paperId)
-            const localVarPath = `/papers{paper_id}/pdf`
+            const localVarPath = `/papers/{paper_id}/pdf`
                 .replace(`{${"paper_id"}}`, encodeURIComponent(String(paperId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -79,7 +79,7 @@ export const PaperApiAxiosParamCreator = function (configuration?: Configuration
             assertParamExists('summaryPapersPaperIdSummaryPost', 'paperId', paperId)
             // verify required parameter 'paperSummaryRequest' is not null or undefined
             assertParamExists('summaryPapersPaperIdSummaryPost', 'paperSummaryRequest', paperSummaryRequest)
-            const localVarPath = `/papers{paper_id}/summary`
+            const localVarPath = `/papers/{paper_id}/summary`
                 .replace(`{${"paper_id"}}`, encodeURIComponent(String(paperId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);

@@ -576,14 +576,14 @@
         }
       }
     },
-    "/papers{paper_id}/summary": {
+    "/papers/{paper_id}/summary": {
       "post": {
         "tags": [
           "Paper"
         ],
         "summary": "Summarise the specified paper",
         "description": "Returns the summary of the specified paper.",
-        "operationId": "summary_papers_paper_id__summary_post",
+        "operationId": "summary_papers__paper_id__summary_post",
         "parameters": [
           {
             "name": "paper_id",
@@ -629,14 +629,14 @@
         }
       }
     },
-    "/papers{paper_id}/pdf": {
+    "/papers/{paper_id}/pdf": {
       "get": {
         "tags": [
           "Paper"
         ],
         "summary": "Get the PDF of the specified paper",
         "description": "Stream the PDF file of the specified paper.\nThis URL can be used directly as the source for frontend PDF viewers.",
-        "operationId": "get_paper_pdf_papers_paper_id__pdf_get",
+        "operationId": "get_paper_pdf_papers__paper_id__pdf_get",
         "parameters": [
           {
             "name": "paper_id",
