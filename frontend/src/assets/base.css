@@ -34,6 +34,10 @@
   --color-text: var(--vt-c-text-light-1);
 
   --section-gap: 160px;
+
+  --radius-default: 16px;
+
+  --shadow-small: 0 0 2px rgba(15, 23, 42, 0.12);
 }
 
 @media (prefers-color-scheme: dark) {

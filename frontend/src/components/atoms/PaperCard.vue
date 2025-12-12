@@ -9,9 +9,10 @@ import {
   VListItemTitle,
   VMenu,
 } from 'vuetify/components';
-import { ChevronDown, FolderPlus, MoreHorizontal } from 'lucide-vue-next';
+import { FolderPlus, MoreHorizontal } from 'lucide-vue-next';
 import { withDefaults } from 'vue';
 import type { Paper, PaperMenuOption } from '@/types/content';
+import ExpansionChevron from '@/components/atoms/ExpansionChevron.vue';
 
 const props = withDefaults(
   defineProps<{
@@ -38,12 +39,7 @@ const emit = defineEmits<{
     <div class="paper-header w-100">
       <!-- Expand icon -->
       <div class="expand-icon-wrapper flex items-center justify-center">
-        <v-icon
-          :icon="ChevronDown"
-          size="18"
-          class="expand-icon"
-          :class="{ 'expand-icon--expanded': expanded }"
-        />
+        <ExpansionChevron :expanded="expanded" />
       </div>
 
       <!-- Title + meta -->
@@ -60,7 +56,7 @@ const emit = defineEmits<{
             v-if="paper.year"
             class="ms-2"
             style="color: grey; font-size: 0.85rem"
-            >
+          >
             {{ paper.year }}
           </span>
         </div>
@@ -143,23 +139,12 @@ const emit = defineEmits<{
   font-size: 0.85rem;
 }
 
-.expand-icon {
-  transition: transform 0.18s ease;
-}
-
 .action-buttons {
   display: flex;
   align-items: center;
   justify-content: flex-end;
   gap: 4px;
   flex-shrink: 0;
-}
-
-.expand-icon {
-  transition: transform 0.2s ease;
-}
-.expand-icon--expanded {
-  transform: rotate(180deg);
 }
 
 .action-buttons :deep(.v-btn) {

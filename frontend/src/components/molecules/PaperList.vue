@@ -72,7 +72,7 @@ const handleMenuSelect = (payload: { option: PaperMenuOption; paper: Paper }) =>
         :key="paper.paper_id"
         :value="paper.paper_id"
         elevation="1"
-        class="paper-panel mb-3"
+        class="paper-panel mb-3 custom-shadow-panel"
         rounded="xl"
         :ripple="false"
         style="border-radius: 12px !important"
@@ -122,6 +122,11 @@ const handleMenuSelect = (payload: { option: PaperMenuOption; paper: Paper }) =>
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.custom-shadow-panel {
+  box-shadow: var(--shadow-small);
+  border-radius: var(--radius-default);
 }
 
 :deep(.v-expansion-panel:not(:first-child)::after),
