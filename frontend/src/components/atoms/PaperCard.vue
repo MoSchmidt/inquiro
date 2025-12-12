@@ -3,14 +3,14 @@ import {
   VBtn,
   VExpansionPanelText,
   VExpansionPanelTitle,
-  VIcon,
+  VIcon
 } from 'vuetify/components';
-import { ChevronDown, Copy, Eye, FolderPlus, RotateCcw, Sparkles } from 'lucide-vue-next';
-import { computed, withDefaults } from 'vue';
-import type { Paper, PaperMenuOption } from '@/types/content';
 import ActionMenu, { type ActionMenuItem } from '@/components/molecules/ActionMenu.vue';
+
+import { Copy, Eye, FolderPlus, RotateCcw, Sparkles } from 'lucide-vue-next';
+import { computed, withDefaults } from 'vue';
 import { usePaperSummariesStore } from '@/stores/paperSummaries';
-import FormattedMarkdown from '@/components/atoms/FormattedMarkdown.vue';
+import type { Paper, PaperMenuOption } from '@/types/content';
 
 const props = withDefaults(
     defineProps<{
@@ -66,26 +66,25 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
   }));
 });
 </script>
+
 <template>
   <v-expansion-panel-title v-slot="{ expanded }">
     <div class="paper-header w-100">
+      <!-- Expand icon -->
       <div class="expand-icon-wrapper flex items-center justify-center">
-        <v-icon
-            :icon="ChevronDown"
-            size="18"
-            class="expand-icon"
-            :class="{ 'expand-icon--expanded': expanded }"
-        />
+        <ExpansionChevron :expanded="expanded" />
       </div>
 
+      <!-- Title + meta -->
       <div class="flex-grow-1 me-sm-4">
         <div class="d-flex align-center">
           <div
-              class="text-subtitle-1 font-weight-medium paper-title text-truncate"
+            class="text-subtitle-1 font-weight-medium paper-title text-truncate"
           >
             {{ paper.title }}
           </div>
 
+          <!-- Year next to title -->
           <span
               v-if="paper.year"
               class="ms-2"
@@ -215,16 +214,7 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
   flex-shrink: 0;
 }
 
-.expand-icon { transition: transform 0.2s ease; }
-.expand-icon--expanded { transform: rotate(180deg); }
-
-.action-buttons :deep(.v-btn) { margin-left: 0; }
-
-.summary-content {
-  line-height: 1.55;
-  padding: 12px 14px;
-  border-radius: 12px;
-  background-color: rgba(var(--v-theme-on-surface), 0.06); /*Ignore error, created during runtime*/
-  border: 1px solid rgb(var(--v-theme-outline));
+.action-buttons :deep(.v-btn) {
+  margin-left: 0;
 }
 </style>
