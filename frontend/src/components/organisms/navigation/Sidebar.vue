@@ -250,5 +250,5 @@
   .border-b-sm { border-bottom: 1px solid var(--border-sm-color); }
   .border-t-sm { border-top: 1px solid var(--border-sm-color); }
   .bg-green-lighten-5 { background-color: var(--green-lighten-5) !important; }
-  .border-success { border: 1px solid var(--border-sucess) !important; }
+  .border-success { border: 1px solid var(--border-success) !important; }
 </style>
