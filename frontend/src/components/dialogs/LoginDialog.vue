@@ -25,6 +25,8 @@ const error = ref<string | null>(null);
 const close = () => {
   emit('update:modelValue', false);
   // Optional: Reset fields on close
+  username.value = '';
+  password.value = '';
   error.value = null;
 };
 
