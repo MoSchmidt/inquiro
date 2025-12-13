@@ -63,7 +63,7 @@ const handleQueryUpdate = () => {
       :papers="outputs"
       :show-abstract="showAbstract"
       :show-add="showAdd"
-      title="Articles"
+      title="Papers"
       empty-message="No results yet"
       :expand-all-on-change="true"
       @add="paper => emit('add', paper)"
