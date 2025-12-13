@@ -27,6 +27,12 @@ export const useAuthStore = defineStore('auth', {
     isAuthenticated: (state) => !!state.accessToken,
   },
 
+  persist: {
+    key: 'auth',
+    storage: sessionStorage,
+    paths: ['accessToken', 'refreshToken', 'user'],
+  },
+
   actions: {
     async login(username: string, password: string) {
       this.loading = true;
