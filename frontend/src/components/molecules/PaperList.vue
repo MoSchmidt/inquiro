@@ -62,6 +62,10 @@ watch(rawSearch, (value) => {
   }, 300);
 });
 
+onBeforeUnmount(() => {
+  window.clearTimeout(searchDebounce);
+});
+
 // ----- filtered papers -----
 
 const filteredPapers = computed(() => {
@@ -134,16 +138,12 @@ const handleScrollToTop = () => {
 // ----- events -----
 
 const handleAdd = (paper: Paper) => emit('add', paper);
-const handleMenuSelect = (payload: {
-  option: PaperMenuOption;
-  paper: Paper;
-}) => emit('menu-select', payload);
+const handleMenuSelect = (payload: { option: PaperMenuOption; paper: Paper }) =>
+  emit('menu-select', payload);
 </script>
 
 <template>
   <section class="paper-list">
-
-
     <div ref="searchFieldRef">
       <v-text-field
         v-model="rawSearch"
@@ -152,6 +152,7 @@ const handleMenuSelect = (payload: {
         clearable
         :clear-icon="X"
         class="mt-4"
+        aria-label="Search research papers"
       >
         <template #prepend-inner>
           <v-icon :icon="Search" size="18" />
@@ -161,9 +162,7 @@ const handleMenuSelect = (payload: {
 
     <h3 class="mb-4">
       {{ title }}
-      <span class="text-medium-emphasis">
-        ({{ filteredPapers.length }})
-      </span>
+      <span class="text-medium-emphasis"> ({{ filteredPapers.length }}) </span>
     </h3>
 
     <v-expansion-panels
@@ -209,12 +208,11 @@ const handleMenuSelect = (payload: {
       size="small"
       elevation="1"
       :ripple="false"
+      aria-label="Scroll back to top"
       @click="handleScrollToTop"
     >
       <v-icon :icon="ArrowUp" size="18" />
-      <v-tooltip activator="parent" location="left">
-          Back to top
-      </v-tooltip>
+      <v-tooltip activator="parent" location="left"> Back to top </v-tooltip>
     </v-btn>
   </section>
 </template>
