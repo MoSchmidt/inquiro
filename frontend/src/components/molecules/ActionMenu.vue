@@ -66,9 +66,3 @@ const handleItemClick = (item: ActionMenuItem) => {
     </v-list>
   </v-menu>
 </template>
-
-<style scoped>
-.action-menu-btn {
-  /* Optional styling */
-}
-</style>
