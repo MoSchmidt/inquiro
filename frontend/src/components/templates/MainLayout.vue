@@ -44,12 +44,12 @@ watch(isAuthenticated, (loggedIn) => {
 // ----- computed UI state -----
 
 const projectLinks = computed<Project[]>(() =>
-  projects.value.map((project) => ({
-    id: project.project_id,
-    name: project.project_name,
-    date: project.created_at?.split('T')[0] ?? '',
-    outputs: [],
-  })),
+    projects.value.map((project) => ({
+      id: project.project_id,
+      name: project.project_name,
+      date: project.created_at?.split('T')[0] ?? '',
+      outputs: [],
+    })),
 )
 
 const showNewQuery = computed(() => route.name !== 'search')
@@ -80,6 +80,19 @@ const handleNewProject = async (name: string) => {
   }
 }
 
+const handleRenameProject = async (projectId: number, newName: string) => {
+  await projectsStore.renameProject(projectId, newName)
+}
+
+const handleDeleteProject = async (projectId: number) => {
+  await projectsStore.deleteExistingProject(projectId)
+
+  if (route.name === 'project' && Number(route.params.projectId) === projectId) {
+    await goToSearch()
+    sidebarOpen.value = true
+  }
+}
+
 const handleLoginSuccess = async () => {
   await projectsStore.loadProjects()
   sidebarOpen.value = true
@@ -103,31 +116,33 @@ const handleAccountCreated = async () => {
   <v-app>
     <v-layout class="h-screen">
       <v-navigation-drawer
-        v-model="sidebarOpen"
-        location="left"
-        temporary
-        width="320"
-        app
+          v-model="sidebarOpen"
+          location="left"
+          temporary
+          width="320"
+          app
       >
         <Sidebar
-          :is-open="sidebarOpen"
-          :projects="projectLinks"
-          :is-logged-in="isAuthenticated"
-          @close="sidebarOpen = false"
-          @project-select="handleProjectSelect"
-          @new-project="handleNewProject"
-          @logout="handleLogout"
-          @new-query="handleNewQuery"
-          @login-success="handleLoginSuccess"
+            :is-open="sidebarOpen"
+            :projects="projectLinks"
+            :is-logged-in="isAuthenticated"
+            @close="sidebarOpen = false"
+            @project-select="handleProjectSelect"
+            @new-project="handleNewProject"
+            @rename-project="handleRenameProject"
+            @delete-project="handleDeleteProject"
+            @logout="handleLogout"
+            @new-query="handleNewQuery"
+            @login-success="handleLoginSuccess"
         />
       </v-navigation-drawer>
 
       <AppHeader
-        :is-authenticated="isAuthenticated"
-        :show-new-query="showNewQuery"
-        @toggle-sidebar="toggleSidebar"
-        @new-query="handleNewQuery"
-        @open-create-account="createAccountOpen = true"
+          :is-authenticated="isAuthenticated"
+          :show-new-query="showNewQuery"
+          @toggle-sidebar="toggleSidebar"
+          @new-query="handleNewQuery"
+          @open-create-account="createAccountOpen = true"
       />
 
       <v-main class="bg-grey-lighten-4 scroll-blocked">
@@ -137,9 +152,9 @@ const handleAccountCreated = async () => {
       </v-main>
 
       <CreateAccount
-        :open="createAccountOpen"
-        @close="createAccountOpen = false"
-        @create="handleAccountCreated"
+          :open="createAccountOpen"
+          @close="createAccountOpen = false"
+          @create="handleAccountCreated"
       />
     </v-layout>
   </v-app>

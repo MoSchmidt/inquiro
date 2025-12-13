@@ -1,4 +1,8 @@
 :root {
+
+    /* Status & Theme Colors */
+    --v-theme-error: #B00020;
+
     /* Blue shades */
     --blue-lighten-5:#e9f2ff;
     --blue-lighten-4: #E3F2FD;
@@ -10,7 +14,7 @@
     /* Border colors */
     --border-sm-color: #E0E0E0;
     --border-sm-color-result: #BBDEFB;
-    --border-sucess: #8BC34A;
+    --border-success: #8BC34A;
 
     /* Paper panel colors */
     --paper-panel-border: rgba(148, 163, 184, 0.25);
