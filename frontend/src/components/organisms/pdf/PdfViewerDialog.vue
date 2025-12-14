@@ -10,7 +10,6 @@ import {
 import VuePdfEmbed from 'vue-pdf-embed';
 import { PaperStore } from '@/stores/papers';
 
-// ✅ CORRECT IMPORTS for Styles
 import "vue-pdf-embed/dist/styles/textLayer.css";
 import "vue-pdf-embed/dist/styles/annotationLayer.css";
 
@@ -28,7 +27,6 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 const pdfSource = ref<string | null>(null);
 
-// Zoom state: Default 800px width
 const pdfWidth = ref(800);
 const pageCount = ref(0);
 
@@ -59,7 +57,7 @@ const handleDocumentLoaded = (doc: any) => {
   loading.value = false;
 };
 
-// ✅ NEW: Handle Internal Links (Citations, Table of Contents)
+//Handle Internal Links (Citations, Table of Contents) !!Not working yet!!
 const handleLinkClick = (destination: any) => {
   // The library emits the page number (or an object containing it)
   // We handle both cases just to be safe.
@@ -217,7 +215,6 @@ onUnmounted(() => {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-/* --- ⚡ CRITICAL LAYERING FIXES --- */
 
 :deep(.vue-pdf-embed > div) {
   position: relative !important;
@@ -245,10 +242,6 @@ onUnmounted(() => {
   pointer-events: auto !important;
 }
 
-/* 4. VISUAL CONFIRMATION:
-   When you hover over a reference [1], it will turn slightly blue.
-   This tells you the click is being captured correctly.
-*/
 :deep(.annotationLayer a:hover) {
   background-color: rgba(255, 255, 0, 0.2); /* Subtle yellow highlight on hover */
   outline: 2px solid rgba(255, 255, 0, 0.5);
