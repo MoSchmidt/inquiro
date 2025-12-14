@@ -1,5 +1,5 @@
 from datetime import date
-from typing import List, Optional
+from typing import List, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict
 
@@ -31,7 +31,9 @@ class PaperSummaryRequest(BaseModel):
 
 class PaperSummaryResponse(BaseModel):
     """
-    Response to summary request for a specified paper
+    Response to summary request for a specified paper.
+    Markdown + TeX format for nice rendering.
     """
 
-    summary: str
+    format: Literal["md+tex"] = "md+tex"
+    summary_markdown: str

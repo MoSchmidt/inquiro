@@ -4,11 +4,16 @@ import {
   VExpansionPanelText,
   VExpansionPanelTitle,
   VIcon,
+  VList,
+  VListItem,
+  VListItemTitle,
+  VMenu,
 } from 'vuetify/components';
-import { ChevronDown, FolderPlus, Eye } from 'lucide-vue-next';
-import { withDefaults, computed } from 'vue';
+import { ChevronDown, Copy, Eye, FolderPlus, MoreHorizontal, RotateCcw, Sparkles } from 'lucide-vue-next';
+import { computed, ref, withDefaults } from 'vue';
 import type { Paper, PaperMenuOption } from '@/types/content';
 import ActionMenu, { type ActionMenuItem } from '@/components/molecules/ActionMenu.vue';
+import { usePaperSummariesStore } from '@/stores/paperSummaries';
 
 const props = withDefaults(
     defineProps<{
@@ -24,11 +29,33 @@ const props = withDefaults(
     }
 );
 
+const isMenuOpen = ref(false);
+
 const emit = defineEmits<{
   (e: 'add', paper: Paper): void;
   (e: 'menu-select', payload: { option: PaperMenuOption; paper: Paper }): void;
   (e: 'view', paper: Paper): void;
 }>();
+
+// ----- summarise paper -----
+const summariesStore = usePaperSummariesStore();
+
+const entry = computed(() => summariesStore.entry(props.paper.paper_id));
+const isLoading = computed(() => entry.value.status === 'loading');
+const isError = computed(() => entry.value.status === 'error');
+const summaryText = computed(() => entry.value.summary ?? '');
+const showSummaryChip = computed(() => summariesStore.hasSummary(props.paper.paper_id));
+
+const regenerate = () => summariesStore.summarise(props.paper.paper_id, { force: true });
+
+const copySummary = async () => {
+  if (!summaryText.value) return;
+  try {
+    await navigator.clipboard.writeText(summaryText.value);
+  } catch {
+    // ignore
+  }
+};
 
 // Transform PaperMenuOption to ActionMenuItem
 const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
@@ -72,6 +99,17 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
             >
             {{ paper.year }}
           </span>
+
+          <!-- Summary chip -->
+          <v-chip
+            v-if="showSummaryChip"
+            size="x-small"
+            class="ms-2"
+            variant="tonal"
+          >
+            <v-icon :icon="Sparkles" size="14" class="me-1" />
+            Summary
+          </v-chip>
         </div>
 
         <!-- Author etc. meta stays below -->
@@ -108,6 +146,44 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
             v-if="transformedMenuOptions.length"
             :items="transformedMenuOptions"
         />
+        <v-menu
+          v-if="menuOptions && menuOptions.length"
+          v-model="isMenuOpen"
+          location="bottom end"
+          offset="4"
+        >
+          <template #activator="{ props: activatorProps }">
+            <v-btn
+              icon
+              size="small"
+              variant="text"
+              v-bind="activatorProps"
+              @click.stop
+            >
+              <v-icon :icon="MoreHorizontal" size="18" />
+            </v-btn>
+          </template>
+
+          <v-list density="compact">
+            <v-list-item
+              v-for="option in menuOptions"
+              :key="option.value"
+              @click.stop="
+                isMenuOpen=false;
+                emit('menu-select', { option, paper })
+              "
+            >
+              <template v-if="option.icon" #prepend>
+                <component
+                  :is="option.icon"
+                  size="16"
+                  class="me-2 text-gray-500"
+                />
+              </template>
+              <v-list-item-title>{{ option.label }}</v-list-item-title>
+            </v-list-item>
+          </v-list>
+        </v-menu>
       </div>
     </div>
   </v-expansion-panel-title>
@@ -116,6 +192,52 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
     <div class="text-body-2 text-medium-emphasis mb-3 paper-abstract">
       <span v-if="showAbstract && paper.abstract"> {{ paper.abstract }} </span>
       <span v-else class="text-disabled"> No abstract available. </span>
+    </div>
+
+    <v-divider class="my-4" />
+
+    <div class="summary-block">
+      <div class="d-flex align-center justify-space-between mb-2">
+        <div class="d-flex align-center">
+          <v-icon :icon="Sparkles" size="18" class="me-2" />
+          <div class="text-subtitle-2 font-weight-medium">AI Summary</div>
+        </div>
+
+        <div class="d-flex align-center" style="gap: 6px;">
+          <v-btn if="summaryText" size="small" variant="text" @click="copySummary">
+            <v-icon :icon="Copy" size="16" class="me-1" />
+            Copy
+          </v-btn>
+
+          <v-btn
+            v-if="summaryText"
+            size="small"
+            variant="text"
+            :disabled="isLoading"
+            @click="regenerate"
+          >
+            <v-icon :icon="RotateCcw" size="16" class="me-1" />
+            Regenerate
+          </v-btn>
+        </div>
+      </div>
+
+      <v-alert v-if="isError" type="error" variant="tonal" class="mb-3">
+        {{ entry.error || "Failed to summarise paper." }}
+        <template #append>
+          <v-btn size="small" variant="text" @click="regenerate">Retry</v-btn>
+        </template>
+      </v-alert>
+
+      <v-skeleton-loader v-if="isLoading" type="paragraph, paragraph, paragraph" />
+
+      <div v-else-if="summaryText" class="summary-content">
+        {{ summaryText }}
+      </div>
+
+      <div v-else class="text-body-2 text-medium-emphasis">
+        No summary generated yet. Use the menu action "Summarise Paper".
+      </div>
     </div>
   </v-expansion-panel-text>
 </template>

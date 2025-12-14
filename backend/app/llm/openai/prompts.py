@@ -70,10 +70,16 @@ Requirements:
     limitations or missing details ("The paper does not directly address X, but discusses Y, which
     may be related because...").
     
-5. Output format:
-    - Provide a single coherent summary in academic prose, optionally using bullet points when
-    clarifying key concepts.
-    - No preamble, no meta-instructions, no formatting outside the summary.
+5. Output format (VERY IMPORTANT):
+    - Output MUST be Markdown (no raw HTML).
+    - Preserver mathematical notation using LaTeX math delimiters:
+        - Inline math: $...$
+        - Block math (only if needed): $$...$$
+    - Prefer shor paragraphs + bullet lists for key items (contributions, methods, results).
+    - Use at most 6 bullet points per list; if more are needed, merge or prioritize.
+    - Do NOT invent equations; include equations only if they appear explicitly in the paper.
 
-You must output ONLY the final summary as plain text.
+Output:
+Return a structured JSON object matching the provided schema exactly.
+No preamble, no extra keys, no commentary.
 """

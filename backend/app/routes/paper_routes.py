@@ -25,7 +25,7 @@ async def summary(
     """
 
     result = await PaperService.summarise_paper(paper_id=paper_id, query=request.query, session=db)
-    return PaperSummaryResponse.model_validate(result)
+    return result
 
 
 @router.get(

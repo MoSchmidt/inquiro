@@ -19,6 +19,7 @@ import type { Paper, PaperMenuOption } from '@/types/content';
 import PaperCard from '@/components/atoms/PaperCard.vue';
 import { ArrowUp, Search, X } from 'lucide-vue-next';
 import { useScrollToTop } from '@/composables/useScrollToTop';
+import { usePaperSummariesStore } from '@/stores/paperSummaries';
 
 interface Props {
   papers: Paper[];
@@ -136,10 +137,32 @@ const handleScrollToTop = () => {
   scrollToTop(searchFieldRef.value);
 };
 
+// ----- summarise paper -----
+watch(() => props.papers, (newPapers) => {
+  if (props.expandAllOnChange && newPapers.length > 0) {
+    nextTick(() => {
+      expanded.value = newPapers.map((p) => p.paper_id);
+    });
+  } else if (!props.expandAllOnChange) {
+    expanded.value = expanded.value.filter((id) => newPapers.some((p) => p.paper_id === id));
+  }
+}, { immediate: props.expandAllOnChange });
+
+const summariesStore = usePaperSummariesStore();
+
 // ----- events -----
 
 const handleAdd = (paper: Paper) => emit('add', paper);
-const handleMenuSelect = (payload: { option: PaperMenuOption; paper: Paper }) =>
+const handleMenuSelect = async (payload: { option: PaperMenuOption; paper: Paper }) => {
+  if (payload.option.value === 'summarise') {
+    await summariesStore.summarise(payload.paper.paper_id);
+
+    if (!expanded.value.includes(payload.paper.paper_id)) {
+      expanded.value = [...expanded.value, payload.paper.paper_id];
+    }
+    return;
+  }
+
   emit('menu-select', payload);
 const handleView = (paper: Paper) => emit('view', paper);
 </script>

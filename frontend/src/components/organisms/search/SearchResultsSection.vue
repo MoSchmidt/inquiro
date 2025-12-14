@@ -8,9 +8,9 @@ import {
   VBtn,
   VTextField,
 } from 'vuetify/components';
-import { FileText, Edit3 } from 'lucide-vue-next';
+import { FileText, Edit3, Sparkles, Trash2 } from 'lucide-vue-next';
 import PaperList from '@/components/molecules/PaperList.vue';
-import type { Paper } from '@/types/content';
+import type { Paper, PaperMenuOption } from '@/types/content';
 
 const props = defineProps<{
   query: string;
@@ -24,6 +24,10 @@ const emit = defineEmits<{
   (e: 'updateQuery', newQuery: string): void;
   (e: 'view', paper: Paper): void;
 }>();
+
+const menuOptions: PaperMenuOption[] = [
+  { label: 'Summarise Paper', value: 'summarise', icon: Sparkles },
+];
 
 const editableQuery = ref(props.query);
 const isQueryChanged = computed(() => editableQuery.value.trim() !== props.query.trim());
@@ -67,6 +71,7 @@ const handleQueryUpdate = () => {
       title="Papers"
       empty-message="No results yet"
       :expand-all-on-change="true"
+      :menu-options="menuOptions"
       @add="paper => emit('add', paper)"
       @view="paper => emit('view', paper)"
     />

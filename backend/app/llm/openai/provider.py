@@ -1,5 +1,5 @@
 import json
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 
 from openai import AsyncOpenAI
 
@@ -84,11 +84,20 @@ class OpenAIProvider:
 
         return keyword_list
 
-    async def summarise_paper(self, paper_text: str, query: str) -> str:
+    async def summarise_paper(self, paper_text: str, query: str) -> Dict[str, Any]:
         """
         Creates a summary of a scientific paper using the query for context using the OpenAI model.
         Returns a string. If parsing fails, returns an empty string.
         """
+        schema = {
+            "type": "object",
+            "additionalProperties": False,
+            "properties": {
+                "format": {"type": "string", "enum": ["md+tex"]},
+                "summary_markdown": {"type": "string"},
+            },
+            "required": ["format", "summary_markdown"],
+        }
 
         response = await self.client.responses.create(
             model=self._model,
@@ -103,6 +112,22 @@ class OpenAIProvider:
                     "content": paper_text,
                 },
             ],
+            text={
+                "format": {
+                    "type": "json_schema",
+                    "name": "paper_summary",
+                    "schema": schema,
+                    "strict": True,
+                }
+            },
         )
 
-        return response.output_text
+        try:
+            data = json.loads(response.output_text)
+        except (json.decoder.JSONDecodeError, KeyError):
+            data = {
+                "format": "md+tex",
+                "summary_markdown": response.output_text.strip(),
+            }
+
+        return data
