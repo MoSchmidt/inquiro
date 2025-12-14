@@ -22,6 +22,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'add', paper: Paper): void;
   (e: 'updateQuery', newQuery: string): void;
+  (e: 'view', paper: Paper): void;
 }>();
 
 const editableQuery = ref(props.query);
@@ -34,39 +35,40 @@ const handleQueryUpdate = () => {
 </script>
 
 <template>
-    <v-container class="results-section">
-      <v-card flat class="mb-8 pa-4 bg-blue-lighten-5 border-sm">
-        <v-card-text class="d-flex align-start pa-0">
-          <v-icon :icon="FileText" color="blue-darken-2" class="mt-1 me-3"></v-icon>
-          <div class="flex-grow-1">
-            <v-text-field
-                v-model="editableQuery"
-                label="Your Query"
-                variant="outlined"
-                dense
-                class="mb-2"
-            ></v-text-field>
-            <v-btn
-                v-if="isQueryChanged"
-                color="primary"
-                variant="outlined"
-                size="small"
-                @click="handleQueryUpdate">
-              <v-icon :icon="Edit3" start size="18"/>
-              Update query
-            </v-btn>
-          </div>
-        </v-card-text>
-      </v-card>
+  <v-container class="results-section">
+    <v-card flat class="mb-8 pa-4 bg-blue-lighten-5 border-sm">
+      <v-card-text class="d-flex align-start pa-0">
+        <v-icon :icon="FileText" color="blue-darken-2" class="mt-1 me-3"></v-icon>
+        <div class="flex-grow-1">
+          <v-text-field
+              v-model="editableQuery"
+              label="Your Query"
+              variant="outlined"
+              dense
+              class="mb-2"
+          ></v-text-field>
+          <v-btn
+              v-if="isQueryChanged"
+              color="primary"
+              variant="outlined"
+              size="small"
+              @click="handleQueryUpdate">
+            <v-icon :icon="Edit3" start size="18"/>
+            Update query
+          </v-btn>
+        </div>
+      </v-card-text>
+    </v-card>
 
     <PaperList
-      :papers="outputs"
-      :show-abstract="showAbstract"
-      :show-add="showAdd"
-      title="Articles"
-      empty-message="No results yet"
-      :expand-all-on-change="true"
-      @add="paper => emit('add', paper)"
+        :papers="outputs"
+        :show-abstract="showAbstract"
+        :show-add="showAdd"
+        title="Articles"
+        empty-message="No results yet"
+        :expand-all-on-change="true"
+        @add="paper => emit('add', paper)"
+        @view="paper => emit('view', paper)"
     />
   </v-container>
 </template>

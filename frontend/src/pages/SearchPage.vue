@@ -15,6 +15,8 @@ import {
 
 import SearchInputSection from '@/components/organisms/search/SearchInputSection.vue';
 import SearchResultsSection from '@/components/organisms/search/SearchResultsSection.vue';
+
+import PdfViewerDialog from '@/components/organisms/pdf/PdfViewerDialog.vue';
 import type { Paper } from '@/types/content';
 
 import { searchPapers } from '@/services/search';
@@ -34,6 +36,10 @@ const errorMessage = ref<string | null>(null);
 const addToProjectDialogOpen = ref(false);
 const paperToAdd = ref<Paper | null>(null);
 const selectedProjectIdForAdd = ref<number | null>(null);
+
+const pdfViewerOpen = ref(false);
+const pdfPaperId = ref<number | null>(null);
+const pdfPaperTitle = ref('');
 
 // derived state
 const isAuthenticated = computed(() => authStore.isAuthenticated);
@@ -84,12 +90,19 @@ const confirmAddToProject = async () => {
   }
 
   await projectsStore.addPaper(
-    selectedProjectIdForAdd.value,
-    paperToAdd.value.paper_id
+      selectedProjectIdForAdd.value,
+      paperToAdd.value.paper_id
   );
 
   addToProjectDialogOpen.value = false;
   paperToAdd.value = null;
+};
+
+// ✅ 3. Add Handler Function
+const handleViewPaper = (paper: Paper) => {
+  pdfPaperId.value = paper.paper_id;
+  pdfPaperTitle.value = paper.title;
+  pdfViewerOpen.value = true;
 };
 </script>
 
@@ -108,12 +121,13 @@ const confirmAddToProject = async () => {
     </div>
     <div v-else>
       <SearchResultsSection
-        :query="currentQuery || ''"
-        :outputs="outputs"
-        :show-abstract="true"
-        :show-add="isAuthenticated"
-        @add="handleAddFromSearch"
-        @update-query="handleSubmitQuery"
+          :query="currentQuery || ''"
+          :outputs="outputs"
+          :show-abstract="true"
+          :show-add="isAuthenticated"
+          @add="handleAddFromSearch"
+          @view="handleViewPaper"
+          @update-query="handleSubmitQuery"
       />
     </div>
 
@@ -125,12 +139,12 @@ const confirmAddToProject = async () => {
             Choose a project to add this paper to.
           </p>
           <v-select
-            v-model="selectedProjectIdForAdd"
-            :items="projectOptions"
-            item-title="project_name"
-            item-value="project_id"
-            label="Project"
-            variant="outlined"
+              v-model="selectedProjectIdForAdd"
+              :items="projectOptions"
+              item-title="project_name"
+              item-value="project_id"
+              label="Project"
+              variant="outlined"
           />
         </v-card-text>
         <v-card-actions>
@@ -142,6 +156,13 @@ const confirmAddToProject = async () => {
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <PdfViewerDialog
+        :open="pdfViewerOpen"
+        :paper-id="pdfPaperId"
+        :paper-title="pdfPaperTitle"
+        @close="pdfViewerOpen = false"
+    />
   </div>
 </template>
 

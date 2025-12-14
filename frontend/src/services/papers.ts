@@ -1,18 +1,13 @@
+import { PaperApi } from '@/api';
 import { apiAxios } from '@/auth/axios-auth';
-// 1. Import the BASE_PATH configuration
-import { BASE_PATH } from '@/api/base';
 
-/**
- * Fetches the PDF binary for a specific paper.
- * Returns a Blob that can be displayed in a viewer.
- */
+// Initialize the generated API class
+const paperApi = new PaperApi(undefined, undefined, apiAxios);
+
 export async function fetchPaperPdf(paperId: number): Promise<Blob> {
-    // 2. Prepend BASE_PATH to the URL
-    const response = await apiAxios.get(`${BASE_PATH}/papers/${paperId}/pdf`, {
-        responseType: 'blob',
-        headers: {
-            'Accept': 'application/pdf',
-        },
+    const response = await paperApi.getPaperPdfPapersPaperIdPdfGet(paperId, {
+        responseType: 'blob'
     });
-    return response.data;
+
+    return response.data as unknown as Blob;
 }
