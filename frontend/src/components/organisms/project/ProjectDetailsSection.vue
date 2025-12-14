@@ -2,18 +2,17 @@
 import { ref } from 'vue';
 import PaperList from '@/components/molecules/PaperList.vue';
 import {
-  VCard,
-  VCardText,
-  VIcon,
   VBtn,
+  VCard,
+  VCardActions,
   VContainer,
   VDialog,
-  VTextField,
-  VCardActions,
+  VIcon,
   VSpacer,
-  VTooltip
+  VTextField,
+  VTooltip,
 } from 'vuetify/components';
-import { FileText, Trash2, Pencil } from 'lucide-vue-next';
+import { Pencil, Trash2 } from 'lucide-vue-next';
 import type { Paper, PaperMenuOption } from '@/types/content';
 
 const props = defineProps<{
@@ -43,7 +42,6 @@ const saveRename = () => {
   }
 };
 
-
 const menuOptions: PaperMenuOption[] = [
   { label: 'Remove from Project', value: 'remove', icon: Trash2 },
 ];
@@ -64,44 +62,34 @@ const handleMenuSelect = ({
 </script>
 
 <template>
-  <v-container class="py-6" style="max-width: 1200px;">
-    <v-card flat class="mb-6 pa-4 project-header-card">
-      <v-card-text class="pa-0">
-        <div class="d-flex align-center mb-2">
-          <div class="project-icon d-flex align-center justify-center me-3">
-            <v-icon :icon="FileText" size="20" />
-          </div>
+  <v-container class="py-6" style="max-width: 1200px">
+    <div class="d-flex align-center mb-2">
+      <h1 class="project-title me-3">
+        {{ projectName }}
+      </h1>
 
-          <h1 class="project-title me-3">
-            {{ projectName }}
-          </h1>
-
-          <v-btn
-              icon
-              variant="text"
-              size="small"
-              color="medium-emphasis"
-              @click="openRenameDialog"
-          >
-            <v-icon :icon="Pencil" size="20" />
-            <v-tooltip activator="parent" location="top">
-              Rename project
-            </v-tooltip>
-          </v-btn>
-        </div>
-        <p class="text-caption text-medium-emphasis">
-          {{ papers.length }} saved papers
-        </p>
-      </v-card-text>
-    </v-card>
+      <v-btn
+        icon
+        variant="text"
+        size="small"
+        color="medium-emphasis"
+        :ripple="false"
+        @click="openRenameDialog"
+      >
+        <v-icon :icon="Pencil" size="20" />
+        <v-tooltip activator="parent" location="top">
+          Rename project
+        </v-tooltip>
+      </v-btn>
+    </div>
 
     <PaperList
       :papers="papers"
       :show-abstract="showAbstract"
       :show-add="false"
       :menu-options="menuOptions"
-      title="Artikel"
-      empty-message="Dieses Projekt hat noch keine gespeicherten Paper."
+      title="Papers"
+      empty-message="This project does not yet have any saved papers."
       :expand-all-on-change="false"
       @menu-select="handleMenuSelect"
     />
@@ -110,27 +98,27 @@ const handleMenuSelect = ({
         <h3 class="text-h6 mb-4">Rename Project</h3>
 
         <v-text-field
-            v-model="tempNewName"
-            label="Project Name"
-            variant="outlined"
-            autofocus
-            @keyup.enter="saveRename"
+          v-model="tempNewName"
+          label="Project Name"
+          variant="outlined"
+          autofocus
+          @keyup.enter="saveRename"
         ></v-text-field>
 
         <v-card-actions class="px-0">
           <v-spacer></v-spacer>
           <v-btn
-              variant="text"
-              color="grey-darken-1"
-              @click="isRenameDialogOpen = false"
+            variant="text"
+            color="grey-darken-1"
+            @click="isRenameDialogOpen = false"
           >
             Cancel
           </v-btn>
           <v-btn
-              color="primary"
-              variant="flat"
-              :disabled="!tempNewName || tempNewName.trim() === ''"
-              @click="saveRename"
+            color="primary"
+            variant="flat"
+            :disabled="!tempNewName || tempNewName.trim() === ''"
+            @click="saveRename"
           >
             Save
           </v-btn>
