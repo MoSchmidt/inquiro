@@ -5,7 +5,6 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.core.security import get_current_user_id
 from app.schemas.paper_dto import PaperSummaryRequest, PaperSummaryResponse
 from app.services.paper_service import PaperService
 
@@ -38,7 +37,6 @@ async def summary(
 async def get_paper_pdf(
     paper_id: int,
     db: AsyncSession = Depends(get_db),
-    _: int = Depends(get_current_user_id),  # Ensure user is authenticated
 ) -> StreamingResponse:
     """
     Stream the PDF file of the specified paper.
