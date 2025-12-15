@@ -1,17 +1,19 @@
 <script setup lang="ts">
-  import { ref } from 'vue';
+  import {computed, ref} from 'vue';
+  import { useAuthStore } from '@/stores/auth';
   import {
     VBtn, VCard, VDivider, VIcon, VList, VListItem,
     VListItemTitle
   } from 'vuetify/components';
   import {
-    CheckCircle, Clock, FolderOpen, LogIn, LogOut,
-    Plus, X, Trash2, Pencil
+    Clock, FolderOpen, FolderPlus, LogIn,
+    Plus, X, Trash2, Pencil, User
   } from 'lucide-vue-next';
   import type { Project } from '@/types/content';
 
   // Import Dialogs
   import LoginDialog from '@/components/dialogs/LoginDialog.vue';
+  import LogoutDialog from '@/components/dialogs/LogoutDialog.vue';
   import NewProjectDialog from '@/components/dialogs/NewProjectDialog.vue';
   import RenameProjectDialog from '@/components/dialogs/RenameProjectDialog.vue';
   import DeleteProjectDialog from '@/components/dialogs/DeleteProjectDialog.vue';
@@ -35,8 +37,21 @@
     (e: 'renameProject', projectId: number, newName: string): void;
   }>();
 
+  const authStore = useAuthStore();
+
+  const formattedUsername = computed(() => {
+    // Get username from store (fallback to 'User' if empty)
+    const name = authStore.user?.username || 'User';
+
+    if (!name) return '';
+
+    // Uppercase the first letter and concatenate the rest
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  });
+
   // Dialog State
   const loginDialogOpen = ref(false);
+  const logoutDialogOpen = ref(false);
   const newProjectDialogOpen = ref(false);
   const renameDialogOpen = ref(false);
   const deleteDialogOpen = ref(false);
@@ -105,6 +120,11 @@
     emit('newQuery');
     emit('close');
   };
+
+  const onLogoutConfirm = () => {
+    emit('logout');
+  };
+
 </script>
 
 <template>
@@ -129,20 +149,6 @@
           New Query
         </v-btn>
       </div>
-
-      <div class="pa-4 pb-2">
-        <v-btn
-            color="secondary"
-            variant="outlined"
-            block
-            class="aligned-button"
-            @click="handleNewProjectClick"
-        >
-          <v-icon :icon="Plus" start size="18" />
-          New Project
-        </v-btn>
-      </div>
-
       <v-divider class="my-3" />
 
       <div class="px-4">
@@ -172,13 +178,24 @@
               </div>
             </template>
           </v-list-item>
+
+          <v-list-item
+              @click="handleNewProjectClick"
+              class="mb-2 rounded-lg project-item"
+          >
+            <template #prepend>
+              <v-icon :icon="FolderPlus" color="blue-darken-2" class="me-1" />
+            </template>
+
+            <v-list-item-title class="font-weight-medium">
+              New Project
+            </v-list-item-title>
+          </v-list-item>
         </v-list>
       </div>
     </div>
 
     <div class="border-t-sm pa-4">
-      <h3 class="text-subtitle-1 mb-3 d-flex align-center">Account</h3>
-
       <div v-if="!isLoggedIn">
         <v-btn block color="primary" @click="loginDialogOpen = true">
           <v-icon :icon="LogIn" start size="18" />
@@ -187,16 +204,20 @@
       </div>
 
       <div v-else>
-        <v-card flat class="pa-3 mb-3 bg-green-lighten-5 border-success">
-          <div class="d-flex align-center">
-            <v-icon :icon="CheckCircle" color="success" class="me-2" size="18" />
-            <p class="text-success text-body-2">Successfully logged in</p>
-          </div>
-        </v-card>
-        <v-btn block variant="outlined" color="secondary" @click="emit('logout')">
-          <v-icon :icon="LogOut" start size="18" />
-          Logout
-        </v-btn>
+        <v-list density="compact" nav class="pa-0">
+          <v-list-item
+              @click="logoutDialogOpen = true"
+              class="rounded-lg project-item"
+          >
+            <template #prepend>
+              <v-icon :icon="User" class="me-1" />
+            </template>
+
+            <v-list-item-title class="font-weight-medium">
+              {{ formattedUsername }}
+            </v-list-item-title>
+          </v-list-item>
+        </v-list>
       </div>
     </div>
 
@@ -211,6 +232,11 @@
         v-model="deleteDialogOpen"
         :project-name="projectToAction?.name || ''"
         @submit="onDeleteSubmit"
+    />
+
+    <LogoutDialog
+        v-model="logoutDialogOpen"
+        @logout="onLogoutConfirm"
     />
   </div>
 </template>
@@ -241,14 +267,11 @@
     opacity: 1;
   }
 
-  /* 3. Keep visible when menu is open (button is expanded)
-     using :has() to check if the child button has aria-expanded="true" */
-  .project-action-btn:has(.v-btn[aria-expanded="true"]) {
-    opacity: 1;
+  /* Ensure minimum height for project items */
+  .project-item {
+    min-height: 50px !important;
   }
 
   .border-b-sm { border-bottom: 1px solid var(--border-sm-color); }
   .border-t-sm { border-top: 1px solid var(--border-sm-color); }
-  .bg-green-lighten-5 { background-color: var(--green-lighten-5) !important; }
-  .border-success { border: 1px solid var(--border-success) !important; }
 </style>
