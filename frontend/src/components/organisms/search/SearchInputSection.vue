@@ -34,7 +34,6 @@ const handleSubmit = () => {
               auto-grow
               rows="8"
               class="mb-4"
-              bg-color="white"
             ></v-textarea>
           <v-btn
               type="submit"

@@ -1,6 +1,6 @@
 :root {
-    /* Blue shades */
-    --blue-lighten-5:#e9f2ff;
+    /* --- Light Mode Defaults (Keep these) --- */
+    --blue-lighten-5: #e9f2ff;
     --blue-lighten-4: #E3F2FD;
     --blue-darken-2: #1976D2;
 
@@ -16,4 +16,25 @@
     --paper-panel-border: rgba(148, 163, 184, 0.25);
     --paper-panel-hover-border: rgba(59, 130, 246, 0.35);
     --paper-panel-hover-shadow: rgba(15, 23, 42, 0.08);
+}
+
+/* --- ADD THIS: Dark Mode Overrides --- */
+:root.dark {
+    /* Map light blues to dark slates/grays */
+    --blue-lighten-5: #1e293b;
+    --blue-lighten-4: #0f172a;
+    --blue-darken-2: #60A5FA; /* Lighter blue for better contrast on dark */
+
+    /* Map light green to dark green */
+    --green-lighten-5: #064e3b;
+
+    /* Darken the borders */
+    --border-sm-color: #334155;
+    --border-sm-color-result: #1e40af;
+    --border-sucess: #15803d;
+
+    /* Update paper card visuals */
+    --paper-panel-border: rgba(255, 255, 255, 0.1);
+    --paper-panel-hover-border: rgba(96, 165, 250, 0.5);
+    --paper-panel-hover-shadow: rgba(0, 0, 0, 0.5);
 }

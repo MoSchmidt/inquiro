@@ -118,14 +118,13 @@ onUnmounted(() => {
   >
     <v-card class="pdf-viewer-card">
 
-      <div class="pdf-toolbar d-flex align-center px-4 py-2 bg-grey-lighten-4 border-b">
-        <h3 class="text-subtitle-1 font-weight-medium me-4">
+      <div class="pdf-toolbar d-flex align-center px-4 py-2 bg-surface border-b">        <h3 class="text-subtitle-1 font-weight-medium me-4">
           {{ paperTitle || 'PDF Viewer' }}
         </h3>
 
         <v-spacer />
 
-        <div class="d-flex align-center bg-white rounded elevation-1 px-2 py-1 me-4">
+        <div class="d-flex align-center bg-surface rounded elevation-1 px-2 py-1 me-4">
           <span class="text-caption font-weight-bold mx-2 text-medium-emphasis">
             {{ pageCount > 0 ? `${pageCount} Pages` : '' }}
           </span>
@@ -161,8 +160,7 @@ onUnmounted(() => {
         </v-btn>
       </div>
 
-      <v-card-text class="pdf-content pa-0 bg-grey-lighten-3 position-relative">
-        <div v-if="loading" class="d-flex flex-column align-center justify-center position-absolute w-100 h-100" style="z-index: 10; background: rgba(255,255,255,0.9);">
+      <v-card-text class="pdf-content pa-0 bg-background position-relative">        <div v-if="loading" class="d-flex flex-column align-center justify-center position-absolute w-100 h-100" style="z-index: 10; background: rgba(255,255,255,0.9);">
           <v-progress-circular indeterminate color="primary" size="64" />
           <p class="mt-4 text-medium-emphasis">Loading PDF...</p>
         </div>

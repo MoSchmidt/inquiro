@@ -130,7 +130,7 @@ const handleAccountCreated = async () => {
         @open-create-account="createAccountOpen = true"
       />
 
-      <v-main class="bg-grey-lighten-4 scroll-blocked">
+      <v-main class="bg-background scroll-blocked">
         <div class="scroll-container">
           <RouterView />
         </div>
