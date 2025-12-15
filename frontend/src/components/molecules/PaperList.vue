@@ -42,6 +42,7 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   add: [paper: Paper];
   'menu-select': [{ option: PaperMenuOption; paper: Paper }];
+  view: [paper: Paper];
 }>();
 
 // ----- expansion state -----
@@ -140,6 +141,7 @@ const handleScrollToTop = () => {
 const handleAdd = (paper: Paper) => emit('add', paper);
 const handleMenuSelect = (payload: { option: PaperMenuOption; paper: Paper }) =>
   emit('menu-select', payload);
+const handleView = (paper: Paper) => emit('view', paper);
 </script>
 
 <template>
@@ -183,12 +185,13 @@ const handleMenuSelect = (payload: { option: PaperMenuOption; paper: Paper }) =>
         style="border-radius: 12px !important"
       >
         <PaperCard
-          :paper="paper"
-          :show-abstract="showAbstract"
-          :show-add="showAdd"
-          :menu-options="menuOptions"
-          @add="handleAdd"
-          @menu-select="handleMenuSelect"
+            :paper="paper"
+            :show-abstract="showAbstract"
+            :show-add="showAdd"
+            :menu-options="menuOptions"
+            @add="handleAdd"
+            @menu-select="handleMenuSelect"
+            @view="handleView"
         />
       </v-expansion-panel>
     </v-expansion-panels>
