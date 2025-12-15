@@ -1,8 +1,24 @@
 <script setup lang="ts">
-import { ref, watch, nextTick, computed, withDefaults } from 'vue';
-import { VExpansionPanel, VExpansionPanels } from 'vuetify/components';
+import {
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  watch,
+  withDefaults,
+} from 'vue';
+import {
+  VBtn,
+  VExpansionPanel,
+  VExpansionPanels,
+  VIcon,
+  VTextField,
+} from 'vuetify/components';
 import type { Paper, PaperMenuOption } from '@/types/content';
 import PaperCard from '@/components/atoms/PaperCard.vue';
+import { ArrowUp, Search, X } from 'lucide-vue-next';
+import { useScrollToTop } from '@/composables/useScrollToTop';
 
 interface Props {
   papers: Paper[];
@@ -29,17 +45,58 @@ const emit = defineEmits<{
   view: [paper: Paper];
 }>();
 
+// ----- expansion state -----
+
 const expanded = ref<(number | string)[]>([]);
 
+// ----- search (debounced) -----
+
+const rawSearch = ref('');
+const searchQuery = ref('');
+
+let searchDebounce: number | undefined;
+
+watch(rawSearch, (value) => {
+  window.clearTimeout(searchDebounce);
+  searchDebounce = window.setTimeout(() => {
+    searchQuery.value = value?.trim().toLowerCase() ?? '';
+  }, 300);
+});
+
+onBeforeUnmount(() => {
+  window.clearTimeout(searchDebounce);
+});
+
+// ----- filtered papers -----
+
+const filteredPapers = computed(() => {
+  if (!searchQuery.value) return props.papers;
+
+  return props.papers.filter((paper) => {
+    const haystack = [
+      paper.title,
+      paper.author,
+      paper.abstract,
+      paper.year?.toString(),
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toLowerCase();
+
+    return haystack.includes(searchQuery.value);
+  });
+});
+
+// ----- keep expansion state in sync -----
+
 watch(
-  () => props.papers,
+  () => filteredPapers.value,
   (newPapers) => {
-    if (props.expandAllOnChange && newPapers.length > 0) {
+    if (props.expandAllOnChange && newPapers.length) {
       nextTick(() => {
         expanded.value = newPapers.map((p) => p.paper_id);
       });
-    } else if (!props.expandAllOnChange) {
-
+    } else {
       expanded.value = expanded.value.filter((id) =>
         newPapers.some((p) => p.paper_id === id)
       );
@@ -48,7 +105,39 @@ watch(
   { immediate: props.expandAllOnChange }
 );
 
-// Event handlers
+// ----- floating "back to top" button -----
+
+const searchFieldRef = ref<HTMLElement | null>(null);
+const showScrollTop = ref(false);
+
+let observer: IntersectionObserver | null = null;
+
+onMounted(() => {
+  if (!searchFieldRef.value || !('IntersectionObserver' in window)) return;
+
+  observer = new IntersectionObserver(
+    ([entry]) => {
+      // show button when search field is NOT visible
+      showScrollTop.value = !entry.isIntersecting;
+    },
+    { threshold: 0 }
+  );
+
+  observer.observe(searchFieldRef.value);
+});
+
+onBeforeUnmount(() => {
+  observer?.disconnect();
+});
+
+const { scrollToTop } = useScrollToTop();
+
+const handleScrollToTop = () => {
+  scrollToTop(searchFieldRef.value);
+};
+
+// ----- events -----
+
 const handleAdd = (paper: Paper) => emit('add', paper);
 const handleMenuSelect = (payload: { option: PaperMenuOption; paper: Paper }) =>
   emit('menu-select', payload);
@@ -57,20 +146,36 @@ const handleView = (paper: Paper) => emit('view', paper);
 
 <template>
   <section class="paper-list">
-    <h3 class="text-h6 mb-4">
+    <div ref="searchFieldRef">
+      <v-text-field
+        v-model="rawSearch"
+        placeholder="Search papers"
+        variant="outlined"
+        clearable
+        :clear-icon="X"
+        class="mt-4"
+        aria-label="Search research papers"
+      >
+        <template #prepend-inner>
+          <v-icon :icon="Search" size="18" />
+        </template>
+      </v-text-field>
+    </div>
+
+    <h3 class="mb-4">
       {{ title }}
-      <span class="text-medium-emphasis">({{ papers.length }})</span>
+      <span class="text-medium-emphasis"> ({{ filteredPapers.length }}) </span>
     </h3>
 
     <v-expansion-panels
-      v-if="papers.length"
+      v-if="filteredPapers.length"
       v-model="expanded"
       multiple
       class="paper-panels"
       :rounded="false"
     >
       <v-expansion-panel
-        v-for="paper in papers"
+        v-for="paper in filteredPapers"
         :key="paper.paper_id"
         :value="paper.paper_id"
         elevation="1"
@@ -91,11 +196,27 @@ const handleView = (paper: Paper) => emit('view', paper);
       </v-expansion-panel>
     </v-expansion-panels>
 
-    <div v-else class="empty-state text-center py-12">
+    <div v-else class="empty-state">
       <p class="text-medium-emphasis">
-        {{ emptyMessage }}
+        {{ searchQuery ? 'No papers match your search.' : emptyMessage }}
       </p>
     </div>
+
+    <!-- floating back-to-top button -->
+    <v-btn
+      v-if="showScrollTop"
+      class="scroll-top-btn"
+      icon
+      variant="tonal"
+      size="small"
+      elevation="1"
+      :ripple="false"
+      aria-label="Scroll back to top"
+      @click="handleScrollToTop"
+    >
+      <v-icon :icon="ArrowUp" size="18" />
+      <v-tooltip activator="parent" location="left"> Back to top </v-tooltip>
+    </v-btn>
   </section>
 </template>
 
@@ -125,6 +246,18 @@ const handleView = (paper: Paper) => emit('view', paper);
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.scroll-top-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  opacity: 0.85;
+}
+
+.scroll-top-btn:hover {
+  opacity: 1;
 }
 
 :deep(.v-expansion-panel:not(:first-child)::after),

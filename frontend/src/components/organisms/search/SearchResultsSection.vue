@@ -61,14 +61,14 @@ const handleQueryUpdate = () => {
     </v-card>
 
     <PaperList
-        :papers="outputs"
-        :show-abstract="showAbstract"
-        :show-add="showAdd"
-        title="Articles"
-        empty-message="No results yet"
-        :expand-all-on-change="true"
-        @add="paper => emit('add', paper)"
-        @view="paper => emit('view', paper)"
+      :papers="outputs"
+      :show-abstract="showAbstract"
+      :show-add="showAdd"
+      title="Papers"
+      empty-message="No results yet"
+      :expand-all-on-change="true"
+      @add="paper => emit('add', paper)"
+      @view="paper => emit('view', paper)"
     />
   </v-container>
 </template>
