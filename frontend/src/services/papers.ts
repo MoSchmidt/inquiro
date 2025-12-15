@@ -1,7 +1,6 @@
 import { PaperApi } from '@/api';
 import { apiAxios } from '@/auth/axios-auth';
 
-// Initialize the generated API class
 const paperApi = new PaperApi(undefined, undefined, apiAxios);
 
 export async function fetchPaperPdf(paperId: number): Promise<Blob> {

@@ -98,7 +98,6 @@ const confirmAddToProject = async () => {
   paperToAdd.value = null;
 };
 
-// ✅ 3. Add Handler Function
 const handleViewPaper = (paper: Paper) => {
   pdfPaperId.value = paper.paper_id;
   pdfPaperTitle.value = paper.title;
