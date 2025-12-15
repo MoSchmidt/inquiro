@@ -10,10 +10,13 @@ from app.services.paper_service import PaperService
 
 router = APIRouter(prefix="/papers", tags=["Paper"])
 
+logger = __import__("logging").getLogger("inquiro")
+
 
 @router.post(
     "/{paper_id}/summary",
     response_model=PaperSummaryResponse,
+    response_model_exclude_none=True,
     status_code=status.HTTP_200_OK,
     summary="Summarise the specified paper",
 )

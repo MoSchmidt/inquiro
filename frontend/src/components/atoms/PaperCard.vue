@@ -14,6 +14,7 @@ import { computed, ref, withDefaults } from 'vue';
 import type { Paper, PaperMenuOption } from '@/types/content';
 import ActionMenu, { type ActionMenuItem } from '@/components/molecules/ActionMenu.vue';
 import { usePaperSummariesStore } from '@/stores/paperSummaries';
+import FormattedMarkdown from '@/components/atoms/FormattedMarkdown.vue';
 
 const props = withDefaults(
     defineProps<{
@@ -43,15 +44,15 @@ const summariesStore = usePaperSummariesStore();
 const entry = computed(() => summariesStore.entry(props.paper.paper_id));
 const isLoading = computed(() => entry.value.status === 'loading');
 const isError = computed(() => entry.value.status === 'error');
-const summaryText = computed(() => entry.value.summary ?? '');
+const summaryMarkdown = computed(() => entry.value.summaryMarkdown ?? '');
 const showSummaryChip = computed(() => summariesStore.hasSummary(props.paper.paper_id));
 
 const regenerate = () => summariesStore.summarise(props.paper.paper_id, { force: true });
 
 const copySummary = async () => {
-  if (!summaryText.value) return;
+  if (!summaryMarkdown.value) return;
   try {
-    await navigator.clipboard.writeText(summaryText.value);
+    await navigator.clipboard.writeText(summaryMarkdown.value);
   } catch {
     // ignore
   }
@@ -194,51 +195,49 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
       <span v-else class="text-disabled"> No abstract available. </span>
     </div>
 
-    <v-divider class="my-4" />
+    <template v-if="isLoading || isError || summaryMarkdown">
+      <v-divider class="my-4" />
 
-    <div class="summary-block">
-      <div class="d-flex align-center justify-space-between mb-2">
-        <div class="d-flex align-center">
-          <v-icon :icon="Sparkles" size="18" class="me-2" />
-          <div class="text-subtitle-2 font-weight-medium">AI Summary</div>
+      <div class="summary-block">
+        <div class="d-flex align-center justify-space-between mb-2">
+          <div class="d-flex align-center">
+            <v-icon :icon="Sparkles" size="18" class="me-2" />
+            <div class="text-subtitle-2 font-weight-medium">AI Summary</div>
+          </div>
+
+          <div class="d-flex align-center" style="gap: 6px;">
+            <v-btn v-if="summaryMarkdown" size="small" variant="text" @click="copySummary">
+              <v-icon :icon="Copy" size="16" class="me-1" />
+              Copy
+            </v-btn>
+
+            <v-btn
+              v-if="summaryMarkdown"
+              size="small"
+              variant="text"
+              :disabled="isLoading"
+              @click="regenerate"
+            >
+              <v-icon :icon="RotateCcw" size="16" class="me-1" />
+              Regenerate
+            </v-btn>
+          </div>
         </div>
 
-        <div class="d-flex align-center" style="gap: 6px;">
-          <v-btn if="summaryText" size="small" variant="text" @click="copySummary">
-            <v-icon :icon="Copy" size="16" class="me-1" />
-            Copy
-          </v-btn>
+        <v-alert v-if="isError" type="error" variant="tonal" class="mb-3">
+          {{ entry.error || "Failed to summarise paper." }}
+          <template #append>
+            <v-btn size="small" variant="text" @click="regenerate">Retry</v-btn>
+          </template>
+        </v-alert>
 
-          <v-btn
-            v-if="summaryText"
-            size="small"
-            variant="text"
-            :disabled="isLoading"
-            @click="regenerate"
-          >
-            <v-icon :icon="RotateCcw" size="16" class="me-1" />
-            Regenerate
-          </v-btn>
+        <v-skeleton-loader v-if="isLoading" type="paragraph, paragraph, paragraph" />
+
+        <div v-else class="summary-content">
+          <FormattedMarkdown :markdown="summaryMarkdown" />
         </div>
       </div>
-
-      <v-alert v-if="isError" type="error" variant="tonal" class="mb-3">
-        {{ entry.error || "Failed to summarise paper." }}
-        <template #append>
-          <v-btn size="small" variant="text" @click="regenerate">Retry</v-btn>
-        </template>
-      </v-alert>
-
-      <v-skeleton-loader v-if="isLoading" type="paragraph, paragraph, paragraph" />
-
-      <div v-else-if="summaryText" class="summary-content">
-        {{ summaryText }}
-      </div>
-
-      <div v-else class="text-body-2 text-medium-emphasis">
-        No summary generated yet. Use the menu action "Summarise Paper".
-      </div>
-    </div>
+    </template>
   </v-expansion-panel-text>
 </template>
 
@@ -266,4 +265,15 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
 .expand-icon--expanded { transform: rotate(180deg); }
 
 .action-buttons :deep(.v-btn) { margin-left: 0; }
+.action-buttons :deep(.v-btn) {
+  margin-left: 0;
+}
+
+.summary-content {
+  line-height: 1.55;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.04);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
 </style>

@@ -35,7 +35,7 @@ export const PaperApiAxiosParamCreator = function (configuration?: Configuration
         /**
          * Stream the PDF file of the specified paper. This URL can be used directly as the source for frontend PDF viewers.
          * @summary Get the PDF of the specified paper
-         * @param {number} paperId
+         * @param {number} paperId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -79,7 +79,7 @@ export const PaperApiAxiosParamCreator = function (configuration?: Configuration
             assertParamExists('summaryPapersPaperIdSummaryPost', 'paperId', paperId)
             // verify required parameter 'paperSummaryRequest' is not null or undefined
             assertParamExists('summaryPapersPaperIdSummaryPost', 'paperSummaryRequest', paperSummaryRequest)
-            const localVarPath = `/papers{paper_id}/summary`
+            const localVarPath = `/papers/{paper_id}/summary`
                 .replace(`{${"paper_id"}}`, encodeURIComponent(String(paperId)));
             // use dummy base URL string because the URL constructor only accepts absolute URLs.
             const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
@@ -117,7 +117,7 @@ export const PaperApiFp = function(configuration?: Configuration) {
         /**
          * Stream the PDF file of the specified paper. This URL can be used directly as the source for frontend PDF viewers.
          * @summary Get the PDF of the specified paper
-         * @param {number} paperId
+         * @param {number} paperId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -153,7 +153,7 @@ export const PaperApiFactory = function (configuration?: Configuration, basePath
         /**
          * Stream the PDF file of the specified paper. This URL can be used directly as the source for frontend PDF viewers.
          * @summary Get the PDF of the specified paper
-         * @param {number} paperId
+         * @param {number} paperId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -181,7 +181,7 @@ export class PaperApi extends BaseAPI {
     /**
      * Stream the PDF file of the specified paper. This URL can be used directly as the source for frontend PDF viewers.
      * @summary Get the PDF of the specified paper
-     * @param {number} paperId
+     * @param {number} paperId 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */

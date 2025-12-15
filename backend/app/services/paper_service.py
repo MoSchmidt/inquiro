@@ -136,8 +136,7 @@ class PaperService:
         """
         Fetch arXiv PDF and return its raw bytes.
         """
-
-        url = f"https://arxiv.org/pdf/{arxiv_id}.pdf"
+        url = f"https://arxiv.org/pdf/{arxiv_id}"
         async with httpx.AsyncClient(timeout=30, follow_redirects=True) as client:
             resp = await client.get(url)
             resp.raise_for_status()

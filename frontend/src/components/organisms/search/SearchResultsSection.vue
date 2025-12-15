@@ -72,6 +72,7 @@ const handleQueryUpdate = () => {
       empty-message="No results yet"
       :expand-all-on-change="true"
       :menu-options="menuOptions"
+      :search-context="query"
       @add="paper => emit('add', paper)"
       @view="paper => emit('view', paper)"
     />

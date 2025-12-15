@@ -1,7 +1,7 @@
 from datetime import date
-from typing import List, Literal, Optional
+from typing import List, Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class PaperDto(BaseModel):
@@ -31,9 +31,30 @@ class PaperSummaryRequest(BaseModel):
 
 class PaperSummaryResponse(BaseModel):
     """
-    Response to summary request for a specified paper.
-    Markdown + TeX format for nice rendering.
+    Structured response to summary request.
+    Fields contain Markdown + LaTeX strings.
     """
 
-    format: Literal["md+tex"] = "md+tex"
-    summary_markdown: str
+    title: str = Field(..., description="The title of the paper.")
+
+    executive_summary: str = Field(
+        ..., description="A high-level, 2-3 sentence overview of the paper's core contribution."
+    )
+
+    relevance_to_query: Optional[str] = Field(
+        default=None,
+        description="Direct answer to how this paper relates to the user's specific query.",
+    )
+
+    methodology_points: List[str] = Field(
+        ..., description="List of technical steps/architectures (bullet points)."
+    )
+
+    results_points: List[str] = Field(
+        ..., description="List of quantitative findings or theoretical results (bullet points)."
+    )
+
+    limitations: str = Field(
+        default="Not explicitly stated.",
+        description="Critical analysis of constraints or assumptions.",
+    )

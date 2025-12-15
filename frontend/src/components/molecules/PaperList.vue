@@ -29,6 +29,7 @@ interface Props {
   emptyMessage?: string;
   expandAllOnChange?: boolean;
   menuOptions?: PaperMenuOption[];
+  searchContext?: string;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -155,7 +156,8 @@ const summariesStore = usePaperSummariesStore();
 const handleAdd = (paper: Paper) => emit('add', paper);
 const handleMenuSelect = async (payload: { option: PaperMenuOption; paper: Paper }) => {
   if (payload.option.value === 'summarise') {
-    await summariesStore.summarise(payload.paper.paper_id);
+    const queryToUse = props.searchContext || "";
+    await summariesStore.summarise(payload.paper.paper_id, { query: queryToUse });
 
     if (!expanded.value.includes(payload.paper.paper_id)) {
       expanded.value = [...expanded.value, payload.paper.paper_id];
@@ -164,6 +166,7 @@ const handleMenuSelect = async (payload: { option: PaperMenuOption; paper: Paper
   }
 
   emit('menu-select', payload);
+}
 const handleView = (paper: Paper) => emit('view', paper);
 </script>
 

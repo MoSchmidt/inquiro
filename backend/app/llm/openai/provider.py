@@ -86,18 +86,41 @@ class OpenAIProvider:
 
     async def summarise_paper(self, paper_text: str, query: str) -> Dict[str, Any]:
         """
-        Creates a summary of a scientific paper using the query for context using the OpenAI model.
-        Returns a string. If parsing fails, returns an empty string.
+        Creates a summary of a scientific paper.
+        Dynamically adjusts schema to include 'relevance_to_query' only if a query is present.
         """
+        has_query = query and query.strip()
+
+        properties = {
+            "title": {"type": "string"},
+            "executive_summary": {"type": "string"},
+            "methodology_points": {"type": "array", "items": {"type": "string"}},
+            "results_points": {"type": "array", "items": {"type": "string"}},
+            "limitations": {"type": "string"},
+        }
+
+        required_fields = [
+            "title",
+            "executive_summary",
+            "methodology_points",
+            "results_points",
+            "limitations",
+        ]
+
+        if has_query:
+            properties["relevance_to_query"] = {"type": "string"}
+            required_fields.append("relevance_to_query")
+
         schema = {
             "type": "object",
             "additionalProperties": False,
-            "properties": {
-                "format": {"type": "string", "enum": ["md+tex"]},
-                "summary_markdown": {"type": "string"},
-            },
-            "required": ["format", "summary_markdown"],
+            "properties": properties,
+            "required": required_fields,
         }
+
+        prompt_content = SUMMARIZATION_PROMPT
+        if has_query:
+            prompt_content += f"\n\nUser query: {query}"
 
         response = await self.client.responses.create(
             model=self._model,
@@ -105,7 +128,7 @@ class OpenAIProvider:
             input=[
                 {
                     "role": "developer",
-                    "content": f"{SUMMARIZATION_PROMPT}\n\nUser query: {query}",
+                    "content": prompt_content,
                 },
                 {
                     "role": "user",
@@ -126,8 +149,13 @@ class OpenAIProvider:
             data = json.loads(response.output_text)
         except (json.decoder.JSONDecodeError, KeyError):
             data = {
-                "format": "md+tex",
-                "summary_markdown": response.output_text.strip(),
+                "title": "Summary (Parsing Fallback)",
+                "executive_summary": response.output_text.strip(),
+                "methodology_points": [],
+                "results_points": [],
+                "limitations": "Parsing failed.",
             }
+            if has_query:
+                data["relevance_to_query"] = "Could not parse specific section."
 
         return data
