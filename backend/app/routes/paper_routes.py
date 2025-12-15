@@ -38,7 +38,7 @@ async def summary(
 async def get_paper_pdf(
     paper_id: int,
     db: AsyncSession = Depends(get_db),
-    current_user_id: int = Depends(get_current_user_id),  # Ensure user is authenticated
+    _: int = Depends(get_current_user_id),  # Ensure user is authenticated
 ) -> StreamingResponse:
     """
     Stream the PDF file of the specified paper.
