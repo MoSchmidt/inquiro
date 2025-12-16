@@ -166,7 +166,7 @@ const handleMenuSelect = async (payload: { option: PaperMenuOption; paper: Paper
   }
 
   emit('menu-select', payload);
-}
+};
 const handleView = (paper: Paper) => emit('view', paper);
 </script>
 
