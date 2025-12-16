@@ -20,7 +20,7 @@ const {
 
 const handleSubmit = () => {
   if (input.value.trim() || selectedFile.value) {
-    emit('submit', { query: input.value, file: selectedFile.value });
+    emit('submit', { query: input.value.trim(), file: selectedFile.value });
     input.value = '';
     removeFile();
   }
@@ -40,10 +40,12 @@ const handleSubmit = () => {
 
         <v-form @submit.prevent="handleSubmit">
           <input
+            id="pdf-upload"
             ref="fileInput"
             type="file"
             accept="application/pdf"
             style="display: none"
+            aria-hidden="true"
             @change="handleFileChange"
           />
 
@@ -78,6 +80,8 @@ const handleSubmit = () => {
                 variant="text"
                 density="compact"
                 color="medium-emphasis"
+                aria-controls="pdf-upload"
+                aria-label="Upload a PDF file"
                 @click="triggerFileSelect"
               >
                 <v-icon :icon="Paperclip" size="22" />
@@ -150,7 +154,7 @@ const handleSubmit = () => {
 .border-sm {
   border: 1px solid var(--border-sm-color);
 }
-.textarea-container  {
+.textarea-container {
   position: relative;
 }
 .textarea-container :deep(.v-field__input) {

@@ -70,10 +70,12 @@ const handleQueryUpdate = () => {
         <v-icon :icon="FileText" color="blue-darken-2" class="mt-1 me-3"></v-icon>
         <div class="flex-grow-1">
           <input
+            id="pdf-upload"
             ref="fileInput"
             type="file"
             accept="application/pdf"
             style="display: none"
+            aria-hidden="true"
             @change="handleFileChange"
           />
 
@@ -85,6 +87,8 @@ const handleQueryUpdate = () => {
               density="compact"
               hide-details
               class="query-input flex-grow mb-2"
+              aria-controls="pdf-upload"
+              aria-label="Attach a PDF"
               @keyup.enter="handleQueryUpdate"
             >
               <template #append-inner>
@@ -109,7 +113,7 @@ const handleQueryUpdate = () => {
                   @click="triggerFileSelect"
                 >
                   <v-icon :icon="Paperclip" size="20" />
-                  <v-tooltip activator="parent" loaction="top">Attach PDF</v-tooltip>
+                  <v-tooltip activator="parent" location="top">Attach PDF</v-tooltip>
                 </v-btn>
               </template>
             </v-text-field>

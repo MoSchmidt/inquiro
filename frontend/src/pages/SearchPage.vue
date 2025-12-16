@@ -57,10 +57,21 @@ onMounted(() => {
 });
 
 // ----- search flow -----
+type SearchPayload = { query: string; file: File | null };
+
+function isSearchPayload(payload: unknown): payload is SearchPayload {
+  return (
+    !!payload && typeof payload === 'object' &&
+      'query' in payload &&
+      typeof (payload as any).query === 'string' &&
+      'file' in payload &&
+    (((payload as any).file === null) || (payload as any).file instanceof File)
+  );
+}
 
 const handleSubmitQuery = async (payload: { query: string; file: File | null } | string) => {
   const query = typeof payload === 'string' ? payload : payload.query;
-  const file = typeof payload === 'object' ? payload.file : null;
+  const file = isSearchPayload(payload) ? payload.file : null;
 
   // Update state
   currentQueryText.value = query || '';
