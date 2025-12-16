@@ -12,6 +12,8 @@ import {
   VList,
   VListItem,
   VTextField,
+  VSpacer,
+  VForm,
 } from 'vuetify/components';
 import {
   CheckCircle,
@@ -53,6 +55,7 @@ const handleNewQueryClick = () => {
   emit('newQuery');
   emit('close');
 };
+
 const handleLoginSubmit = async () => {
   loginError.value = null;
   if (!username.value || !password.value) {
@@ -101,8 +104,8 @@ const handleNewProjectSubmit = () => {
 <template>
   <div class="d-flex flex-column h-100">
     <v-card
-      flat
-      class="pa-4 d-flex align-center justify-space-between border-b-sm"
+        flat
+        class="pa-4 d-flex align-center justify-space-between border-b border-border-light"
     >
       <h2 class="text-h6">Menu</h2>
       <v-btn icon variant="text" @click="emit('close')">
@@ -113,11 +116,11 @@ const handleNewProjectSubmit = () => {
     <div class="flex-grow-1 overflow-y-auto">
       <div class="pa-4 pb-2">
         <v-btn
-          color="secondary"
-          variant="outlined"
-          block
-          class="aligned-button"
-          @click="handleNewQueryClick"
+            color="secondary"
+            variant="outlined"
+            block
+            class="aligned-button"
+            @click="handleNewQueryClick"
         >
           <v-icon :icon="Plus" start size="18" />
           New Query
@@ -126,11 +129,11 @@ const handleNewProjectSubmit = () => {
 
       <div class="pa-4 pb-2">
         <v-btn
-          color="secondary"
-          variant="outlined"
-          block
-          class="aligned-button"
-          @click="handleNewProjectClick"
+            color="secondary"
+            variant="outlined"
+            block
+            class="aligned-button"
+            @click="handleNewProjectClick"
         >
           <v-icon :icon="Plus" start size="18" />
           New Project
@@ -146,12 +149,12 @@ const handleNewProjectSubmit = () => {
         </h3>
         <v-list density="compact" nav class="pa-0">
           <v-list-item
-            v-for="project in projects"
-            :key="project.id"
-            @click="emit('projectSelect', project.id)"
-            class="mb-2 rounded-lg"
-            :title="project.name"
-            lines="three"
+              v-for="project in projects"
+              :key="project.id"
+              @click="emit('projectSelect', project.id)"
+              class="mb-2 rounded-lg"
+              :title="project.name"
+              lines="three"
           >
             <template #prepend>
               <v-icon :icon="FolderOpen" color="blue-darken-2"></v-icon>
@@ -166,7 +169,7 @@ const handleNewProjectSubmit = () => {
       </div>
     </div>
 
-    <div class="border-t-sm pa-4">
+    <div class="border-t border-border-light pa-4">
       <h3 class="text-subtitle-1 mb-3 d-flex align-center">Account</h3>
       <div v-if="!isLoggedIn">
         <v-btn block color="primary" @click="loginDialogOpen = true">
@@ -175,22 +178,27 @@ const handleNewProjectSubmit = () => {
         </v-btn>
       </div>
       <div v-else>
-        <v-card flat class="pa-3 mb-3 bg-green-lighten-5 border-success">
+        <v-card
+            flat
+            border
+            class="pa-3 mb-3 border-success-border"
+            color="success-surface"
+        >
           <div class="d-flex align-center">
             <v-icon
-              :icon="CheckCircle"
-              color="success"
-              class="me-2"
-              size="18"
+                :icon="CheckCircle"
+                color="success"
+                class="me-2"
+                size="18"
             ></v-icon>
             <p class="text-success text-body-2">Successfully logged in</p>
           </div>
         </v-card>
         <v-btn
-          block
-          variant="outlined"
-          color="secondary"
-          @click="emit('logout')"
+            block
+            variant="outlined"
+            color="secondary"
+            @click="emit('logout')"
         >
           <v-icon :icon="LogOut" start size="18" />
           Logout
@@ -207,28 +215,28 @@ const handleNewProjectSubmit = () => {
           </p>
           <v-form @submit.prevent="handleLoginSubmit">
             <v-text-field
-              v-model="username"
-              label="Username"
-              type="text"
-              variant="outlined"
-              required
-              class="mb-4"
+                v-model="username"
+                label="Username"
+                type="text"
+                variant="outlined"
+                required
+                class="mb-4"
             ></v-text-field>
             <v-text-field
-              v-model="password"
-              label="Password"
-              type="password"
-              variant="outlined"
-              required
-              class="mb-4"
+                v-model="password"
+                label="Password"
+                type="password"
+                variant="outlined"
+                required
+                class="mb-4"
             ></v-text-field>
-            <v-btn type="submit" color="primary" block :loading="loginLoading"
-              >Login</v-btn
-            >
+            <v-btn type="submit" color="primary" block :loading="loginLoading">
+              Login
+            </v-btn>
             <div
-              v-if="loginError"
-              class="mt-2"
-              style="color: var(--v-theme-error)"
+                v-if="loginError"
+                class="mt-2"
+                style="color: rgb(var(--v-theme-error))"
             >
               {{ loginError }}
             </div>
@@ -237,9 +245,9 @@ const handleNewProjectSubmit = () => {
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
-            color="secondary"
-            variant="text"
-            @click="loginDialogOpen = false"
+              color="secondary"
+              variant="text"
+              @click="loginDialogOpen = false"
           >
             Close
           </v-btn>
@@ -256,12 +264,12 @@ const handleNewProjectSubmit = () => {
           </p>
           <v-form @submit.prevent="handleNewProjectSubmit">
             <v-text-field
-              v-model="newProjectName"
-              label="Project name"
-              type="text"
-              variant="outlined"
-              required
-              class="mb-4"
+                v-model="newProjectName"
+                label="Project name"
+                type="text"
+                variant="outlined"
+                required
+                class="mb-4"
             ></v-text-field>
             <v-btn type="submit" color="primary" block>Create Project</v-btn>
           </v-form>
@@ -269,9 +277,9 @@ const handleNewProjectSubmit = () => {
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
-            color="secondary"
-            variant="text"
-            @click="newProjectDialogOpen = false"
+              color="secondary"
+              variant="text"
+              @click="newProjectDialogOpen = false"
           >
             Close
           </v-btn>
@@ -282,24 +290,12 @@ const handleNewProjectSubmit = () => {
 </template>
 
 <style scoped>
+
 .aligned-button {
   display: flex;
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
   text-align: left;
-}
-
-.border-b-sm {
-  border-bottom: 1px solid var(--border-sm-color);
-}
-.border-t-sm {
-  border-top: 1px solid var(--border-sm-color);
-}
-.bg-green-lighten-5 {
-  background-color: var(--green-lighten-5) !important;
-}
-.border-success {
-  border: 1px solid var(--border-sucess) !important;
 }
 </style>

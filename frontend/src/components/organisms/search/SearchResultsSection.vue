@@ -36,9 +36,14 @@ const handleQueryUpdate = () => {
 
 <template>
   <v-container class="results-section">
-    <v-card flat class="mb-8 pa-4 bg-blue-lighten-5 border-sm">
+    <v-card
+        flat
+        border
+        class="mb-8 pa-4 border-border-highlight"
+        color="search-surface"
+    >
       <v-card-text class="d-flex align-start pa-0">
-        <v-icon :icon="FileText" color="blue-darken-2" class="mt-1 me-3"></v-icon>
+        <v-icon :icon="FileText" color="step-text" class="mt-1 me-3"></v-icon>
         <div class="flex-grow-1">
           <v-text-field
               v-model="editableQuery"
@@ -61,23 +66,17 @@ const handleQueryUpdate = () => {
     </v-card>
 
     <PaperList
-      :papers="outputs"
-      :show-abstract="showAbstract"
-      :show-add="showAdd"
-      title="Papers"
-      empty-message="No results yet"
-      :expand-all-on-change="true"
-      @add="paper => emit('add', paper)"
-      @view="paper => emit('view', paper)"
+        :papers="outputs"
+        :show-abstract="showAbstract"
+        :show-add="showAdd"
+        title="Papers"
+        empty-message="No results yet"
+        :expand-all-on-change="true"
+        @add="paper => emit('add', paper)"
+        @view="paper => emit('view', paper)"
     />
   </v-container>
 </template>
 
 <style scoped>
-.bg-blue-lighten-5 {
-  background-color: var(--blue-lighten-5) !important;
-}
-.border-sm {
-  border: 1px solid var(--border-sm-color-result);
-}
 </style>

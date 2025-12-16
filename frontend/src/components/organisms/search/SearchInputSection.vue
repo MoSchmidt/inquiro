@@ -27,14 +27,14 @@ const handleSubmit = () => {
         </div>
 
         <v-form @submit.prevent="handleSubmit">
-            <v-textarea
+          <v-textarea
               v-model="input"
               label="Enter your text here..."
               variant="outlined"
               auto-grow
               rows="8"
               class="mb-4"
-            ></v-textarea>
+          ></v-textarea>
           <v-btn
               type="submit"
               color="primary"
@@ -49,9 +49,13 @@ const handleSubmit = () => {
 
         <v-row class="mt-12">
           <v-col cols="12" md="4">
-            <v-card flat class="pa-4 text-center border-sm">
-              <div class="d-flex align-center justify-center mx-auto mb-4 bg-blue-lighten-4 rounded-circle" style="width: 48px; height: 48px;">
-                <span class="text-blue-darken-2 text-h6">1</span>
+            <v-card
+                flat
+                border
+                class="pa-4 text-center border-border-light"
+            >
+              <div class="d-flex align-center justify-center mx-auto mb-4 bg-step-surface rounded-circle" style="width: 48px; height: 48px;">
+                <span class="text-step-text text-h6">1</span>
               </div>
               <v-card-title class="text-h6 mb-2 pa-0">Input</v-card-title>
               <v-card-text class="text-medium-emphasis pa-0 text-body-2">
@@ -59,10 +63,15 @@ const handleSubmit = () => {
               </v-card-text>
             </v-card>
           </v-col>
+
           <v-col cols="12" md="4">
-            <v-card flat class="pa-4 text-center border-sm">
-              <div class="d-flex align-center justify-center mx-auto mb-4 bg-blue-lighten-4 rounded-circle" style="width: 48px; height: 48px;">
-                <span class="text-blue-darken-2 text-h6">2</span>
+            <v-card
+                flat
+                border
+                class="pa-4 text-center border-border-light"
+            >
+              <div class="d-flex align-center justify-center mx-auto mb-4 bg-step-surface rounded-circle" style="width: 48px; height: 48px;">
+                <span class="text-step-text text-h6">2</span>
               </div>
               <v-card-title class="text-h6 mb-2 pa-0">AI Processing</v-card-title>
               <v-card-text class="text-medium-emphasis pa-0 text-body-2">
@@ -70,10 +79,15 @@ const handleSubmit = () => {
               </v-card-text>
             </v-card>
           </v-col>
+
           <v-col cols="12" md="4">
-            <v-card flat class="pa-4 text-center border-sm">
-              <div class="d-flex align-center justify-center mx-auto mb-4 bg-blue-lighten-4 rounded-circle" style="width: 48px; height: 48px;">
-                <span class="text-blue-darken-2 text-h6">3</span>
+            <v-card
+                flat
+                border
+                class="pa-4 text-center border-border-light"
+            >
+              <div class="d-flex align-center justify-center mx-auto mb-4 bg-step-surface rounded-circle" style="width: 48px; height: 48px;">
+                <span class="text-step-text text-h6">3</span>
               </div>
               <v-card-title class="text-h6 mb-2 pa-0">Results</v-card-title>
               <v-card-text class="text-medium-emphasis pa-0 text-body-2">
@@ -85,18 +99,7 @@ const handleSubmit = () => {
       </div>
     </v-container>
   </div>
-
 </template>
 
 <style scoped>
-/* Prefer Vuetify classes, but include a few custom styles for the circles */
-.bg-blue-lighten-4 {
-  background-color: var(--blue-lighten-4) !important;
-}
-.text-blue-darken-2 {
-  color: var(--blue-darken-2) !important;
-}
-.border-sm {
-  border: 1px solid var(--border-sm-color);
-}
 </style>
