@@ -19,7 +19,7 @@ import SearchResultsSection from '@/components/organisms/search/SearchResultsSec
 import PdfViewerDialog from '@/components/organisms/pdf/PdfViewerDialog.vue';
 import type { Paper } from '@/types/content';
 
-import { searchPapers } from '@/services/search';
+import { searchPapers, searchPapersByPdf } from '@/services/search';
 import { useAuthStore } from '@/stores/auth';
 import { useProjectsStore } from '@/stores/projects';
 import { mapSearchResponseToPapers } from '@/mappers/paper-mapper';
@@ -54,14 +54,28 @@ onMounted(() => {
 
 // ----- search flow -----
 
-const handleSubmitQuery = async (query: string) => {
-  currentQuery.value = query;
+const handleSubmitQuery = async (payload: { query: string; file: File | null } | string) => {
+  const query = typeof payload === 'string' ? payload : payload.query;
+  const file = typeof payload === 'object' ? payload.file : null;
+
+  if (file) {
+    currentQuery.value = query ? `${file.name}: ${query}` : `PDF: ${file.name}`;
+  } else {
+    currentQuery.value = query;
+  }
+
   outputs.value = [];
   errorMessage.value = null;
   isLoading.value = true;
 
   try {
-    const response = await searchPapers(query);
+    let response;
+
+    if (file) {
+      response = await searchPapersByPdf(file, query || undefined);
+    } else {
+      response = await searchPapers(query);
+    }
     outputs.value = mapSearchResponseToPapers(response);
   } catch (err) {
     console.error('Search failed', err);
