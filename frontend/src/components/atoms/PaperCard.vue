@@ -147,44 +147,6 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
             v-if="transformedMenuOptions.length"
             :items="transformedMenuOptions"
         />
-        <v-menu
-          v-if="menuOptions && menuOptions.length"
-          v-model="isMenuOpen"
-          location="bottom end"
-          offset="4"
-        >
-          <template #activator="{ props: activatorProps }">
-            <v-btn
-              icon
-              size="small"
-              variant="text"
-              v-bind="activatorProps"
-              @click.stop
-            >
-              <v-icon :icon="MoreHorizontal" size="18" />
-            </v-btn>
-          </template>
-
-          <v-list density="compact">
-            <v-list-item
-              v-for="option in menuOptions"
-              :key="option.value"
-              @click.stop="
-                isMenuOpen=false;
-                emit('menu-select', { option, paper })
-              "
-            >
-              <template v-if="option.icon" #prepend>
-                <component
-                  :is="option.icon"
-                  size="16"
-                  class="me-2 text-gray-500"
-                />
-              </template>
-              <v-list-item-title>{{ option.label }}</v-list-item-title>
-            </v-list-item>
-          </v-list>
-        </v-menu>
       </div>
     </div>
   </v-expansion-panel-title>
