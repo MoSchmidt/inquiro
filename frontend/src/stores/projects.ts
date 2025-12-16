@@ -1,4 +1,6 @@
 import { defineStore } from 'pinia';
+import { ref } from 'vue';
+import type { ProjectResponse, ProjectWithPapersResponse } from '@/api';
 import {
   addPaperToProject,
   createProject,
@@ -8,156 +10,159 @@ import {
   removePaperFromProject,
   updateProject,
 } from '@/services/projects';
-import type { ProjectResponse, ProjectWithPapersResponse } from '@/api';
 
-interface ProjectsState {
-  projects: ProjectResponse[];
-  selectedProject: ProjectWithPapersResponse | null;
-  loading: boolean;
-  error: string | null;
-}
+export const useProjectsStore = defineStore('projects', () => {
+  const projects = ref<ProjectResponse[]>([]);
+  const selectedProject = ref<ProjectWithPapersResponse | null>(null);
+  const loading = ref(false);
+  const error = ref<string | null>(null);
 
-export const useProjectsStore = defineStore('projects', {
-  state: (): ProjectsState => ({
-    projects: [],
-    selectedProject: null,
-    loading: false,
-    error: null,
-  }),
+  async function loadProjects() {
+    loading.value = true;
+    error.value = null;
+    try {
+      projects.value = await listProjects();
+    } catch (err) {
+      error.value = 'Failed to load projects.';
+      console.error(err)
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
 
-  actions: {
-    async loadProjects() {
-      this.loading = true;
-      this.error = null;
-      try {
-        this.projects = await listProjects();
-      } catch (err) {
-        this.error = 'Failed to load projects.';
-        console.error(err);
-        throw err;
-      } finally {
-        this.loading = false;
+  async function selectProject(projectId: number) {
+    loading.value = true;
+    error.value = null;
+    try {
+      selectedProject.value = await getProject(projectId);
+      return selectedProject.value;
+    } catch (err) {
+      error.value = 'Failed to load project.';
+      console.error(err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function createNewProject(name: string) {
+    loading.value = true;
+    error.value = null;
+    try {
+      const project = await createProject({ project_name: name });
+      projects.value.unshift(project);
+      return project;
+    } catch (err) {
+      error.value = 'Failed to create project.';
+      console.error(err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function renameProject(projectId: number, newName: string) {
+    loading.value = true;
+    error.value = null;
+    try {
+      const updated = await updateProject(projectId, { project_name: newName });
+
+      projects.value = projects.value.map((p) =>
+        p.project_id === projectId ? updated : p
+      );
+
+      if (selectedProject.value?.project.project_id === projectId) {
+        selectedProject.value = {
+          ...selectedProject.value,
+          project: updated,
+        };
       }
-    },
 
-    async selectProject(projectId: number) {
-      this.loading = true;
-      this.error = null;
-      try {
-        this.selectedProject = await getProject(projectId);
-        return this.selectedProject;
-      } catch (err) {
-        this.error = 'Failed to load project.';
-        console.error(err);
-        throw err;
-      } finally {
-        this.loading = false;
+      return updated;
+    } catch (err) {
+      error.value = 'Failed to update project.';
+      console.error(err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  async function deleteExistingProject(projectId: number) {
+    loading.value = true;
+    error.value = null;
+    try {
+      await deleteProject(projectId);
+
+      projects.value = projects.value.filter((p) => p.project_id !== projectId);
+
+      if (selectedProject.value?.project.project_id === projectId) {
+        selectedProject.value = null;
       }
-    },
+    } catch (err) {
+      error.value = 'Failed to delete project.';
+      console.error(err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
 
-    async createNewProject(name: string) {
-      this.loading = true;
-      this.error = null;
-      try {
-        const project = await createProject({ project_name: name });
-        this.projects.unshift(project);
-        return project;
-      } catch (err) {
-        this.error = 'Failed to create project.';
-        console.error(err);
-        throw err;
-      } finally {
-        this.loading = false;
+  async function addPaper(projectId: number, paperId: number) {
+    loading.value = true;
+    error.value = null;
+    try {
+      const updated = await addPaperToProject(projectId, paperId);
+
+      if (selectedProject.value?.project.project_id === projectId) {
+        selectedProject.value = updated;
       }
-    },
 
-    async renameProject(projectId: number, newName: string) {
-      this.loading = true;
-      this.error = null;
-      try {
-        const updated = await updateProject(projectId, {
-          project_name: newName,
-        });
+      return updated;
+    } catch (err) {
+      error.value = 'Failed to add paper.';
+      console.error(err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
 
-        this.projects = this.projects.map((p) =>
-          p.project_id === projectId ? updated : p
-        );
+  async function removePaper(projectId: number, paperId: number) {
+    loading.value = true;
+    error.value = null;
+    try {
+      const updated = await removePaperFromProject(projectId, paperId);
 
-        if (this.selectedProject?.project.project_id === projectId) {
-          this.selectedProject = {
-            ...this.selectedProject,
-            project: updated,
-          };
-        }
-
-        return updated;
-      } catch (err) {
-        this.error = 'Failed to update project.';
-        console.error(err);
-        throw err;
-      } finally {
-        this.loading = false;
+      if (selectedProject.value?.project.project_id === projectId) {
+        selectedProject.value = updated;
       }
-    },
 
-    async deleteExistingProject(projectId: number) {
-      this.loading = true;
-      this.error = null;
-      try {
-        await deleteProject(projectId);
+      return updated;
+    } catch (err) {
+      error.value = 'Failed to remove paper.';
+      console.error(err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
 
-        this.projects = this.projects.filter((p) => p.project_id !== projectId);
+  return {
+    // state
+    projects,
+    selectedProject,
+    loading,
+    error,
 
-        if (this.selectedProject?.project.project_id === projectId) {
-          this.selectedProject = null;
-        }
-      } catch (err) {
-        this.error = 'Failed to delete project.';
-        console.error(err);
-        throw err;
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    async addPaper(projectId: number, paperId: number) {
-      this.loading = true;
-      this.error = null;
-      try {
-        const updated = await addPaperToProject(projectId, paperId);
-
-        if (this.selectedProject?.project.project_id === projectId) {
-          this.selectedProject = updated;
-        }
-
-        return updated;
-      } catch (err) {
-        this.error = 'Failed to add paper.';
-        console.error(err);
-        throw err;
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    async removePaper(projectId: number, paperId: number) {
-      this.loading = true;
-      this.error = null;
-      try {
-        const updated = await removePaperFromProject(projectId, paperId);
-
-        if (this.selectedProject?.project.project_id === projectId) {
-          this.selectedProject = updated;
-        }
-
-        return updated;
-      } catch (err) {
-        this.error = 'Failed to remove paper.';
-        console.error(err);
-        throw err;
-      } finally {
-        this.loading = false;
-      }
-    },
-  },
+    // actions
+    loadProjects,
+    selectProject,
+    createNewProject,
+    renameProject,
+    deleteExistingProject,
+    addPaper,
+    removePaper,
+  }
 });
