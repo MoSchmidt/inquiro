@@ -37,9 +37,9 @@ const rendered = computed(() => {
 .md :deep(h2),
 .md :deep(h3),
 .md :deep(h4) {
-  font-weight: 600;          /* <-- THIS fixes "not bold" */
+  font-weight: 600;
   line-height: 1.35;
-  margin: 10px 0 6px;        /* tight but readable */
+  margin: 10px 0 6px;
 }
 
 /* Paragraphs */
