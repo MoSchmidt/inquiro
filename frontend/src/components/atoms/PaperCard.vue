@@ -30,7 +30,6 @@ const props = withDefaults(
     }
 );
 
-const isMenuOpen = ref(false);
 
 const emit = defineEmits<{
   (e: 'add', paper: Paper): void;
