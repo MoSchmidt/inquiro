@@ -854,7 +854,7 @@
             "type": "string",
             "title": "Relevance To Query",
             "description": "Direct answer to how this paper relates to the user's specific query.",
-            "default": "No specific query provided."
+            "default": null
           },
           "methodology_points": {
             "items": {
