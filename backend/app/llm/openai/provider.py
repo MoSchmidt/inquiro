@@ -104,7 +104,6 @@ class OpenAIProvider:
             "executive_summary",
             "methodology_points",
             "results_points",
-            "limitations",
         ]
 
         if has_query:
@@ -140,7 +139,7 @@ class OpenAIProvider:
                     "type": "json_schema",
                     "name": "paper_summary",
                     "schema": schema,
-                    "strict": True,
+                    "strict": False,
                 }
             },
         )

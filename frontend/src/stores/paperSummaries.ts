@@ -10,7 +10,7 @@ export interface StructuredSummary {
   relevance_to_query?: string;
   methodology_points: string[];
   results_points: string[];
-  limitations: string;
+  limitations?: string;
 }
 
 export type SummaryEntry = {
@@ -50,7 +50,10 @@ function formatSummaryToMarkdown(data: StructuredSummary): string {
 
   parts.push(`### Core Methodology\n${data.methodology_points.map(p => `* ${p}`).join('\n')}`);
   parts.push(`### Key Findings & Results\n${data.results_points.map(p => `* ${p}`).join('\n')}`);
-  parts.push(`### Critical Analysis & Limitations\n${data.limitations}`);
+
+  if (data.limitations) {
+    parts.push(`### Critical Analysis & Limitations\n${data.limitations}`);
+  }
 
   return parts.join('\n\n');
 }

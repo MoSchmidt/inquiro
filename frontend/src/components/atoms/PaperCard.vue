@@ -4,13 +4,9 @@ import {
   VExpansionPanelText,
   VExpansionPanelTitle,
   VIcon,
-  VList,
-  VListItem,
-  VListItemTitle,
-  VMenu,
 } from 'vuetify/components';
-import { ChevronDown, Copy, Eye, FolderPlus, MoreHorizontal, RotateCcw, Sparkles } from 'lucide-vue-next';
-import { computed, ref, withDefaults } from 'vue';
+import { ChevronDown, Copy, Eye, FolderPlus, RotateCcw, Sparkles } from 'lucide-vue-next';
+import { computed, withDefaults } from 'vue';
 import type { Paper, PaperMenuOption } from '@/types/content';
 import ActionMenu, { type ActionMenuItem } from '@/components/molecules/ActionMenu.vue';
 import { usePaperSummariesStore } from '@/stores/paperSummaries';
@@ -22,11 +18,13 @@ const props = withDefaults(
       showAbstract?: boolean;
       showAdd?: boolean;
       menuOptions?: PaperMenuOption[];
+      queryContext?: string;
     }>(),
     {
       showAbstract: true,
       showAdd: false,
       menuOptions: () => [] as PaperMenuOption[],
+      queryContext: '',
     }
 );
 
@@ -46,7 +44,7 @@ const isError = computed(() => entry.value.status === 'error');
 const summaryMarkdown = computed(() => entry.value.summaryMarkdown ?? '');
 const showSummaryChip = computed(() => summariesStore.hasSummary(props.paper.paper_id));
 
-const regenerate = () => summariesStore.summarise(props.paper.paper_id, { force: true });
+const regenerate = () => summariesStore.summarise(props.paper.paper_id, { force: true, query: props.queryContext });
 
 const copySummary = async () => {
   if (!summaryMarkdown.value) return;

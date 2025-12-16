@@ -139,15 +139,6 @@ const handleScrollToTop = () => {
 };
 
 // ----- summarise paper -----
-watch(() => props.papers, (newPapers) => {
-  if (props.expandAllOnChange && newPapers.length > 0) {
-    nextTick(() => {
-      expanded.value = newPapers.map((p) => p.paper_id);
-    });
-  } else if (!props.expandAllOnChange) {
-    expanded.value = expanded.value.filter((id) => newPapers.some((p) => p.paper_id === id));
-  }
-}, { immediate: props.expandAllOnChange });
 
 const summariesStore = usePaperSummariesStore();
 
@@ -215,6 +206,7 @@ const handleView = (paper: Paper) => emit('view', paper);
             :show-abstract="showAbstract"
             :show-add="showAdd"
             :menu-options="menuOptions"
+            :query-context="searchContext"
             @add="handleAdd"
             @menu-select="handleMenuSelect"
             @view="handleView"

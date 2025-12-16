@@ -10,6 +10,7 @@ from app.services.paper_service import PaperService
 
 router = APIRouter(prefix="/papers", tags=["Paper"])
 
+
 @router.post(
     "/{paper_id}/summary",
     response_model=PaperSummaryResponse,
@@ -23,7 +24,6 @@ async def summary(
     """
     Returns the summary of the specified paper.
     """
-
     result = await PaperService.summarise_paper(paper_id=paper_id, query=request.query, session=db)
     return result
 
