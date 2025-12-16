@@ -10,7 +10,7 @@ export interface StructuredSummary {
   relevance_to_query?: string;
   methodology_points: string[];
   results_points: string[];
-  limitations: string;
+  limitations?: string;
 }
 
 export type SummaryEntry = {
