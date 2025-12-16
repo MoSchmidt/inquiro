@@ -2,33 +2,21 @@
 import { ref } from 'vue';
 import { VCard, VCardTitle, VCardText, VTextarea, VBtn, VIcon, VRow, VCol, VChip, VContainer } from 'vuetify/components';
 import { Send, Paperclip, X } from 'lucide-vue-next';
+import { useFileSelection } from '@/composables/useFileSelection';
 
 const emit = defineEmits<{
   (e: 'submit', payload: { query: string; file: File | null }): void
 }>();
 
 const input = ref('');
-const fileInput = ref<HTMLInputElement | null>(null);
-const selectedFile = ref<File | null>(null);
 
-const triggerFileSelect = () => {
-  fileInput.value?.click();
-};
-
-const handleFileChange = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  // We only allow a single file to be selected
-  if (target.files && target.files[0]) {
-    selectedFile.value = target.files[0];
-  }
-};
-
-const removeFile = () => {
-  selectedFile.value = null;
-  if (fileInput.value) {
-    fileInput.value.value = '';
-  }
-}
+const {
+  fileInput,
+  selectedFile,
+  triggerFileSelect,
+  handleFileChange,
+  removeFile
+} = useFileSelection();
 
 const handleSubmit = () => {
   if (input.value.trim() || selectedFile.value) {
@@ -59,48 +47,51 @@ const handleSubmit = () => {
             @change="handleFileChange"
           />
 
-          <div v-if="selectedFile" class="mb-2 text-left">
-            <v-chip
-              closable
-              color="primary"
-              variant="tonal"
-              @click:close="removeFile"
-            >
-              <v-icon :icon="Paperclip" start size="16" />
-              {{ selectedFile.name }}
-            </v-chip>
-          </div>
+          <div class="textarea-container mb-4">
+            <v-textarea
+              v-model="input"
+              label="Enter your text here..."
+              variant="outlined"
+              auto-grow
+              rows="8"
+              class="mb-4"
+              bg-color="white"
+              hide-details
+            ></v-textarea>
 
-          <v-textarea
-            v-model="input"
-            label="Enter your text here..."
-            variant="outlined"
-            auto-grow
-            rows="8"
-            class="mb-4"
-            bg-color="white"
-          >
-            <template #prepend-inner>
+            <div class="add-pdf-actions">
+              <v-chip
+                v-if="selectedFile"
+                closable
+                :close-icon="X"
+                color="primary"
+                variant="tonal"
+                size="small"
+                class="me-2"
+                @click:close="removeFile"
+              >
+                {{ selectedFile.name }}
+              </v-chip>
+
               <v-btn
                 icon
                 variant="text"
                 density="compact"
-                class="mt-1"
                 color="medium-emphasis"
                 @click="triggerFileSelect"
               >
                 <v-icon :icon="Paperclip" size="22" />
                 <v-tooltip activator="parent" location="top">Attach PDF</v-tooltip>
               </v-btn>
-            </template>
-          </v-textarea>
+            </div>
+          </div>
 
           <v-btn
               type="submit"
               color="primary"
               block
               size="large"
-              :disabled="!input.trim()"
+              :disabled="!input.trim() && !selectedFile"
           >
             <v-icon :icon="Send" start></v-icon>
             Generate results
@@ -158,5 +149,19 @@ const handleSubmit = () => {
 }
 .border-sm {
   border: 1px solid var(--border-sm-color);
+}
+.textarea-container  {
+  position: relative;
+}
+.textarea-container :deep(.v-field__input) {
+  padding-bottom: 40px; /* Adjust this value if needed */
+}
+.add-pdf-actions {
+  position: absolute;
+  bottom: 8px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  z-index: 1;
 }
 </style>

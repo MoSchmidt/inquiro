@@ -27,7 +27,11 @@ import { mapSearchResponseToPapers } from '@/mappers/paper-mapper';
 const authStore = useAuthStore();
 const projectsStore = useProjectsStore();
 
-const currentQuery = ref<string | null>(null);
+// State to track the active search context
+const hasActiveSearch = ref(false);
+const currentQueryText = ref('');
+const currentFile = ref<File | null>(null);
+
 const outputs = ref<Paper[]>([]);
 const isLoading = ref(false);
 const errorMessage = ref<string | null>(null);
@@ -58,11 +62,10 @@ const handleSubmitQuery = async (payload: { query: string; file: File | null } |
   const query = typeof payload === 'string' ? payload : payload.query;
   const file = typeof payload === 'object' ? payload.file : null;
 
-  if (file) {
-    currentQuery.value = query ? `${file.name}: ${query}` : `PDF: ${file.name}`;
-  } else {
-    currentQuery.value = query;
-  }
+  // Update state
+  currentQueryText.value = query || '';
+  currentFile.value = file || null;
+  hasActiveSearch.value = true;
 
   outputs.value = [];
   errorMessage.value = null;
@@ -129,12 +132,13 @@ const handleViewPaper = (paper: Paper) => {
       {{ errorMessage }}
     </v-alert>
 
-    <div v-if="!currentQuery">
+    <div v-if="!hasActiveSearch">
       <SearchInputSection @submit="handleSubmitQuery" />
     </div>
     <div v-else>
       <SearchResultsSection
-          :query="currentQuery || ''"
+          :query="currentQueryText"
+          :file="currentFile"
           :outputs="outputs"
           :show-abstract="true"
           :show-add="isAuthenticated"
