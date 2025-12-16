@@ -181,7 +181,6 @@ const handleView = (paper: Paper) => emit('view', paper);
         elevation="1"
         class="paper-panel mb-3"
         rounded="xl"
-        :ripple="false"
         style="border-radius: 12px !important"
       >
         <PaperCard
@@ -210,7 +209,6 @@ const handleView = (paper: Paper) => emit('view', paper);
       variant="tonal"
       size="small"
       elevation="1"
-      :ripple="false"
       aria-label="Scroll back to top"
       @click="handleScrollToTop"
     >
