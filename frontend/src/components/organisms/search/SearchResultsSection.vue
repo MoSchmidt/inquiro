@@ -8,7 +8,7 @@ import {
   VBtn,
   VTextField,
 } from 'vuetify/components';
-import { FileText, Edit3, Sparkles, Trash2 } from 'lucide-vue-next';
+import { FileText, Edit3, Sparkles } from 'lucide-vue-next';
 import PaperList from '@/components/molecules/PaperList.vue';
 import type { Paper, PaperMenuOption } from '@/types/content';
 
