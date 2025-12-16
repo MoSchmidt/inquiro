@@ -5,7 +5,7 @@ import {
   VExpansionPanelTitle,
   VIcon,
 } from 'vuetify/components';
-import { ChevronDown, FolderPlus } from 'lucide-vue-next';
+import { ChevronDown, FolderPlus, Eye } from 'lucide-vue-next';
 import { withDefaults, computed } from 'vue';
 import type { Paper, PaperMenuOption } from '@/types/content';
 import ActionMenu, { type ActionMenuItem } from '@/components/molecules/ActionMenu.vue';
@@ -27,6 +27,7 @@ const props = withDefaults(
 const emit = defineEmits<{
   (e: 'add', paper: Paper): void;
   (e: 'menu-select', payload: { option: PaperMenuOption; paper: Paper }): void;
+  (e: 'view', paper: Paper): void;
 }>();
 
 // Transform PaperMenuOption to ActionMenuItem
@@ -44,6 +45,7 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
 <template>
   <v-expansion-panel-title v-slot="{ expanded }">
     <div class="paper-header w-100">
+      <!-- Expand icon -->
       <div class="expand-icon-wrapper flex items-center justify-center">
         <v-icon
           :icon="ChevronDown"
@@ -53,6 +55,7 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
         />
       </div>
 
+      <!-- Title + meta -->
       <div class="flex-grow-1 me-sm-4">
         <div class="d-flex align-center">
           <div
@@ -60,6 +63,8 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
           >
             {{ paper.title }}
           </div>
+
+          <!-- Year next to title -->
           <span
             v-if="paper.year"
             class="ms-2"
@@ -68,12 +73,26 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
             {{ paper.year }}
           </span>
         </div>
+
+        <!-- Author etc. meta stays below -->
         <div class="text-body-2 text-medium-emphasis paper-meta">
           <span v-if="paper.author">{{ paper.author }}</span>
         </div>
       </div>
 
+      <!-- Right actions stay the same -->
       <div class="action-buttons">
+        <v-btn
+            icon
+            size="small"
+            variant="text"
+            color="primary"
+            class="me-1"
+            @click.stop="emit('view', paper)"
+        >
+          <v-icon :icon="Eye" size="18" />
+          <v-tooltip activator="parent" location="top">Read Paper</v-tooltip>
+        </v-btn>
         <v-btn
           v-if="showAdd"
           icon
