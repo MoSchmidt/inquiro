@@ -24,7 +24,7 @@ export const useProjectsStore = defineStore('projects', () => {
       projects.value = await listProjects();
     } catch (err) {
       error.value = 'Failed to load projects.';
-      console.error(err)
+      console.error(err);
       throw err;
     } finally {
       loading.value = false;
