@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import type { AdvancedSearchOptions, ConditionGroup } from '@/types/search';
 import AdvancedSearchGroup from '@/components/atoms/AdvancedSearchGroup.vue';
-import { X } from 'lucide-vue-next';
+import { ChevronDown, X } from 'lucide-vue-next';
 import ExpansionChevron from '@/components/atoms/ExpansionChevron.vue';
 
 const emit = defineEmits<{
@@ -56,7 +56,7 @@ watch(
 </script>
 
 <template>
-  <v-expansion-panels flat rounded="lg" :ripple="false">
+  <v-expansion-panels flat rounded="lg">
     <v-expansion-panel class="custom-shadow-panel">
       <v-expansion-panel-title v-slot="{ expanded }">
         <div class="d-flex align-center justify-space-between w-100">
@@ -86,6 +86,7 @@ watch(
               label="Published from"
               clearable
               :clear-icon="X"
+              :menu-icon="ChevronDown"
               density="compact"
               hide-details
             />
@@ -99,6 +100,7 @@ watch(
               label="Published to"
               clearable
               :clear-icon="X"
+              :menu-icon="ChevronDown"
               density="compact"
               hide-details
             />

@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
-import { VBtn, VSelect, VTooltip, VDivider } from 'vuetify/components';
+import { computed } from 'vue';
+import { VBtn, VDivider, VIcon, VSelect, VTooltip } from 'vuetify/components';
+import { ChevronDown, Plus, PlusSquare, Trash2 } from 'lucide-vue-next';
+
 import ConditionRow from './ConditionRow.vue';
 import type { ConditionGroup, TextCondition } from '@/types/search';
-import { Plus, PlusSquare, Trash2 } from 'lucide-vue-next';
 
 defineOptions({ name: 'AdvancedSearchGroup' });
 
@@ -19,23 +20,23 @@ const emit = defineEmits<{
   (e: 'remove'): void;
 }>();
 
-const clone = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
-const localGroup = ref<ConditionGroup>(clone(props.modelValue));
-
-watch(() => props.modelValue, (val) => {
-  // keep local shadow in sync but avoid shared refs
-  localGroup.value = clone(val);
-}, { deep: true });
-
-watch(localGroup, (val) => {
-  // always emit a fresh object (breaks shared refs between siblings/parents)
-  emit('update:modelValue', clone(val));
-}, { deep: true });
+const model = computed<ConditionGroup>({
+  get: () => props.modelValue,
+  set: (value) => emit('update:modelValue', value),
+});
 
 const logicalItems = [
   { title: 'All conditions (AND)', value: 'AND' },
-  { title: 'Any condition (OR)',  value: 'OR'  },
-];
+  { title: 'Any condition (OR)', value: 'OR' },
+] as const;
+
+const operatorModel = computed<ConditionGroup['operator']>({
+  get: () => (props.isRoot ? 'AND' : model.value.operator),
+  set: (op) => {
+    if (props.isRoot) return; // root is locked to AND
+    model.value = { ...model.value, operator: op };
+  },
+});
 
 function addCondition() {
   const next: TextCondition = {
@@ -44,7 +45,7 @@ function addCondition() {
     operator: 'contains',
     value: '',
   };
-  localGroup.value = { ...localGroup.value, children: [...localGroup.value.children, next] };
+  model.value = { ...model.value, children: [...model.value.children, next] };
 }
 
 function addGroup() {
@@ -53,48 +54,44 @@ function addGroup() {
     operator: 'AND',
     children: [],
   };
-  localGroup.value = { ...localGroup.value, children: [...localGroup.value.children, next] };
+  model.value = { ...model.value, children: [...model.value.children, next] };
 }
 
-function removeChild(idx: number) {
-  const children = localGroup.value.children.slice();
-  children.splice(idx, 1);
-  localGroup.value = { ...localGroup.value, children };
+function removeChild(index: number) {
+  model.value = {
+    ...model.value,
+    children: model.value.children.filter((_, i) => i !== index),
+  };
 }
 
-function updateChild(idx: number, updated: ConditionGroup | TextCondition) {
-  const children = localGroup.value.children.slice();
-  children[idx] = clone(updated);
-  localGroup.value = { ...localGroup.value, children };
+function updateChild(index: number, updated: ConditionGroup | TextCondition) {
+  model.value = {
+    ...model.value,
+    children: model.value.children.map((c, i) => (i === index ? updated : c)),
+  };
 }
 </script>
 
 <template>
   <!-- Root: frameless; Nested: subtle card -->
   <div
-    :class="[
-      isRoot
-        ? ''
-        : 'rounded-lg border border-default pa-4 bg-surface',
-    ]"
+    :class="[isRoot ? '' : 'rounded-lg border border-default pa-4 bg-surface']"
   >
-    <!-- Header row: hidden for root; shown for nested -->
-    <div
-      v-if="!isRoot"
-      class="d-flex align-center mb-3"
-      style="gap: 12px"
-    >
+    <!-- Header row (hidden for root) -->
+    <div v-if="!isRoot" class="d-flex align-center mb-3" style="gap: 12px">
       <span class="text-medium-emphasis">Combine with</span>
 
       <v-select
-        v-model="localGroup.operator"
+        v-model="operatorModel"
         :items="logicalItems"
         item-title="title"
         item-value="value"
         variant="outlined"
         density="compact"
         hide-details
+        :menu-icon="ChevronDown"
         style="max-width: 240px"
+        :menu-props="{ closeOnContentClick: true }"
       />
 
       <v-tooltip text="Remove group">
@@ -104,8 +101,7 @@ function updateChild(idx: number, updated: ConditionGroup | TextCondition) {
             v-bind="tprops"
             size="x-small"
             variant="text"
-            :ripple="false"
-            @click="$emit('remove')"
+            @click="emit('remove')"
           >
             <v-icon :icon="Trash2" size="18" />
           </v-btn>
@@ -115,11 +111,7 @@ function updateChild(idx: number, updated: ConditionGroup | TextCondition) {
 
     <!-- Children -->
     <div class="ms-1">
-      <div
-        v-for="(child, idx) in localGroup.children"
-        :key="idx"
-        class="mb-2"
-      >
+      <div v-for="(child, idx) in model.children" :key="idx" class="mb-2">
         <AdvancedSearchGroup
           v-if="child.type === 'group'"
           :model-value="child"
@@ -128,21 +120,28 @@ function updateChild(idx: number, updated: ConditionGroup | TextCondition) {
           @update:model-value="(val) => updateChild(idx, val)"
           @remove="removeChild(idx)"
         />
+
         <ConditionRow
           v-else
           :model-value="child"
           @update:model-value="(val) => updateChild(idx, val)"
           @remove="removeChild(idx)"
         />
-        <v-divider v-if="idx < localGroup.children.length - 1" class="my-2" />
+
+        <v-divider v-if="idx < model.children.length - 1" class="my-2" />
       </div>
     </div>
 
     <!-- Actions -->
     <div class="d-flex mt-3" style="gap: 8px">
-      <v-btn size="small" variant="outlined" :ripple="false" @click="addCondition">
+      <v-btn
+        size="small"
+        variant="outlined"
+        @click="addCondition"
+      >
         <v-icon :icon="Plus" start /> Condition
       </v-btn>
+
       <v-btn size="small" variant="outlined" :ripple="false" @click="addGroup">
         <v-icon :icon="PlusSquare" start /> Group
       </v-btn>
