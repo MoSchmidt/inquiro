@@ -3,7 +3,7 @@ import { onUnmounted, ref, watch } from 'vue';
 import { VAlert, VBtn, VCard, VCardText, VDialog, VIcon, VProgressCircular, VSpacer, } from 'vuetify/components';
 import { Download, X, ZoomIn, ZoomOut } from 'lucide-vue-next';
 import VuePdfEmbed from 'vue-pdf-embed';
-import { PaperStore } from '@/stores/papers';
+import { usePaperStore } from '@/stores/papers';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 
 import 'vue-pdf-embed/dist/styles/textLayer.css';
@@ -26,6 +26,8 @@ const pdfSource = ref<string | null>(null);
 const pdfWidth = ref(800);
 const pageCount = ref(0);
 
+const paperStore = usePaperStore();
+
 const loadPdf = async () => {
   if (!props.paperId) return;
 
@@ -39,7 +41,7 @@ const loadPdf = async () => {
   }
 
   try {
-    const blob = await PaperStore.getPdf(props.paperId);
+    const blob = await paperStore.getPdf(props.paperId);
     pdfSource.value = URL.createObjectURL(blob);
   } catch (err) {
     console.error('Failed to load PDF:', err);
