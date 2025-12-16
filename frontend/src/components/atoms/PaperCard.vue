@@ -227,9 +227,6 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
 .expand-icon--expanded { transform: rotate(180deg); }
 
 .action-buttons :deep(.v-btn) { margin-left: 0; }
-.action-buttons :deep(.v-btn) {
-  margin-left: 0;
-}
 
 .summary-content {
   line-height: 1.55;
