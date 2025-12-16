@@ -83,7 +83,7 @@ export const usePaperSummariesStore = defineStore("paperSummaries", () => {
 
     const p = (async () => {
       try {
-        const result = (await summarisePaper(paperId, opts?.query || "")) as unknown as StructuredSummary;
+        const result = await summarisePaper(paperId, opts?.query || "");
 
         if (!result || !result.executive_summary) {
           throw new Error("Invalid summary format returned.");
