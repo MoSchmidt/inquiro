@@ -235,9 +235,7 @@ const handleNewProjectSubmit = () => {
             </v-btn>
             <div
                 v-if="loginError"
-                class="mt-2"
-                style="color: rgb(var(--v-theme-error))"
-            >
+                class="mt-2 text-error" >
               {{ loginError }}
             </div>
           </v-form>
