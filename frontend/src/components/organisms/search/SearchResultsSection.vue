@@ -7,13 +7,17 @@ import {
   VContainer,
   VBtn,
   VTextField,
+  VChip,
+  VTooltip
 } from 'vuetify/components';
-import { FileText, Edit3, Sparkles } from 'lucide-vue-next';
+import { FileText, Edit3, Paperclip, Sparkles, X } from 'lucide-vue-next';
 import PaperList from '@/components/molecules/PaperList.vue';
 import type { Paper, PaperMenuOption } from '@/types/content';
+import { useFileSelection } from '@/composables/useFileSelection';
 
 const props = defineProps<{
   query: string;
+  file: File | null;
   outputs: Paper[];
   showAbstract?: boolean;
   showAdd?: boolean;
@@ -21,7 +25,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'add', paper: Paper): void;
-  (e: 'updateQuery', newQuery: string): void;
+  (e: 'updateQuery', payload: { query: string; file: File | null }): void;
   (e: 'view', paper: Paper): void;
 }>();
 
@@ -29,11 +33,36 @@ const menuOptions: PaperMenuOption[] = [
   { label: 'Summarise Paper', value: 'summarise', icon: Sparkles },
 ];
 
+// ----- Query & File State -----
 const editableQuery = ref(props.query);
-const isQueryChanged = computed(() => editableQuery.value.trim() !== props.query.trim());
+
+const {
+  fileInput,
+  selectedFile,
+  triggerFileSelect,
+  handleFileChange,
+  removeFile
+} = useFileSelection(props.file);
+
+// Watch for external prop changes to keep local state in sync
+watch(() => props.query, (newVal) => {
+  editableQuery.value = newVal;
+});
+watch(() => props.file, (newVal) => {
+  selectedFile.value = newVal;
+});
+
+// ----- Submission -----
+const isChanged = computed(() => {
+  const queryChanged = editableQuery.value.trim() !== props.query.trim();
+  const fileChanged = selectedFile.value !== props.file;
+  return queryChanged || fileChanged;
+});
+
 const handleQueryUpdate = () => {
-  if (editableQuery.value.trim()) {
-    emit('updateQuery', editableQuery.value.trim());
+  // Allow updating search if there is a text OR a file
+  if (editableQuery.value.trim() || selectedFile.value) {
+    emit('updateQuery', { query: editableQuery.value.trim(), file: selectedFile.value });
   }
 };
 </script>
@@ -44,22 +73,66 @@ const handleQueryUpdate = () => {
       <v-card-text class="d-flex align-start pa-0">
         <v-icon :icon="FileText" color="blue-darken-2" class="mt-1 me-3"></v-icon>
         <div class="flex-grow-1">
-          <v-text-field
+          <input
+            id="pdf-upload"
+            ref="fileInput"
+            type="file"
+            accept="application/pdf"
+            style="display: none"
+            aria-hidden="true"
+            @change="handleFileChange"
+          />
+
+          <div class="d-flex align-center">
+            <v-text-field
               v-model="editableQuery"
               label="Your Query"
               variant="outlined"
-              dense
-              class="mb-2"
-          ></v-text-field>
-          <v-btn
-              v-if="isQueryChanged"
+              density="compact"
+              hide-details
+              class="query-input flex-grow mb-2"
+              aria-controls="pdf-upload"
+              aria-label="Attach a PDF"
+              @keyup.enter="handleQueryUpdate"
+            >
+              <template #append-inner>
+                <v-chip
+                  v-if="selectedFile"
+                  closable
+                  :close-icon="X"
+                  color="primary"
+                  variant="tonal"
+                  size="small"
+                  class="me-2"
+                  @click:close="removeFile"
+                >
+                  {{ selectedFile.name }}
+                </v-chip>
+
+                <v-btn
+                  icon
+                  variant="text"
+                  density="compact"
+                  color="medium-emphasis"
+                  @click="triggerFileSelect"
+                >
+                  <v-icon :icon="Paperclip" size="20" />
+                  <v-tooltip activator="parent" location="top">Attach PDF</v-tooltip>
+                </v-btn>
+              </template>
+            </v-text-field>
+
+            <v-btn
+              v-if="isChanged"
               color="primary"
               variant="outlined"
               size="small"
+              class="ml-4"
               @click="handleQueryUpdate">
-            <v-icon :icon="Edit3" start size="18"/>
-            Update query
-          </v-btn>
+              <v-icon :icon="Edit3" start size="18"/>
+              Update query
+            </v-btn>
+          </div>
         </div>
       </v-card-text>
     </v-card>

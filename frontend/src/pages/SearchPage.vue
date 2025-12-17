@@ -19,7 +19,7 @@ import SearchResultsSection from '@/components/organisms/search/SearchResultsSec
 import PdfViewerDialog from '@/components/organisms/pdf/PdfViewerDialog.vue';
 import type { Paper } from '@/types/content';
 
-import { searchPapers } from '@/services/search';
+import { searchPapers, searchPapersByPdf } from '@/services/search';
 import { useAuthStore } from '@/stores/auth';
 import { useProjectsStore } from '@/stores/projects';
 import { mapSearchResponseToPapers } from '@/mappers/paper-mapper';
@@ -27,7 +27,11 @@ import { mapSearchResponseToPapers } from '@/mappers/paper-mapper';
 const authStore = useAuthStore();
 const projectsStore = useProjectsStore();
 
-const currentQuery = ref<string | null>(null);
+// State to track the active search context
+const hasActiveSearch = ref(false);
+const currentQueryText = ref('');
+const currentFile = ref<File | null>(null);
+
 const outputs = ref<Paper[]>([]);
 const isLoading = ref(false);
 const errorMessage = ref<string | null>(null);
@@ -53,15 +57,39 @@ onMounted(() => {
 });
 
 // ----- search flow -----
+type SearchPayload = { query: string; file: File | null };
 
-const handleSubmitQuery = async (query: string) => {
-  currentQuery.value = query;
+function isSearchPayload(payload: unknown): payload is SearchPayload {
+  return (
+    !!payload && typeof payload === 'object' &&
+      'query' in payload &&
+      typeof (payload as any).query === 'string' &&
+      'file' in payload &&
+    (((payload as any).file === null) || (payload as any).file instanceof File)
+  );
+}
+
+const handleSubmitQuery = async (payload: { query: string; file: File | null } | string) => {
+  const query = typeof payload === 'string' ? payload : payload.query;
+  const file = isSearchPayload(payload) ? payload.file : null;
+
+  // Update state
+  currentQueryText.value = query || '';
+  currentFile.value = file || null;
+  hasActiveSearch.value = true;
+
   outputs.value = [];
   errorMessage.value = null;
   isLoading.value = true;
 
   try {
-    const response = await searchPapers(query);
+    let response;
+
+    if (file) {
+      response = await searchPapersByPdf(file, query || undefined);
+    } else {
+      response = await searchPapers(query);
+    }
     outputs.value = mapSearchResponseToPapers(response);
   } catch (err) {
     console.error('Search failed', err);
@@ -115,12 +143,13 @@ const handleViewPaper = (paper: Paper) => {
       {{ errorMessage }}
     </v-alert>
 
-    <div v-if="!currentQuery">
+    <div v-if="!hasActiveSearch">
       <SearchInputSection @submit="handleSubmitQuery" />
     </div>
     <div v-else>
       <SearchResultsSection
-          :query="currentQuery || ''"
+          :query="currentQueryText"
+          :file="currentFile"
           :outputs="outputs"
           :show-abstract="true"
           :show-add="isAuthenticated"
