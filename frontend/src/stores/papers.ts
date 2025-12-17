@@ -1,21 +1,25 @@
-import { fetchPaperPdf } from '@/services/papers'; // Check this path matches your file location
+import { defineStore } from 'pinia';
+import { fetchPaperPdf } from '@/services/papers';
 
-const pdfCache = new Map<number, Blob>();
+export const usePaperStore = defineStore('paper', () => {
+    // module-scoped cache (shared across all store instances)
+    const pdfCache = new Map<number, Blob>();
 
-export const PaperStore = {
-
-    async getPdf(paperId: number): Promise<Blob> {
-        if (pdfCache.has(paperId)) {
-            return pdfCache.get(paperId)!;
-        }
+    async function getPdf(paperId: number): Promise<Blob> {
+        const cached = pdfCache.get(paperId);
+        if (cached) return cached;
 
         const blob = await fetchPaperPdf(paperId);
-
         pdfCache.set(paperId, blob);
         return blob;
-    },
+    }
 
-    clearCache() {
+    function clearCache() {
         pdfCache.clear();
     }
-};
+
+    return {
+        getPdf,
+        clearCache,
+    };
+});
