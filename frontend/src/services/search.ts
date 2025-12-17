@@ -10,3 +10,8 @@ export async function searchPapers(searchText: string): Promise<SearchResponse> 
   const response = await searchApi.searchSearchPost(request);
   return response.data;
 }
+
+export async function searchPapersByPdf(file: File, query?: string): Promise<SearchResponse> {
+  const response = await searchApi.searchByPdfSearchPdfPost(file, query);
+  return response.data;
+}
