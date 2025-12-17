@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import {
   VCard,
   VCardText,
@@ -8,7 +8,7 @@ import {
   VBtn,
   VTextField,
   VChip,
-  VTooltip
+  VTooltip,
 } from 'vuetify/components';
 import { FileText, Edit3, Paperclip, Sparkles, X } from 'lucide-vue-next';
 import PaperList from '@/components/molecules/PaperList.vue';
@@ -41,7 +41,7 @@ const {
   selectedFile,
   triggerFileSelect,
   handleFileChange,
-  removeFile
+  removeFile,
 } = useFileSelection(props.file);
 
 // Watch for external prop changes to keep local state in sync
@@ -129,7 +129,7 @@ const handleQueryUpdate = () => {
               size="small"
               class="ml-4"
               @click="handleQueryUpdate">
-              <v-icon :icon="Edit3" start size="18"/>
+              <v-icon :icon="Edit3" start size="18" />
               Update query
             </v-btn>
           </div>
@@ -156,6 +156,7 @@ const handleQueryUpdate = () => {
 .bg-blue-lighten-5 {
   background-color: var(--blue-lighten-5) !important;
 }
+
 .border-sm {
   border: 1px solid var(--border-sm-color-result);
 }

@@ -148,11 +148,13 @@ const handleAdd = (paper: Paper) => emit('add', paper);
 const handleMenuSelect = async (payload: { option: PaperMenuOption; paper: Paper }) => {
   if (payload.option.value === 'summarise') {
     const queryToUse = props.searchContext || "";
-    await summariesStore.summarise(payload.paper.paper_id, { query: queryToUse });
 
     if (!expanded.value.includes(payload.paper.paper_id)) {
       expanded.value = [...expanded.value, payload.paper.paper_id];
     }
+
+    await summariesStore.summarise(payload.paper.paper_id, { query: queryToUse });
+
     return;
   }
 
