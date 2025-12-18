@@ -34,7 +34,6 @@ const handleSearch = (payload: { query: string; file: File | null } | string) =>
   max-width: 1200px;
   margin: 0 auto;
   padding: 8px;
-  /* Center vertically like the original start screen often does */
   min-height: 60vh;
   display: flex;
   align-items: center;

@@ -49,10 +49,8 @@ onMounted(async () => {
   await initializeSearch();
 });
 
-// Watcher: Handles Search when URL changes (e.g. from Home -> Search or Search -> Search)
+// Watcher: Handles Search when URL changes
 watch(() => route.query.q, async (newQuery) => {
-  // We allow the watcher to run even if query text is same,
-  // IF there is a staged file waiting in the store.
   if (newQuery !== currentQueryText.value || searchStore.stagedFile) {
     await initializeSearch();
   }
@@ -61,13 +59,13 @@ watch(() => route.query.q, async (newQuery) => {
 // ----- search logic -----
 
 const initializeSearch = async () => {
-  // 1. Check Pinia store for a File (passed from Home)
+  // 1. Check Pinia store for a File
   const storedFile = searchStore.stagedFile;
 
   // 2. Check URL query for text
   const queryParam = route.query.q?.toString() || '';
 
-  // [FIX] If we have neither, CLEAR the results instead of just returning.
+  // If we have neither, clear the results
   if (!queryParam && !storedFile) {
     outputs.value = [];
     currentQueryText.value = '';
@@ -85,7 +83,7 @@ const initializeSearch = async () => {
 };
 
 const performSearch = async (query: string, file: File | null) => {
-  // [FIX] Guard clause: If no query AND no file, do not call API.
+  // Guard clause: If no query AND no file, do not call API.
   if (!query.trim() && !file) {
     isLoading.value = false;
     return;
@@ -101,7 +99,6 @@ const performSearch = async (query: string, file: File | null) => {
   try {
     let response;
     if (file) {
-      // Pass undefined if query is empty string, assuming your service handles that
       response = await searchPapersByPdf(file, query || undefined);
     } else {
       response = await searchPapers(query);
@@ -115,30 +112,32 @@ const performSearch = async (query: string, file: File | null) => {
   }
 };
 
-// Handle new search from within the Results Page (The Search Bar at the top)
+// Handle new search from within the Results Page
 const handleUpdateQuery = async (payload: { query: string; file: File | null } | string) => {
   const query = typeof payload === 'string' ? payload : payload.query;
   const file = typeof payload !== 'string' && payload.file ? payload.file : null;
 
-  // 1. If we have a file, put it in the Store
+  // 1. If we have a file, put it in the Store. If NOT, clear it to prevent stale state.
   if (file) {
     searchStore.setStagedFile(file);
+  } else {
+    searchStore.setStagedFile(null);
   }
 
   const isTextSame = query === currentQueryText.value;
+  const isFileSame = file === currentFile.value;
 
   // 2. Update URL
-  // This usually triggers the `watch` above ^
   await router.push({ query: { q: query } });
 
-  // 3. Edge Case: If the text is exactly the same, the URL didn't change,
-  // so the Watcher won't fire. We must manually trigger the search.
-  if (isTextSame && file) {
+  // 3. Edge Case: If text is same but file changed (or removed), watcher won't fire.
+  // We must manually trigger.
+  if (isTextSame && !isFileSame) {
     await initializeSearch();
   }
 };
 
-// ----- add-to-project & view logic (unchanged) -----
+// ----- add-to-project & view logic -----
 
 const handleAddFromSearch = (paper: Paper) => {
   if (!isAuthenticated.value || !projects.value.length) return;
