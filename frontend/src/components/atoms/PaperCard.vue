@@ -132,6 +132,7 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
             @click.stop="emit('add', paper)"
         >
           <v-icon :icon="FolderPlus" size="16" />
+          <v-tooltip activator="parent" location="top">Add to Project</v-tooltip>
         </v-btn>
 
         <ActionMenu
