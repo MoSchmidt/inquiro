@@ -3,7 +3,8 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 import { VApp, VLayout, VNavigationDrawer, VMain, VSnackbar } from 'vuetify/components'
 import { X } from 'lucide-vue-next'
-import { useTheme } from 'vuetify'
+// We can remove useTheme since we don't need manual checking anymore
+// import { useTheme } from 'vuetify'
 
 import AppHeader from '@/components/organisms/layout/AppHeader.vue'
 import Sidebar from '@/components/organisms/navigation/Sidebar.vue'
@@ -18,7 +19,7 @@ const createAccountOpen = ref(false)
 
 const route = useRoute()
 const router = useRouter()
-const theme = useTheme()
+// const theme = useTheme() // Removed
 
 const authStore = useAuthStore()
 const projectsStore = useProjectsStore()
@@ -57,10 +58,8 @@ const snackbarMessage = ref('')
 const snackbarType = ref<'success' | 'error' | 'info'>('success')
 
 const snackbarColor = computed(() => {
-  const isDark = theme.global.current.value.dark
-
   if (snackbarType.value === 'success') {
-    return isDark ? '#2E7D32' : 'success'
+    return 'snackbar-success'
   }
   return snackbarType.value
 })

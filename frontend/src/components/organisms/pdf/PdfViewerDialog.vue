@@ -9,6 +9,8 @@ import type { PDFDocumentProxy } from 'pdfjs-dist';
 import 'vue-pdf-embed/dist/styles/textLayer.css';
 import 'vue-pdf-embed/dist/styles/annotationLayer.css';
 
+const SCROLL_ANIMATION_DURATION = 1000;
+
 const props = defineProps<{
   open: boolean;
   paperId: number | null;
@@ -29,7 +31,7 @@ const rotation = ref(0);
 const pageCount = ref(0);
 const userInputPage = ref(1);
 
-// NEW: Flag to prevent flickering during auto-scroll
+// Flag to prevent flickering during auto-scroll
 const isAutoScrolling = ref(false);
 
 const paperStore = usePaperStore();
@@ -66,7 +68,6 @@ const setupPageObserver = () => {
   if (observer) observer.disconnect();
 
   observer = new IntersectionObserver((entries) => {
-    // FIX 1: If we are auto-scrolling (jumping), ignore these updates!
     if (isAutoScrolling.value) return;
 
     // Find the page with the highest visibility ratio
@@ -108,7 +109,6 @@ const scrollToPage = (pageNumber: number) => {
   const targetPage = pages[pageNumber - 1];
 
   if (targetPage) {
-    // FIX 2: Lock observer updates before scrolling
     isAutoScrolling.value = true;
 
     // Explicitly set the number to the target immediately (e.g. "8")
@@ -116,10 +116,9 @@ const scrollToPage = (pageNumber: number) => {
 
     targetPage.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-    // FIX 3: Unlock after animation finishes (approx 1000ms)
     setTimeout(() => {
       isAutoScrolling.value = false;
-    }, 1000);
+    }, SCROLL_ANIMATION_DURATION);
   }
 };
 

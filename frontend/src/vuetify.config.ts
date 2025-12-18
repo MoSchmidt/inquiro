@@ -19,7 +19,7 @@ export default createVuetify({
           surface: '#FFFFFF',
 
           primary: '#0065bd',
-          secondary: '#005293', // Dark Blue (Good for Light Mode)
+          secondary: '#005293',
           error: '#EF4444',
           info: '#3B82F6',
           success: '#10B981',
@@ -30,6 +30,7 @@ export default createVuetify({
           'step-surface': '#E3F2FD',
           'step-text': '#1976D2',
           'success-surface': '#F1F8E9',
+          'snackbar-success': '#10B981',
 
           // Borders
           'border-light': '#E0E0E0',
@@ -47,9 +48,6 @@ export default createVuetify({
           surface: '#1E293B',
 
           primary: '#60A5FA',
-
-          // FIX: Changed from #005293 (Dark Blue) to Light Blue
-          // This makes the sidebar buttons visible in dark mode.
           secondary: '#7DD3FC',
 
           error: '#F87171',
@@ -62,6 +60,7 @@ export default createVuetify({
           'step-surface': '#0f172a',
           'step-text': '#60A5FA',
           'success-surface': '#064e3b',
+          'snackbar-success': '#2E7D32',
 
           // Borders
           'border-light': '#334155',
