@@ -29,7 +29,6 @@ const rendered = computed(() => {
 .md {
   line-height: 1.5;
   font-size: 0.95rem;
-  color: rgba(0, 0, 0, 0.87);
 }
 
 /* Headings */
