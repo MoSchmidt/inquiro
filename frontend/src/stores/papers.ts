@@ -9,6 +9,10 @@ export const usePaperStore = defineStore('paper', () => {
         const cached = pdfCache.get(paperId);
         if (cached) return cached;
 
+        if (pdfCache.size > 40) {
+            pdfCache.clear();
+        }
+
         const blob = await fetchPaperPdf(paperId);
         pdfCache.set(paperId, blob);
         return blob;

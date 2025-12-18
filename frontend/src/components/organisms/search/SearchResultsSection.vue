@@ -70,9 +70,9 @@ const handleQueryUpdate = () => {
 
 <template>
   <v-container class="results-section">
-    <v-card flat class="mb-8 pa-4 bg-blue-lighten-5 border-sm">
+    <v-card flat class="mb-8 pa-4 border-sm" color="search-surface">
       <v-card-text class="d-flex align-start pa-0">
-        <v-icon :icon="FileText" color="blue-darken-2" class="mt-1 me-3"></v-icon>
+        <v-icon :icon="FileText" color="primary" class="mt-1 me-3"></v-icon>
         <div class="flex-grow-1">
           <input
               id="pdf-upload"
@@ -91,6 +91,7 @@ const handleQueryUpdate = () => {
                 variant="outlined"
                 density="compact"
                 hide-details
+                bg-color="surface"
                 class="query-input flex-grow mb-2"
                 aria-controls="pdf-upload"
                 aria-label="Attach a PDF"

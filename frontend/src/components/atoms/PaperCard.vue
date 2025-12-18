@@ -66,57 +66,50 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
   }));
 });
 </script>
-
 <template>
   <v-expansion-panel-title v-slot="{ expanded }">
     <div class="paper-header w-100">
-      <!-- Expand icon -->
       <div class="expand-icon-wrapper flex items-center justify-center">
         <v-icon
-          :icon="ChevronDown"
-          size="18"
-          class="expand-icon"
-          :class="{ 'expand-icon--expanded': expanded }"
+            :icon="ChevronDown"
+            size="18"
+            class="expand-icon"
+            :class="{ 'expand-icon--expanded': expanded }"
         />
       </div>
 
-      <!-- Title + meta -->
       <div class="flex-grow-1 me-sm-4">
         <div class="d-flex align-center">
           <div
-            class="text-subtitle-1 font-weight-medium paper-title text-truncate"
+              class="text-subtitle-1 font-weight-medium paper-title text-truncate"
           >
             {{ paper.title }}
           </div>
 
-          <!-- Year next to title -->
           <span
-            v-if="paper.year"
-            class="ms-2"
-            style="color: grey; font-size: 0.85rem"
-            >
+              v-if="paper.year"
+              class="ms-2"
+              style="color: grey; font-size: 0.85rem"
+          >
             {{ paper.year }}
           </span>
 
-          <!-- Summary chip -->
           <v-chip
-            v-if="showSummaryChip"
-            size="x-small"
-            class="ms-2"
-            variant="tonal"
+              v-if="showSummaryChip"
+              size="x-small"
+              class="ms-2"
+              variant="tonal"
           >
             <v-icon :icon="Sparkles" size="14" class="me-1" />
             Summary
           </v-chip>
         </div>
 
-        <!-- Author etc. meta stays below -->
         <div class="text-body-2 text-medium-emphasis paper-meta">
           <span v-if="paper.author">{{ paper.author }}</span>
         </div>
       </div>
 
-      <!-- Right actions stay the same -->
       <div class="action-buttons">
         <v-btn
             icon
@@ -129,24 +122,14 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
           <v-icon :icon="Eye" size="18" />
           <v-tooltip activator="parent" location="top">Read Paper</v-tooltip>
         </v-btn>
+
         <v-btn
+            v-if="showAdd"
             icon
             size="small"
             variant="text"
             color="primary"
-            class="me-1"
-            @click.stop="emit('view', paper)"
-        >
-          <v-icon :icon="Eye" size="18" />
-          <v-tooltip activator="parent" location="top">Read Paper</v-tooltip>
-        </v-btn>
-        <v-btn
-          v-if="showAdd"
-          icon
-          size="small"
-          variant="text"
-          color="primary"
-          @click.stop="emit('add', paper)"
+            @click.stop="emit('add', paper)"
         >
           <v-icon :icon="FolderPlus" size="16" />
         </v-btn>
@@ -182,11 +165,11 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
             </v-btn>
 
             <v-btn
-              v-if="summaryMarkdown"
-              size="small"
-              variant="text"
-              :disabled="isLoading"
-              @click="regenerate"
+                v-if="summaryMarkdown"
+                size="small"
+                variant="text"
+                :disabled="isLoading"
+                @click="regenerate"
             >
               <v-icon :icon="RotateCcw" size="16" class="me-1" />
               Regenerate
@@ -240,7 +223,7 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
   line-height: 1.55;
   padding: 12px 14px;
   border-radius: 12px;
-  background: rgba(15, 23, 42, 0.04);
-  border: 1px solid rgba(15, 23, 42, 0.06);
+  background-color: rgba(var(--v-theme-on-surface), 0.06); /*Ignore error, created during runtime*/
+  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
 }
 </style>

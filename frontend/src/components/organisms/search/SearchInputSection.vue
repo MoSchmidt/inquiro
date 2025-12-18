@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { VCard, VCardTitle, VCardText, VTextarea, VBtn, VIcon, VRow, VCol, VChip, VContainer } from 'vuetify/components';
+import { VCard, VCardTitle, VCardText, VTextarea, VBtn, VIcon, VRow, VCol, VChip, VContainer, VForm } from 'vuetify/components';
 import { Send, Paperclip, X } from 'lucide-vue-next';
 import { useFileSelection } from '@/composables/useFileSelection';
 
@@ -40,49 +40,49 @@ const handleSubmit = () => {
 
         <v-form @submit.prevent="handleSubmit">
           <input
-            id="pdf-upload"
-            ref="fileInput"
-            type="file"
-            accept="application/pdf"
-            style="display: none"
-            aria-hidden="true"
-            @change="handleFileChange"
+              id="pdf-upload"
+              ref="fileInput"
+              type="file"
+              accept="application/pdf"
+              style="display: none"
+              aria-hidden="true"
+              @change="handleFileChange"
           />
 
           <div class="textarea-container mb-4">
-          <v-textarea
-              v-model="input"
-              label="Enter your text here..."
-              variant="outlined"
-              auto-grow
-              rows="8"
-              class="mb-4"
-              bg-color="white"
-              hide-details
-          ></v-textarea>
+            <v-textarea
+                v-model="input"
+                label="Enter your text here..."
+                variant="outlined"
+                auto-grow
+                rows="8"
+                bg-color="surface"
+                hide-details
+                class="search-textarea"
+            ></v-textarea>
 
             <div class="add-pdf-actions">
               <v-chip
-                v-if="selectedFile"
-                closable
-                :close-icon="X"
-                color="primary"
-                variant="tonal"
-                size="small"
-                class="me-2"
-                @click:close="removeFile"
+                  v-if="selectedFile"
+                  closable
+                  :close-icon="X"
+                  color="primary"
+                  variant="tonal"
+                  size="small"
+                  class="me-2"
+                  @click:close="removeFile"
               >
                 {{ selectedFile.name }}
               </v-chip>
 
               <v-btn
-                icon
-                variant="text"
-                density="compact"
-                color="medium-emphasis"
-                aria-controls="pdf-upload"
-                aria-label="Upload a PDF file"
-                @click="triggerFileSelect"
+                  icon
+                  variant="text"
+                  density="compact"
+                  color="medium-emphasis"
+                  aria-controls="pdf-upload"
+                  aria-label="Upload a PDF file"
+                  @click="triggerFileSelect"
               >
                 <v-icon :icon="Paperclip" size="22" />
                 <v-tooltip activator="parent" location="top">Attach PDF</v-tooltip>
@@ -157,4 +157,23 @@ const handleSubmit = () => {
 </template>
 
 <style scoped>
+/* 1. Set the container to relative so we can position children absolutely inside it */
+.textarea-container {
+  position: relative;
+}
+
+/* 2. Position the actions in the bottom right corner */
+.add-pdf-actions {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  z-index: 10;
+}
+
+/* 3. Ensure text inside the input doesn't overlap the button */
+:deep(.v-field__input) {
+  padding-bottom: 40px !important;
+}
 </style>
