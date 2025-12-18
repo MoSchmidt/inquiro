@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import {
   VAlert,
   VBtn,
@@ -13,9 +14,7 @@ import {
   VSpacer,
 } from 'vuetify/components';
 
-import SearchInputSection from '@/components/organisms/search/SearchInputSection.vue';
 import SearchResultsSection from '@/components/organisms/search/SearchResultsSection.vue';
-
 import PdfViewerDialog from '@/components/organisms/pdf/PdfViewerDialog.vue';
 import type { Paper } from '@/types/content';
 
@@ -24,11 +23,12 @@ import { useAuthStore } from '@/stores/auth';
 import { useProjectsStore } from '@/stores/projects';
 import { mapSearchResponseToPapers } from '@/mappers/paper-mapper';
 
+const route = useRoute();
+const router = useRouter();
 const authStore = useAuthStore();
 const projectsStore = useProjectsStore();
 
-// State to track the active search context
-const hasActiveSearch = ref(false);
+// ----- state -----
 const currentQueryText = ref('');
 const currentFile = ref<File | null>(null);
 
@@ -36,47 +36,55 @@ const outputs = ref<Paper[]>([]);
 const isLoading = ref(false);
 const errorMessage = ref<string | null>(null);
 
-// add-to-project dialog state
+// Dialog states
 const addToProjectDialogOpen = ref(false);
 const paperToAdd = ref<Paper | null>(null);
 const selectedProjectIdForAdd = ref<number | null>(null);
-
 const pdfViewerOpen = ref(false);
 const pdfPaperId = ref<number | null>(null);
 const pdfPaperTitle = ref('');
 
-// derived state
+// ----- derived state -----
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const projects = computed(() => projectsStore.projects);
 const projectOptions = computed(() => projectsStore.projects);
 
-onMounted(() => {
+// ----- lifecycle -----
+
+onMounted(async () => {
   if (isAuthenticated.value) {
     projectsStore.loadProjects();
   }
+  // Trigger search immediately based on URL or State
+  await initializeSearch();
 });
 
-// ----- search flow -----
-type SearchPayload = { query: string; file: File | null };
+// Watch for URL changes (e.g., user searches for something new inside the results page)
+watch(() => route.query.q, async (newQuery) => {
+  if (newQuery !== currentQueryText.value) {
+    await initializeSearch();
+  }
+});
 
-function isSearchPayload(payload: unknown): payload is SearchPayload {
-  return (
-    !!payload && typeof payload === 'object' &&
-      'query' in payload &&
-      typeof (payload as any).query === 'string' &&
-      'file' in payload &&
-    (((payload as any).file === null) || (payload as any).file instanceof File)
-  );
-}
+// ----- search logic -----
 
-const handleSubmitQuery = async (payload: { query: string; file: File | null } | string) => {
-  const query = typeof payload === 'string' ? payload : payload.query;
-  const file = isSearchPayload(payload) ? payload.file : null;
+const initializeSearch = async () => {
+  // 1. Check history state for a File (passed from Home)
+  const stateFile = history.state?.file as File | undefined;
+  // 2. Check URL query for text
+  const queryParam = route.query.q?.toString() || '';
 
-  // Update state
-  currentQueryText.value = query || '';
-  currentFile.value = file || null;
-  hasActiveSearch.value = true;
+  // If we have neither, usually we redirect to home, but let's just stay empty or load default
+  if (!queryParam && !stateFile) {
+    return;
+  }
+
+  await performSearch(queryParam, stateFile || null);
+};
+
+const performSearch = async (query: string, file: File | null) => {
+  currentQueryText.value = query;
+  currentFile.value = file;
 
   outputs.value = [];
   errorMessage.value = null;
@@ -84,7 +92,6 @@ const handleSubmitQuery = async (payload: { query: string; file: File | null } |
 
   try {
     let response;
-
     if (file) {
       response = await searchPapersByPdf(file, query || undefined);
     } else {
@@ -99,13 +106,24 @@ const handleSubmitQuery = async (payload: { query: string; file: File | null } |
   }
 };
 
-// ----- add-from-search flow -----
+// Handle new search from within the Results Page
+const handleUpdateQuery = (payload: { query: string; file: File | null } | string) => {
+  const query = typeof payload === 'string' ? payload : payload.query;
+  const file = typeof payload !== 'string' && payload.file ? payload.file : null;
+
+  // Update URL. This will trigger the `watch` above if only text changes.
+  // If file changes, we might need to manually trigger because URL might not change.
+  router.push({ query: { q: query }, state: { file: file } });
+
+  // If there is a file, the URL watch might not catch it (if query string is same),
+  // so we force execution if a file is present.
+  if (file) {
+    performSearch(query, file);
+  }
+};
 
 const handleAddFromSearch = (paper: Paper) => {
-  if (!isAuthenticated.value || !projects.value.length) {
-    return;
-  }
-
+  if (!isAuthenticated.value || !projects.value.length) return;
   paperToAdd.value = paper;
   selectedProjectIdForAdd.value = projects.value[0]?.project_id ?? null;
   addToProjectDialogOpen.value = true;
@@ -116,12 +134,7 @@ const confirmAddToProject = async () => {
     addToProjectDialogOpen.value = false;
     return;
   }
-
-  await projectsStore.addPaper(
-      selectedProjectIdForAdd.value,
-      paperToAdd.value.paper_id
-  );
-
+  await projectsStore.addPaper(selectedProjectIdForAdd.value, paperToAdd.value.paper_id);
   addToProjectDialogOpen.value = false;
   paperToAdd.value = null;
 };
@@ -143,21 +156,16 @@ const handleViewPaper = (paper: Paper) => {
       {{ errorMessage }}
     </v-alert>
 
-    <div v-if="!hasActiveSearch">
-      <SearchInputSection @submit="handleSubmitQuery" />
-    </div>
-    <div v-else>
-      <SearchResultsSection
-          :query="currentQueryText"
-          :file="currentFile"
-          :outputs="outputs"
-          :show-abstract="true"
-          :show-add="isAuthenticated"
-          @add="handleAddFromSearch"
-          @view="handleViewPaper"
-          @update-query="handleSubmitQuery"
-      />
-    </div>
+    <SearchResultsSection
+        :query="currentQueryText"
+        :file="currentFile"
+        :outputs="outputs"
+        :show-abstract="true"
+        :show-add="isAuthenticated"
+        @add="handleAddFromSearch"
+        @view="handleViewPaper"
+        @update-query="handleUpdateQuery"
+    />
 
     <v-dialog v-model="addToProjectDialogOpen" max-width="500">
       <v-card>

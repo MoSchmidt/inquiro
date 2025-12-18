@@ -52,7 +52,7 @@ const projectLinks = computed<Project[]>(() =>
     })),
 )
 
-const showNewQuery = computed(() => route.name !== 'search')
+const showNewQuery = computed(() => route.name !== 'search' && route.name !== 'home')
 
 // ----- handlers -----
 
@@ -60,10 +60,10 @@ const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
 }
 
-const goToSearch = () => router.push({ name: 'search' })
+const goToHome = () => router.push({ name: 'home' })
 
 const handleNewQuery = () => {
-  goToSearch()
+  goToHome()
   sidebarOpen.value = false
 }
 
@@ -88,7 +88,7 @@ const handleDeleteProject = async (projectId: number) => {
   await projectsStore.deleteExistingProject(projectId)
 
   if (route.name === 'project' && Number(route.params.projectId) === projectId) {
-    await goToSearch()
+    await goToHome()
     sidebarOpen.value = true
   }
 }
