@@ -200,8 +200,7 @@ onUnmounted(() => {
         <v-spacer />
 
         <div
-            class="d-flex align-center bg-background rounded px-2 py-1"
-            style="border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));"
+            class="d-flex align-center bg-background rounded px-2 py-1 border"
         >
 
           <v-btn icon size="x-small" variant="text" @click="prevPage" :disabled="userInputPage <= 1">
