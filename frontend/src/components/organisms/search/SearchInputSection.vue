@@ -96,6 +96,7 @@ const handleSubmit = () => {
               block
               size="large"
               :disabled="!input.trim() && !selectedFile"
+              class="generate-btn"
           >
             <v-icon :icon="Send" start></v-icon>
             Generate results
@@ -157,12 +158,10 @@ const handleSubmit = () => {
 </template>
 
 <style scoped>
-/* 1. Set the container to relative so we can position children absolutely inside it */
 .textarea-container {
   position: relative;
 }
 
-/* 2. Position the actions in the bottom right corner */
 .add-pdf-actions {
   position: absolute;
   bottom: 12px;
@@ -172,8 +171,21 @@ const handleSubmit = () => {
   z-index: 10;
 }
 
-/* 3. Ensure text inside the input doesn't overlap the button */
 :deep(.v-field__input) {
   padding-bottom: 40px !important;
+}
+</style>
+
+<style>
+
+.v-theme--dark .generate-btn.v-btn--disabled {
+  background-color: rgba(112, 146, 189, 1) !important;
+  color: rgba(255, 255, 255, 0.3) !important;
+  opacity: 1 !important;
+}
+
+.v-theme--dark .generate-btn.v-btn--disabled .v-btn__overlay {
+  opacity: 0 !important;
+  display: none !important;
 }
 </style>
