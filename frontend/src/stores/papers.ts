@@ -7,10 +7,19 @@ export const usePaperStore = defineStore('paper', () => {
 
     async function getPdf(paperId: number): Promise<Blob> {
         const cached = pdfCache.get(paperId);
-        if (cached) return cached;
+        if (cached) {
+            // refresh LRU position by reinserting the cached entry
+            pdfCache.delete(paperId);
+            pdfCache.set(paperId, cached);
+            return cached;
+        }
 
-        if (pdfCache.size > 40) {
-            pdfCache.clear();
+        // enforce a max cache size using a simple LRU eviction strategy
+        if (pdfCache.size >= 40) {
+            const oldestKey = pdfCache.keys().next().value as number | undefined;
+            if (oldestKey !== undefined) {
+                pdfCache.delete(oldestKey);
+            }
         }
 
         const blob = await fetchPaperPdf(paperId);
