@@ -1,19 +1,24 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import SearchInputSection from '@/components/organisms/search/SearchInputSection.vue';
+import { useSearchStore } from '@/stores/search';
 
 const router = useRouter();
+const searchStore = useSearchStore();
 
 const handleSearch = (payload: { query: string; file: File | null } | string) => {
   const query = typeof payload === 'string' ? payload : payload.query;
   const file = typeof payload !== 'string' && payload.file ? payload.file : null;
 
-  // Navigate to the search route.
-  // We pass strings via query params, and Files via history state
+  // 1. Store the file in Pinia
+  if (file) {
+    searchStore.setStagedFile(file);
+  }
+
+  // 2. Navigate
   router.push({
     name: 'search',
-    query: { q: query },
-    state: { file: file } // Pass the file object invisibly via History API
+    query: { q: query }
   });
 };
 </script>
