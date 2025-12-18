@@ -8,11 +8,11 @@ import {
   VBtn,
   VTextField,
   VChip,
-  VTooltip
+  VTooltip,
 } from 'vuetify/components';
-import { FileText, Edit3, Paperclip, X } from 'lucide-vue-next';
+import { FileText, Edit3, Paperclip, Sparkles, X } from 'lucide-vue-next';
 import PaperList from '@/components/molecules/PaperList.vue';
-import type { Paper } from '@/types/content';
+import type { Paper, PaperMenuOption } from '@/types/content';
 import { useFileSelection } from '@/composables/useFileSelection';
 
 const props = defineProps<{
@@ -29,6 +29,10 @@ const emit = defineEmits<{
   (e: 'view', paper: Paper): void;
 }>();
 
+const menuOptions: PaperMenuOption[] = [
+  { label: 'Summarise Paper', value: 'summarise', icon: Sparkles },
+];
+
 // ----- Query & File State -----
 const editableQuery = ref(props.query);
 
@@ -37,7 +41,7 @@ const {
   selectedFile,
   triggerFileSelect,
   handleFileChange,
-  removeFile
+  removeFile,
 } = useFileSelection(props.file);
 
 // Watch for external prop changes to keep local state in sync
@@ -125,7 +129,7 @@ const handleQueryUpdate = () => {
               size="small"
               class="ml-4"
               @click="handleQueryUpdate">
-              <v-icon :icon="Edit3" start size="18"/>
+              <v-icon :icon="Edit3" start size="18" />
               Update query
             </v-btn>
           </div>
@@ -140,6 +144,8 @@ const handleQueryUpdate = () => {
       title="Papers"
       empty-message="No results yet"
       :expand-all-on-change="true"
+      :menu-options="menuOptions"
+      :search-context="query"
       @add="paper => emit('add', paper)"
       @view="paper => emit('view', paper)"
     />
@@ -150,6 +156,7 @@ const handleQueryUpdate = () => {
 .bg-blue-lighten-5 {
   background-color: var(--blue-lighten-5) !important;
 }
+
 .border-sm {
   border: 1px solid var(--border-sm-color-result);
 }

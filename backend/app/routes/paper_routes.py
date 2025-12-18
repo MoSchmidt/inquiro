@@ -14,6 +14,7 @@ router = APIRouter(prefix="/papers", tags=["Paper"])
 @router.post(
     "/{paper_id}/summary",
     response_model=PaperSummaryResponse,
+    response_model_exclude_none=True,
     status_code=status.HTTP_200_OK,
     summary="Summarise the specified paper",
 )
@@ -23,9 +24,8 @@ async def summary(
     """
     Returns the summary of the specified paper.
     """
-
     result = await PaperService.summarise_paper(paper_id=paper_id, query=request.query, session=db)
-    return PaperSummaryResponse.model_validate(result)
+    return result
 
 
 @router.get(

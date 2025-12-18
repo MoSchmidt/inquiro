@@ -69,8 +69,8 @@ class PaperService:
             )
 
             openai_provider = get_openai_provider()
-            summary = await openai_provider.summarise_paper(pdf_text, query)
-            return PaperSummaryResponse(summary=summary)
+            summary_payload = await openai_provider.summarise_paper(pdf_text, query)
+            return PaperSummaryResponse.model_validate(summary_payload)
         except httpx.HTTPStatusError as exc:
             # arXiv returned 404 or similar error
             logger.warning("Failed to fetch arXiv paper %s: %s", external_id, exc, exc_info=True)
@@ -136,7 +136,6 @@ class PaperService:
         """
         Fetch arXiv PDF and return its raw bytes.
         """
-
         url = f"https://arxiv.org/pdf/{arxiv_id}.pdf"
         async with httpx.AsyncClient(timeout=30, follow_redirects=True) as client:
             resp = await client.get(url)

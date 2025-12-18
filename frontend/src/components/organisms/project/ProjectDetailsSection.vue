@@ -5,7 +5,7 @@ import {
   VContainer,
   VTooltip
 } from 'vuetify/components';
-import { Pencil, Trash2 } from 'lucide-vue-next';
+import { Pencil, Sparkles, Trash2 } from 'lucide-vue-next';
 import type { Paper, PaperMenuOption } from '@/types/content';
 
 import RenameProjectDialog from '@/components/dialogs/RenameProjectDialog.vue';
@@ -29,7 +29,9 @@ const handleRenameSubmit = (newName: string) => {
   isRenameDialogOpen.value = false;
 };
 
+
 const menuOptions: PaperMenuOption[] = [
+  { label: 'Summarise Paper', value: 'summarise', icon: Sparkles },
   { label: 'Remove from Project', value: 'remove', icon: Trash2 },
 ];
 

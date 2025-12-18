@@ -5,10 +5,12 @@ import {
   VExpansionPanelTitle,
   VIcon,
 } from 'vuetify/components';
-import { ChevronDown, FolderPlus, Eye } from 'lucide-vue-next';
-import { withDefaults, computed } from 'vue';
+import { ChevronDown, Copy, Eye, FolderPlus, RotateCcw, Sparkles } from 'lucide-vue-next';
+import { computed, withDefaults } from 'vue';
 import type { Paper, PaperMenuOption } from '@/types/content';
 import ActionMenu, { type ActionMenuItem } from '@/components/molecules/ActionMenu.vue';
+import { usePaperSummariesStore } from '@/stores/paperSummaries';
+import FormattedMarkdown from '@/components/atoms/FormattedMarkdown.vue';
 
 const props = withDefaults(
     defineProps<{
@@ -16,19 +18,42 @@ const props = withDefaults(
       showAbstract?: boolean;
       showAdd?: boolean;
       menuOptions?: PaperMenuOption[];
+      queryContext?: string;
     }>(),
     {
       showAbstract: true,
       showAdd: false,
       menuOptions: () => [] as PaperMenuOption[],
+      queryContext: '',
     }
 );
+
 
 const emit = defineEmits<{
   (e: 'add', paper: Paper): void;
   (e: 'menu-select', payload: { option: PaperMenuOption; paper: Paper }): void;
   (e: 'view', paper: Paper): void;
 }>();
+
+// ----- summarise paper -----
+const summariesStore = usePaperSummariesStore();
+
+const entry = computed(() => summariesStore.entry(props.paper.paper_id));
+const isLoading = computed(() => entry.value.status === 'loading');
+const isError = computed(() => entry.value.status === 'error');
+const summaryMarkdown = computed(() => entry.value.summaryMarkdown ?? '');
+const showSummaryChip = computed(() => summariesStore.hasSummary(props.paper.paper_id));
+
+const regenerate = () => summariesStore.summarise(props.paper.paper_id, { force: true, query: props.queryContext });
+
+const copySummary = async () => {
+  if (!summaryMarkdown.value) return;
+  try {
+    await navigator.clipboard.writeText(summaryMarkdown.value);
+  } catch {
+    // ignore
+  }
+};
 
 // Transform PaperMenuOption to ActionMenuItem
 const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
@@ -72,6 +97,17 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
             >
             {{ paper.year }}
           </span>
+
+          <!-- Summary chip -->
+          <v-chip
+            v-if="showSummaryChip"
+            size="x-small"
+            class="ms-2"
+            variant="tonal"
+          >
+            <v-icon :icon="Sparkles" size="14" class="me-1" />
+            Summary
+          </v-chip>
         </div>
 
         <!-- Author etc. meta stays below -->
@@ -117,6 +153,50 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
       <span v-if="showAbstract && paper.abstract"> {{ paper.abstract }} </span>
       <span v-else class="text-disabled"> No abstract available. </span>
     </div>
+
+    <template v-if="isLoading || isError || summaryMarkdown">
+      <v-divider class="my-4" />
+
+      <div class="summary-block">
+        <div class="d-flex align-center justify-space-between mb-2">
+          <div class="d-flex align-center">
+            <v-icon :icon="Sparkles" size="18" class="me-2" />
+            <div class="text-subtitle-2 font-weight-medium">AI Summary</div>
+          </div>
+
+          <div class="d-flex align-center" style="gap: 6px;">
+            <v-btn v-if="summaryMarkdown" size="small" variant="text" @click="copySummary">
+              <v-icon :icon="Copy" size="16" class="me-1" />
+              Copy
+            </v-btn>
+
+            <v-btn
+              v-if="summaryMarkdown"
+              size="small"
+              variant="text"
+              :disabled="isLoading"
+              @click="regenerate"
+            >
+              <v-icon :icon="RotateCcw" size="16" class="me-1" />
+              Regenerate
+            </v-btn>
+          </div>
+        </div>
+
+        <v-alert v-if="isError" type="error" variant="tonal" class="mb-3">
+          {{ entry.error || "Failed to summarise paper." }}
+          <template #append>
+            <v-btn size="small" variant="text" @click="regenerate">Retry</v-btn>
+          </template>
+        </v-alert>
+
+        <v-skeleton-loader v-if="isLoading" type="paragraph, paragraph, paragraph" />
+
+        <div v-else class="summary-content">
+          <FormattedMarkdown :markdown="summaryMarkdown" />
+        </div>
+      </div>
+    </template>
   </v-expansion-panel-text>
 </template>
 
@@ -144,4 +224,12 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
 .expand-icon--expanded { transform: rotate(180deg); }
 
 .action-buttons :deep(.v-btn) { margin-left: 0; }
+
+.summary-content {
+  line-height: 1.55;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.04);
+  border: 1px solid rgba(15, 23, 42, 0.06);
+}
 </style>

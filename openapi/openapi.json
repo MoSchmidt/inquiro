@@ -840,17 +840,54 @@
       },
       "PaperSummaryResponse": {
         "properties": {
-          "summary": {
+          "title": {
             "type": "string",
-            "title": "Summary"
+            "title": "Title",
+            "description": "The title of the paper."
+          },
+          "executive_summary": {
+            "type": "string",
+            "title": "Executive Summary",
+            "description": "A high-level, 2-3 sentence overview of the paper's core contribution."
+          },
+          "relevance_to_query": {
+            "type": "string",
+            "title": "Relevance To Query",
+            "description": "Direct answer to how this paper relates to the user's specific query.",
+            "default": null
+          },
+          "methodology_points": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Methodology Points",
+            "description": "List of technical steps/architectures (bullet points)."
+          },
+          "results_points": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Results Points",
+            "description": "List of quantitative findings or theoretical results (bullet points)."
+          },
+          "limitations": {
+            "type": "string",
+            "title": "Limitations",
+            "description": "Critical analysis of constraints or assumptions.",
+            "default": "Not explicitly stated."
           }
         },
         "type": "object",
         "required": [
-          "summary"
+          "title",
+          "executive_summary",
+          "methodology_points",
+          "results_points"
         ],
         "title": "PaperSummaryResponse",
-        "description": "Response to summary request for a specified paper"
+        "description": "Structured response to summary request.\nFields contain Markdown + LaTeX strings."
       },
       "ProjectCreate": {
         "properties": {
