@@ -1,6 +1,8 @@
 import { defineStore } from 'pinia';
 import { fetchPaperPdf } from '@/services/papers';
 
+const MAX_PDF_CACHE_SIZE = 40;
+
 export const usePaperStore = defineStore('paper', () => {
     // module-scoped cache (shared across all store instances)
     const pdfCache = new Map<number, Blob>();
@@ -15,7 +17,7 @@ export const usePaperStore = defineStore('paper', () => {
         }
 
         // enforce a max cache size using a simple LRU eviction strategy
-        if (pdfCache.size >= 40) {
+        if (pdfCache.size >= MAX_PDF_CACHE_SIZE) {
             const oldestKey = pdfCache.keys().next().value as number | undefined;
             if (oldestKey !== undefined) {
                 pdfCache.delete(oldestKey);
