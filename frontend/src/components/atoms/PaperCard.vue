@@ -225,6 +225,6 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
   padding: 12px 14px;
   border-radius: 12px;
   background-color: rgba(var(--v-theme-on-surface), 0.06); /*Ignore error, created during runtime*/
-  border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  border: 1px solid rgb(var(--v-theme-outline));
 }
 </style>
