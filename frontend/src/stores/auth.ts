@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { computed, ref } from 'vue';
 import { login as loginApi, signup as signupApi } from '@/services/auth';
 
 interface User {
@@ -6,84 +7,91 @@ interface User {
   username: string;
 }
 
-interface AuthState {
-  accessToken: string | null;
-  refreshToken: string | null;
-  user: User | null;
-  loading: boolean;
-  error: string | null;
-}
+export const useAuthStore = defineStore('auth', () => {
+  const accessToken = ref<string | null>(null);
+  const refreshToken = ref<string | null>(null);
+  const user = ref<User | null>(null);
+  const loading = ref(false);
+  const error = ref<string | null>(null);
 
-export const useAuthStore = defineStore('auth', {
-  state: (): AuthState => ({
-    accessToken: null,
-    refreshToken: null,
-    user: null,
-    loading: false,
-    error: null,
-  }),
+  const isAuthenticated = computed(() => !!accessToken.value);
 
-  getters: {
-    isAuthenticated: (state) => !!state.accessToken,
-  },
+  async function login(username: string, password: string) {
+    loading.value = true;
+    error.value = null;
 
-  persist: {
-    key: 'auth',
-    storage: sessionStorage,
-    paths: ['accessToken', 'refreshToken', 'user'],
-  },
+    try {
+      const { access_token, refresh_token, user: userFromApi } =
+        await loginApi(username, password);
 
-  actions: {
-    async login(username: string, password: string) {
-      this.loading = true;
-      this.error = null;
+      accessToken.value = access_token;
+      refreshToken.value = refresh_token;
+      user.value = userFromApi;
 
-      try {
-        const { access_token, refresh_token, user } = await loginApi(
-          username,
-          password
-        );
+      return userFromApi;
+    } catch (err) {
+      error.value = 'Login failed.';
+      console.error(err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
 
-        this.accessToken = access_token;
-        this.refreshToken = refresh_token;
-        this.user = user;
+  async function signup(username: string, password: string) {
+    loading.value = true;
+    error.value = null;
 
-        return user;
-      } catch (err) {
-        this.error = 'Login failed.';
-        console.error(err);
-        throw err;
-      } finally {
-        this.loading = false;
-      }
+    try {
+      await signupApi(username);
+      // domain decision: auto-login after signup
+      return await login(username, password);
+    } catch (err) {
+      error.value = 'Signup failed.';
+      console.error(err);
+      throw err;
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  function logout() {
+    accessToken.value = null;
+    refreshToken.value = null;
+    user.value = null;
+    error.value = null;
+  }
+
+  function reset() {
+    accessToken.value = null;
+    refreshToken.value = null;
+    user.value = null;
+    loading.value = false;
+    error.value = null;
+  }
+
+  return {
+    // state
+    accessToken,
+    refreshToken,
+    user,
+    loading,
+    error,
+
+    // getters
+    isAuthenticated,
+
+    // actions
+    login,
+    signup,
+    logout,
+    reset,
+  };
+},
+  {
+    persist: {
+      key: 'auth',
+      storage: sessionStorage,
+      pick: ['accessToken', 'refreshToken', 'user'],
     },
-
-    async signup(username: string, password: string) {
-      this.loading = true;
-      this.error = null;
-
-      try {
-        await signupApi(username);
-        // domain decision: auto-login after signup
-        return await this.login(username, password);
-      } catch (err) {
-        this.error = 'Signup failed.';
-        console.error(err);
-        throw err;
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    logout() {
-      this.accessToken = null;
-      this.refreshToken = null;
-      this.user = null;
-      this.error = null;
-    },
-
-    reset() {
-      this.$reset();
-    },
-  },
-});
+  });

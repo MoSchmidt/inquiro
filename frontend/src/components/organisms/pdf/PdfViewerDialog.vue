@@ -1,17 +1,13 @@
-<script setup lang="ts">
-import { ref, watch, onUnmounted, nextTick } from 'vue';
-import {
-  VDialog, VCard, VCardText, VBtn, VIcon,
-  VSpacer, VProgressCircular, VAlert
-} from 'vuetify/components';
-import {
-  X, Download, ZoomIn, ZoomOut
-} from 'lucide-vue-next';
+<script lang="ts" setup>
+import { onUnmounted, ref, watch } from 'vue';
+import { VAlert, VBtn, VCard, VCardText, VDialog, VIcon, VProgressCircular, VSpacer, } from 'vuetify/components';
+import { Download, X, ZoomIn, ZoomOut } from 'lucide-vue-next';
 import VuePdfEmbed from 'vue-pdf-embed';
-import { PaperStore } from '@/stores/papers';
+import { usePaperStore } from '@/stores/papers';
+import type { PDFDocumentProxy } from 'pdfjs-dist';
 
-import "vue-pdf-embed/dist/styles/textLayer.css";
-import "vue-pdf-embed/dist/styles/annotationLayer.css";
+import 'vue-pdf-embed/dist/styles/textLayer.css';
+import 'vue-pdf-embed/dist/styles/annotationLayer.css';
 
 const props = defineProps<{
   open: boolean;
@@ -30,6 +26,8 @@ const pdfSource = ref<string | null>(null);
 const pdfWidth = ref(800);
 const pageCount = ref(0);
 
+const paperStore = usePaperStore();
+
 const loadPdf = async () => {
   if (!props.paperId) return;
 
@@ -43,7 +41,7 @@ const loadPdf = async () => {
   }
 
   try {
-    const blob = await PaperStore.getPdf(props.paperId);
+    const blob = await paperStore.getPdf(props.paperId);
     pdfSource.value = URL.createObjectURL(blob);
   } catch (err) {
     console.error('Failed to load PDF:', err);
@@ -52,21 +50,19 @@ const loadPdf = async () => {
   }
 };
 
-const handleDocumentLoaded = (doc: any) => {
+const handleDocumentLoaded = (doc: PDFDocumentProxy) => {
   pageCount.value = doc.numPages;
   loading.value = false;
 };
 
-//Handle Internal Links (Citations, Table of Contents) !!Not working yet!!
-const handleLinkClick = (destination: any) => {
-  // The library emits the page number (or an object containing it)
-  // We handle both cases just to be safe.
-  const pageNumber = typeof destination === 'object' ? destination.pageNumber : destination;
-
+//Handle Internal Links
+const handleLinkClick = (pageNumber: number) => {
   if (pageNumber) {
     // Find the specific page element in the DOM
     // PDF.js renders pages with the class 'page' and attribute 'data-page-number'
-    const pageElement = document.querySelector(`.pdf-document .page[data-page-number="${pageNumber}"]`);
+    const pageElement = document.querySelector(
+      `.pdf-document .page[data-page-number="${pageNumber}"]`
+    );
 
     if (pageElement) {
       pageElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -92,14 +88,17 @@ const handleDownload = () => {
   }
 };
 
-watch(() => props.open, (isOpen) => {
-  if (isOpen && props.paperId) {
-    loadPdf();
-  } else if (!isOpen && pdfSource.value) {
-    URL.revokeObjectURL(pdfSource.value);
-    pdfSource.value = null;
+watch(
+  () => props.open,
+  (isOpen) => {
+    if (isOpen && props.paperId) {
+      loadPdf();
+    } else if (!isOpen && pdfSource.value) {
+      URL.revokeObjectURL(pdfSource.value);
+      pdfSource.value = null;
+    }
   }
-});
+);
 
 onUnmounted(() => {
   if (pdfSource.value) {
@@ -110,31 +109,36 @@ onUnmounted(() => {
 
 <template>
   <v-dialog
-      :model-value="open"
-      @update:model-value="val => !val && emit('close')"
-      fullscreen
-      transition="dialog-bottom-transition"
-      class="pdf-dialog"
+    :model-value="open"
+    class="pdf-dialog"
+    fullscreen
+    transition="dialog-bottom-transition"
+    @update:model-value="(val) => !val && emit('close')"
   >
     <v-card class="pdf-viewer-card">
-
-      <div class="pdf-toolbar d-flex align-center px-4 py-2 bg-surface border-b">        <h3 class="text-subtitle-1 font-weight-medium me-4">
+      <div
+        class="pdf-toolbar d-flex align-center px-4 py-2 bg-grey-lighten-4 border-b"
+      >
+        <h3 class="text-subtitle-1 font-weight-medium me-4">
           {{ paperTitle || 'PDF Viewer' }}
         </h3>
 
         <v-spacer />
 
-        <div class="d-flex align-center bg-surface rounded elevation-1 px-2 py-1 me-4">
+        <div class="d-flex align-center me-4">
           <span class="text-caption font-weight-bold mx-2 text-medium-emphasis">
             {{ pageCount > 0 ? `${pageCount} Pages` : '' }}
           </span>
-          <v-divider vertical class="mx-2" />
+          <v-divider class="mx-2" vertical />
 
           <v-btn icon size="small" variant="text" @click="zoomOut">
             <v-icon :icon="ZoomOut" size="20" />
           </v-btn>
 
-          <span class="text-caption font-weight-bold mx-2" style="min-width: 40px; text-align: center;">
+          <span
+            class="text-caption font-weight-bold mx-2"
+            style="min-width: 40px; text-align: center"
+          >
             {{ Math.round((pdfWidth / 800) * 100) }}%
           </span>
 
@@ -144,14 +148,14 @@ onUnmounted(() => {
         </div>
 
         <v-btn
-            v-if="pdfSource"
-            variant="flat"
-            color="primary"
-            class="me-2 text-none"
-            size="small"
-            @click="handleDownload"
+          v-if="pdfSource"
+          class="me-2 text-none"
+          color="primary"
+          size="small"
+          variant="flat"
+          @click="handleDownload"
         >
-          <v-icon :icon="Download" start size="18" />
+          <v-icon :icon="Download" size="18" start />
           Download
         </v-btn>
 
@@ -160,24 +164,34 @@ onUnmounted(() => {
         </v-btn>
       </div>
 
-      <v-card-text class="pdf-content pa-0 bg-background position-relative">        <div v-if="loading" class="d-flex flex-column align-center justify-center position-absolute w-100 h-100" style="z-index: 10; background: rgba(255,255,255,0.9);">
-          <v-progress-circular indeterminate color="primary" size="64" />
+      <v-card-text class="pdf-content pa-0 bg-grey-lighten-3 position-relative">
+        <div
+          v-if="loading"
+          class="d-flex flex-column align-center justify-center position-absolute w-100 h-100"
+          style="z-index: 10; background: rgba(255, 255, 255, 0.9)"
+        >
+          <v-progress-circular color="primary" indeterminate size="64" />
           <p class="mt-4 text-medium-emphasis">Loading PDF...</p>
         </div>
 
         <div v-if="error" class="d-flex justify-center mt-12 w-100 px-4">
-          <v-alert type="error" variant="tonal" :text="error" style="max-width: 600px;" />
+          <v-alert
+            :text="error"
+            style="max-width: 600px"
+            type="error"
+            variant="tonal"
+          />
         </div>
 
         <div v-if="pdfSource" class="pdf-scroll-container">
           <vue-pdf-embed
-              :source="pdfSource"
-              :width="pdfWidth"
-              :text-layer="true"
-              :annotation-layer="true"
-              @loaded="handleDocumentLoaded"
-              @internal-link-clicked="handleLinkClick"
-              class="pdf-document"
+            :annotation-layer="true"
+            :source="pdfSource"
+            :text-layer="true"
+            :width="pdfWidth"
+            class="pdf-document"
+            @loaded="handleDocumentLoaded"
+            @internal-link-clicked="handleLinkClick"
           />
         </div>
       </v-card-text>
@@ -213,7 +227,6 @@ onUnmounted(() => {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-
 :deep(.vue-pdf-embed > div) {
   position: relative !important;
   margin-bottom: 24px;
@@ -225,12 +238,12 @@ onUnmounted(() => {
   z-index: 1 !important;
   opacity: 1;
   mix-blend-mode: multiply;
-  line-height: 1.0;
+  line-height: 1;
 }
 
 /* 2. Annotation Layer: MUST be above text */
 :deep(.annotationLayer) {
-  z-index: 10 !important; /* Higher than textLayer (1) */
+  z-index: 10 !important;
 }
 
 /* 3. Make links strictly clickable */
@@ -241,7 +254,7 @@ onUnmounted(() => {
 }
 
 :deep(.annotationLayer a:hover) {
-  background-color: rgba(255, 255, 0, 0.2); /* Subtle yellow highlight on hover */
+  background-color: rgba(255, 255, 0, 0.2);
   outline: 2px solid rgba(255, 255, 0, 0.5);
 }
 
