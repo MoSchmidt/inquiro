@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
+import HomePage from '@/pages/HomePage.vue';
 import SearchPage from '@/pages/SearchPage.vue';
 import ProjectPage from '@/pages/ProjectPage.vue';
 import { useAuthStore } from '@/stores/auth';
@@ -8,7 +9,12 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: '/search',
+      redirect: '/home',
+    },
+    {
+      path: '/home',
+      name: 'home',
+      component: HomePage,
     },
     {
       path: '/search',
@@ -30,7 +36,7 @@ router.beforeEach((to, from, next) => {
   // If trying to access a project page AND not logged in
   if (to.name === 'project' && !authStore.isAuthenticated) {
     // Redirect to home/search
-    next({ name: 'search' });
+    next({ name: 'home' });
   } else {
     next();
   }
