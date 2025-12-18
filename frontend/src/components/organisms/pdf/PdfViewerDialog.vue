@@ -58,10 +58,8 @@ const handleDocumentLoaded = (doc: PDFDocumentProxy) => {
 //Handle Internal Links
 const handleLinkClick = (pageNumber: number) => {
   if (pageNumber) {
-    // Find the specific page element in the DOM
-    // PDF.js renders pages with the class 'page' and attribute 'data-page-number'
     const pageElement = document.querySelector(
-      `.pdf-document .page[data-page-number="${pageNumber}"]`
+        `.pdf-document .page[data-page-number="${pageNumber}"]`
     );
 
     if (pageElement) {
@@ -89,15 +87,15 @@ const handleDownload = () => {
 };
 
 watch(
-  () => props.open,
-  (isOpen) => {
-    if (isOpen && props.paperId) {
-      loadPdf();
-    } else if (!isOpen && pdfSource.value) {
-      URL.revokeObjectURL(pdfSource.value);
-      pdfSource.value = null;
+    () => props.open,
+    (isOpen) => {
+      if (isOpen && props.paperId) {
+        loadPdf();
+      } else if (!isOpen && pdfSource.value) {
+        URL.revokeObjectURL(pdfSource.value);
+        pdfSource.value = null;
+      }
     }
-  }
 );
 
 onUnmounted(() => {
@@ -109,15 +107,15 @@ onUnmounted(() => {
 
 <template>
   <v-dialog
-    :model-value="open"
-    class="pdf-dialog"
-    fullscreen
-    transition="dialog-bottom-transition"
-    @update:model-value="(val) => !val && emit('close')"
+      :model-value="open"
+      class="pdf-dialog"
+      fullscreen
+      transition="dialog-bottom-transition"
+      @update:model-value="(val) => !val && emit('close')"
   >
     <v-card class="pdf-viewer-card">
       <div
-        class="pdf-toolbar d-flex align-center px-4 py-2 bg-grey-lighten-4 border-b"
+          class="pdf-toolbar d-flex align-center px-4 py-2 bg-surface border-b"
       >
         <h3 class="text-subtitle-1 font-weight-medium me-4">
           {{ paperTitle || 'PDF Viewer' }}
@@ -136,8 +134,8 @@ onUnmounted(() => {
           </v-btn>
 
           <span
-            class="text-caption font-weight-bold mx-2"
-            style="min-width: 40px; text-align: center"
+              class="text-caption font-weight-bold mx-2"
+              style="min-width: 40px; text-align: center"
           >
             {{ Math.round((pdfWidth / 800) * 100) }}%
           </span>
@@ -148,12 +146,12 @@ onUnmounted(() => {
         </div>
 
         <v-btn
-          v-if="pdfSource"
-          class="me-2 text-none"
-          color="primary"
-          size="small"
-          variant="flat"
-          @click="handleDownload"
+            v-if="pdfSource"
+            class="me-2 text-none"
+            color="primary"
+            size="small"
+            variant="flat"
+            @click="handleDownload"
         >
           <v-icon :icon="Download" size="18" start />
           Download
@@ -164,11 +162,12 @@ onUnmounted(() => {
         </v-btn>
       </div>
 
-      <v-card-text class="pdf-content pa-0 bg-grey-lighten-3 position-relative">
+      <v-card-text class="pdf-content pa-0 bg-background position-relative">
+
         <div
-          v-if="loading"
-          class="d-flex flex-column align-center justify-center position-absolute w-100 h-100"
-          style="z-index: 10; background: rgba(255, 255, 255, 0.9)"
+            v-if="loading"
+            class="d-flex flex-column align-center justify-center position-absolute w-100 h-100 bg-surface"
+            style="z-index: 10; opacity: 0.9"
         >
           <v-progress-circular color="primary" indeterminate size="64" />
           <p class="mt-4 text-medium-emphasis">Loading PDF...</p>
@@ -176,22 +175,22 @@ onUnmounted(() => {
 
         <div v-if="error" class="d-flex justify-center mt-12 w-100 px-4">
           <v-alert
-            :text="error"
-            style="max-width: 600px"
-            type="error"
-            variant="tonal"
+              :text="error"
+              style="max-width: 600px"
+              type="error"
+              variant="tonal"
           />
         </div>
 
         <div v-if="pdfSource" class="pdf-scroll-container">
           <vue-pdf-embed
-            :annotation-layer="true"
-            :source="pdfSource"
-            :text-layer="true"
-            :width="pdfWidth"
-            class="pdf-document"
-            @loaded="handleDocumentLoaded"
-            @internal-link-clicked="handleLinkClick"
+              :annotation-layer="true"
+              :source="pdfSource"
+              :text-layer="true"
+              :width="pdfWidth"
+              class="pdf-document"
+              @loaded="handleDocumentLoaded"
+              @internal-link-clicked="handleLinkClick"
           />
         </div>
       </v-card-text>
@@ -227,6 +226,7 @@ onUnmounted(() => {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
+/* This keeps the actual PDF pages WHITE even in Dark Mode (Standard behavior) */
 :deep(.vue-pdf-embed > div) {
   position: relative !important;
   margin-bottom: 24px;
