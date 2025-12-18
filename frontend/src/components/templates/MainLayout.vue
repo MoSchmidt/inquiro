@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { RouterView, useRoute, useRouter } from 'vue-router'
-import { VApp, VLayout, VNavigationDrawer, VMain } from 'vuetify/components'
+import { VApp, VLayout, VNavigationDrawer, VMain, VSnackbar } from 'vuetify/components'
+import { X } from 'lucide-vue-next'
+import { useTheme } from 'vuetify'
 
 import AppHeader from '@/components/organisms/layout/AppHeader.vue'
 import Sidebar from '@/components/organisms/navigation/Sidebar.vue'
@@ -16,16 +18,13 @@ const createAccountOpen = ref(false)
 
 const route = useRoute()
 const router = useRouter()
+const theme = useTheme()
 
 const authStore = useAuthStore()
 const projectsStore = useProjectsStore()
 
-// ----- derived store state -----
-
 const isAuthenticated = computed(() => authStore.isAuthenticated)
 const projects = computed(() => projectsStore.projects)
-
-// ----- lifecycle -----
 
 onMounted(() => {
   if (isAuthenticated.value) {
@@ -37,11 +36,10 @@ watch(isAuthenticated, (loggedIn) => {
   if (loggedIn) {
     projectsStore.loadProjects()
   } else {
-    projectsStore.$reset()
+    projectsStore.projects = []
+    projectsStore.selectedProject = null
   }
 })
-
-// ----- computed UI state -----
 
 const projectLinks = computed<Project[]>(() =>
     projects.value.map((project) => ({
@@ -54,7 +52,24 @@ const projectLinks = computed<Project[]>(() =>
 
 const showNewQuery = computed(() => route.name !== 'search')
 
-// ----- handlers -----
+const snackbarOpen = ref(false)
+const snackbarMessage = ref('')
+const snackbarType = ref<'success' | 'error' | 'info'>('success')
+
+const snackbarColor = computed(() => {
+  const isDark = theme.global.current.value.dark
+
+  if (snackbarType.value === 'success') {
+    return isDark ? '#2E7D32' : 'success'
+  }
+  return snackbarType.value
+})
+
+const showNotification = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+  snackbarMessage.value = message
+  snackbarType.value = type
+  snackbarOpen.value = true
+}
 
 const toggleSidebar = () => {
   sidebarOpen.value = !sidebarOpen.value
@@ -96,12 +111,15 @@ const handleDeleteProject = async (projectId: number) => {
 const handleLoginSuccess = async () => {
   await projectsStore.loadProjects()
   sidebarOpen.value = true
+  showNotification('Successfully logged in!', 'success')
 }
 
 const handleLogout = () => {
   authStore.logout()
-  projectsStore.$reset()
+  projectsStore.projects = []
+  projectsStore.selectedProject = null
   handleNewQuery()
+  showNotification('Logged out', 'error')
 }
 
 const handleAccountCreated = async () => {
@@ -109,12 +127,33 @@ const handleAccountCreated = async () => {
   if (isAuthenticated.value) {
     await projectsStore.loadProjects()
   }
+  showNotification('Account created successfully!', 'success')
 }
 </script>
 
 <template>
   <v-app>
     <v-layout class="h-screen">
+      <v-snackbar
+          v-model="snackbarOpen"
+          :color="snackbarColor"
+          location="bottom right"
+          timeout="3000"
+      >
+        {{ snackbarMessage }}
+
+        <template #actions>
+          <v-btn
+              icon
+              variant="text"
+              density="compact"
+              @click="snackbarOpen = false"
+          >
+            <v-icon :icon="X" size="18" />
+          </v-btn>
+        </template>
+      </v-snackbar>
+
       <v-navigation-drawer
           v-model="sidebarOpen"
           location="left"
