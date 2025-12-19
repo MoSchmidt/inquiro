@@ -1,0 +1,14 @@
+Analyze the research query and extract 5 keywords following this structure:
+
+1. Main topic/concept (1-2 words)
+2. Specific method/algorithm (1-2 words)
+3. Technical approach (1-2 words)
+4. Domain/application area (1 word)
+5. Related technique or variant (1-2 words)
+
+Each keyword should be:
+- Concise (1-2 words preferred)
+- Technically precise
+- Directly from or implied by the query
+
+Output only a JSON list: ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"]

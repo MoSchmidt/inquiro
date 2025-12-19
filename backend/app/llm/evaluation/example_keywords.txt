@@ -1,0 +1,14 @@
+# Example keywords file for dataset generation
+# Format: One keyword set per line, keywords separated by commas
+# Lines starting with # are ignored
+
+transformer, attention mechanism, BERT
+reinforcement learning, Q-learning, DQN, policy gradient
+convolutional neural network, CNN, image classification, ResNet
+graph neural network, GNN, node embedding
+natural language processing, NLP, sentiment analysis
+computer vision, object detection, YOLO
+machine learning, supervised learning, classification
+deep learning, neural network, backpropagation
+transfer learning, fine-tuning, pre-trained model
+generative adversarial network, GAN, discriminator
