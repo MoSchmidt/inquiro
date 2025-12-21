@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import type { AdvancedSearchOptions, ConditionGroup } from '@/types/search';
-import AdvancedSearchGroup from '@/components/atoms/AdvancedSearchGroup.vue';
+import AdvancedSearchGroup from '@/components/molecules/AdvancedSearchGroup.vue';
 import { ChevronDown, X } from 'lucide-vue-next';
 import ExpansionChevron from '@/components/atoms/ExpansionChevron.vue';
 
@@ -107,7 +107,7 @@ watch(
           </v-col>
         </v-row>
 
-        <AdvancedSearchGroup class="mt-5" v-model="root" :is-root="true" />
+        <AdvancedSearchGroup v-model="root" class="mt-5" :is-root="true" />
       </v-expansion-panel-text>
     </v-expansion-panel>
   </v-expansion-panels>

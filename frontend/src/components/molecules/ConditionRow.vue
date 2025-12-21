@@ -30,7 +30,7 @@ watchEffect(() => {
     value: model.value.value ?? '',
   };
 
-  // avoid emitting if nothing changed
+  // Avoid emitting if nothing changed
   if (
     next.field !== model.value.field ||
     next.operator !== model.value.operator ||
@@ -40,7 +40,7 @@ watchEffect(() => {
   }
 });
 
-// Computed proxies per field (official pattern for nested v-model)
+// Computed proxies per field
 const field = computed<TextCondition['field']>({
   get: () => model.value.field,
   set: (v) => (model.value = { ...model.value, field: v }),
@@ -60,7 +60,7 @@ const remove = defineEmits<{ (e: 'remove'): void }>();
 </script>
 
 <template>
-  <div class="d-flex align-center" style="gap: 12px">
+  <div class="d-flex align-center condition-row">
     <v-select
       v-model="field"
       :items="fieldItems"
@@ -70,7 +70,7 @@ const remove = defineEmits<{ (e: 'remove'): void }>();
       density="compact"
       hide-details
       :menu-icon="ChevronDown"
-      style="max-width: 180px"
+      class="field-select"
       :menu-props="{ closeOnContentClick: true }"
     />
 
@@ -83,7 +83,7 @@ const remove = defineEmits<{ (e: 'remove'): void }>();
       density="compact"
       hide-details
       :menu-icon="ChevronDown"
-      style="max-width: 220px"
+      class="operator-select"
       :menu-props="{ closeOnContentClick: true }"
     />
 
@@ -110,3 +110,17 @@ const remove = defineEmits<{ (e: 'remove'): void }>();
     </v-tooltip>
   </div>
 </template>
+
+<style scoped>
+.condition-row {
+  gap: 12px;
+}
+
+.field-select {
+  max-width: 180px;
+}
+
+.operator-select {
+  max-width: 220px;
+}
+</style>

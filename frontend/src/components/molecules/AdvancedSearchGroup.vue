@@ -11,7 +11,6 @@ defineOptions({ name: 'AdvancedSearchGroup' });
 const props = defineProps<{
   modelValue: ConditionGroup;
   removable?: boolean;
-  /** Root renders without border/operator and is locked to AND */
   isRoot?: boolean;
 }>();
 
@@ -75,10 +74,16 @@ function updateChild(index: number, updated: ConditionGroup | TextCondition) {
 <template>
   <!-- Root: frameless; Nested: subtle card -->
   <div
-    :class="[isRoot ? '' : 'rounded-lg border border-default pa-4 bg-surface']"
+    :class="[
+      'advanced-search-group',
+      !isRoot && 'rounded-lg border border-default pa-4 bg-surface',
+    ]"
   >
     <!-- Header row (hidden for root) -->
-    <div v-if="!isRoot" class="d-flex align-center mb-3" style="gap: 12px">
+    <div
+      v-if="!isRoot"
+      class="d-flex align-center mb-3 group-header"
+    >
       <span class="text-medium-emphasis">Combine with</span>
 
       <v-select
@@ -90,7 +95,7 @@ function updateChild(index: number, updated: ConditionGroup | TextCondition) {
         density="compact"
         hide-details
         :menu-icon="ChevronDown"
-        style="max-width: 240px"
+        class="operator-select"
         :menu-props="{ closeOnContentClick: true }"
       />
 
@@ -111,7 +116,11 @@ function updateChild(index: number, updated: ConditionGroup | TextCondition) {
 
     <!-- Children -->
     <div class="ms-1">
-      <div v-for="(child, idx) in model.children" :key="idx" class="mb-2">
+      <div
+        v-for="(child, idx) in model.children"
+        :key="idx"
+        class="mb-2"
+      >
         <AdvancedSearchGroup
           v-if="child.type === 'group'"
           :model-value="child"
@@ -133,7 +142,7 @@ function updateChild(index: number, updated: ConditionGroup | TextCondition) {
     </div>
 
     <!-- Actions -->
-    <div class="d-flex mt-3" style="gap: 8px">
+    <div class="d-flex mt-3 actions-row">
       <v-btn
         size="small"
         variant="outlined"
@@ -142,9 +151,28 @@ function updateChild(index: number, updated: ConditionGroup | TextCondition) {
         <v-icon :icon="Plus" start /> Condition
       </v-btn>
 
-      <v-btn size="small" variant="outlined" :ripple="false" @click="addGroup">
+      <v-btn
+        size="small"
+        variant="outlined"
+        :ripple="false"
+        @click="addGroup"
+      >
         <v-icon :icon="PlusSquare" start /> Group
       </v-btn>
     </div>
   </div>
 </template>
+
+<style scoped>
+.group-header {
+  gap: 12px;
+}
+
+.operator-select {
+  max-width: 240px;
+}
+
+.actions-row {
+  gap: 8px;
+}
+</style>
