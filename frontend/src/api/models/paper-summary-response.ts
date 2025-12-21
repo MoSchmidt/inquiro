@@ -15,9 +15,32 @@
 
 
 /**
- * Response to summary request for a specified paper
+ * Structured response to summary request. Fields contain Markdown + LaTeX strings.
  */
 export interface PaperSummaryResponse {
-    'summary': string;
+    /**
+     * The title of the paper.
+     */
+    'title': string;
+    /**
+     * A high-level, 2-3 sentence overview of the paper\'s core contribution.
+     */
+    'executive_summary': string;
+    /**
+     * Direct answer to how this paper relates to the user\'s specific query.
+     */
+    'relevance_to_query'?: string;
+    /**
+     * List of technical steps/architectures (bullet points).
+     */
+    'methodology_points': Array<string>;
+    /**
+     * List of quantitative findings or theoretical results (bullet points).
+     */
+    'results_points': Array<string>;
+    /**
+     * Critical analysis of constraints or assumptions.
+     */
+    'limitations'?: string;
 }
 

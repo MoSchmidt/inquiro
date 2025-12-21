@@ -22,8 +22,12 @@
     ]
   },
   "dependencies": {
+    "@vueuse/core": "^14.1.0",
     "axios": "^1.13.1",
+    "dompurify": "^3.3.1",
     "lucide-vue-next": "^0.554.0",
+    "markdown-it": "^14.1.0",
+    "markdown-it-katex": "^2.0.3",
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.7.1",
     "tailwindcss": "^4.1.16",
