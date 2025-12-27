@@ -81,11 +81,27 @@ export default createVuetify({
     },
   },
   defaults: {
-    global: { ripple: true },
-    VTextField: { variant: 'outlined', density: 'comfortable', color: 'primary' },
-    VSelect: { variant: 'outlined', density: 'comfortable' },
-    VBtn: { color: 'primary', rounded: 'lg' },
-    VCard: { rounded: 'lg' },
-    VDataTable: { density: 'comfortable' },
+    global: {
+      ripple: false,
+    },
+    VTextField: {
+      variant: 'outlined',
+      density: 'comfortable',
+      color: 'primary',
+    },
+    VSelect: {
+      variant: 'outlined',
+      density: 'comfortable',
+    },
+    VBtn: {
+      color: 'primary',
+      rounded: 'lg',
+    },
+    VCard: {
+      rounded: 'lg',
+    },
+    VDataTable: {
+      density: 'comfortable',
+    },
   },
 });
