@@ -15,7 +15,7 @@ export default createVuetify({
       light: {
         dark: false,
         colors: {
-          background: '#F9FAFB',
+          background: '#F3F4F6',
           surface: '#FFFFFF',
 
           primary: '#0065bd',
@@ -83,7 +83,7 @@ export default createVuetify({
   defaults: {
     global: { ripple: true },
     VTextField: { variant: 'outlined', density: 'comfortable', color: 'primary' },
-    VSelect: { variant: 'outlined', density: 'comfortable' },
+    VSelect: { variant: 'outlined', density: 'comfortable', singleLine: true },
     VBtn: { color: 'primary', rounded: 'lg' },
     VCard: { rounded: 'lg' },
     VDataTable: { density: 'comfortable' },

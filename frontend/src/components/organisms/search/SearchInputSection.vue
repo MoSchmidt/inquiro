@@ -13,9 +13,9 @@ import {
   VTextarea,
 } from 'vuetify/components';
 import type { AdvancedSearchOptions } from '@/types/search';
-import AdvancedSearchPanel from '@/components/atoms/AdvancedSearchPanel.vue';
 import { Paperclip, Send, X } from 'lucide-vue-next';
 import { useFileSelection } from '@/composables/useFileSelection';
+import AdvancedSearchPanel from '@/components/organisms/search/AdvancedSearchPanel.vue';
 
 const emit = defineEmits<{
   (
@@ -64,12 +64,11 @@ const handleSubmit = () => {
 <template>
   <div class="input-wrapper">
     <v-container fluid class="fill-height align-center justify-center">
-      <div class="w-100" style="max-width: 900px">
+      <div class="w-100" style="max-width: 900px;">
         <div class="text-center mb-10">
           <h2 class="text-h4 mb-2">Welcome to Inquiro</h2>
           <p class="text-medium-emphasis">
-            Enter your text input below and let our AI generate powerful results
-            for you
+            Enter your text input below and let our AI generate powerful results for you
           </p>
         </div>
 
@@ -93,8 +92,7 @@ const handleSubmit = () => {
               auto-grow
               flat
               rows="8"
-              class="mb-4 shadow-xl custom-shadow-textarea"
-              bg-color="white"
+              hide-details
             />
 
             <div class="add-pdf-actions">
@@ -110,11 +108,6 @@ const handleSubmit = () => {
               >
                 {{ selectedFile.name }}
               </v-chip>
-
-              <AdvancedSearchPanel
-                class="mb-4"
-                @update="(val) => (advancedOptions = val)"
-              />
 
               <v-btn
                 icon
@@ -132,6 +125,11 @@ const handleSubmit = () => {
               </v-btn>
             </div>
           </div>
+
+          <AdvancedSearchPanel
+            class="mb-4"
+            @update="(val) => (advancedOptions = val)"
+          />
 
           <v-btn
             type="submit"
@@ -213,12 +211,6 @@ const handleSubmit = () => {
   z-index: 10;
 }
 
-:deep(.v-field__input) {
-  padding-bottom: 40px !important;
-}
-</style>
-
-<style>
 .v-theme--dark .generate-btn.v-btn--disabled {
   background-color: rgba(112, 146, 189, 1) !important;
   color: rgba(255, 255, 255, 0.3) !important;
@@ -230,8 +222,4 @@ const handleSubmit = () => {
   display: none !important;
 }
 
-.custom-shadow-textarea :deep(.v-field) {
-  box-shadow: var(--shadow-small);
-  border-radius: var(--radius-default);
-}
 </style>

@@ -57,7 +57,7 @@ watch(
 
 <template>
   <v-expansion-panels flat rounded="lg">
-    <v-expansion-panel class="custom-shadow-panel">
+    <v-expansion-panel>
       <v-expansion-panel-title v-slot="{ expanded }">
         <div class="d-flex align-center justify-space-between w-100">
           <div class="d-flex align-center ga-2">
@@ -112,9 +112,3 @@ watch(
     </v-expansion-panel>
   </v-expansion-panels>
 </template>
-<style scoped>
-.custom-shadow-panel {
-  box-shadow: var(--shadow-small);
-  border-radius: var(--radius-default);
-}
-</style>

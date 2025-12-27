@@ -11,6 +11,8 @@ import { Copy, Eye, FolderPlus, RotateCcw, Sparkles } from 'lucide-vue-next';
 import { computed, withDefaults } from 'vue';
 import { usePaperSummariesStore } from '@/stores/paperSummaries';
 import type { Paper, PaperMenuOption } from '@/types/content';
+import FormattedMarkdown from '@/components/atoms/FormattedMarkdown.vue';
+import ExpansionChevron from '@/components/atoms/ExpansionChevron.vue';
 
 const props = withDefaults(
     defineProps<{
