@@ -154,7 +154,6 @@ function updateChild(index: number, updated: ConditionGroup | TextCondition) {
       <v-btn
         size="small"
         variant="outlined"
-        :ripple="false"
         @click="addGroup"
       >
         <v-icon :icon="PlusSquare" start /> Group
