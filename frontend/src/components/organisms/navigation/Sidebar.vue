@@ -135,7 +135,8 @@
   <div class="d-flex flex-column h-100">
     <v-card
         flat
-        class="pa-4 d-flex align-center justify-space-between border-b border-border-light"
+        height="64"
+        class="px-4 d-flex align-center justify-space-between border-b border-border-light"
     >
       <h2 class="text-h6">Menu</h2>
       <v-btn icon variant="text" @click="emit('close')">
@@ -144,9 +145,11 @@
     </v-card>
 
     <div class="flex-grow-1 overflow-y-auto">
-      <div class="pa-4 pb-2">
+      <div class="px-4 pb-2 pt-4">
         <v-btn
             variant="text"
+            color="on-surface"
+            rounded="lg"
             block
             height="50"
             class="d-flex justify-start align-center text-none px-4 text-high-emphasis"
@@ -158,7 +161,7 @@
       </div>
 
       <div class="px-4">
-        <h3 class="text-subtitle-1 mb-3 d-flex align-center">
+        <h3 class="text-subtitle-1 mb-2 d-flex align-center">
           Projects
         </h3>
 
@@ -167,7 +170,7 @@
               v-for="project in projects"
               :key="project.id"
               @click="emit('projectSelect', project.id)"
-              class="mb-2 rounded-lg project-item px-4"
+              class="rounded-lg project-item px-4"
           >
             <div class="d-flex align-center w-100">
               <v-icon :icon="FolderOpen" size="20" class="me-3" />
@@ -185,7 +188,7 @@
 
           <v-list-item
               @click="handleNewProjectClick"
-              class="mb-2 rounded-lg project-item px-4"
+              class="rounded-lg project-item px-4"
           >
             <div class="d-flex align-center w-100">
               <v-icon :icon="FolderPlus" size="20" class="me-3" />
@@ -198,12 +201,14 @@
       </div>
     </div>
 
-    <div class="border-t border-border-light pa-4">
-      <h3 class="text-subtitle-1 mb-3 d-flex align-center">Account</h3>
+    <div class="border-t border-border-light px-4 py-2">
+      <h3 class="text-subtitle-1 mb-2 d-flex align-center">Account</h3>
 
       <div v-if="!isLoggedIn">
         <v-btn
             variant="text"
+            color="on-surface"
+            rounded="lg"
             block
             height="50"
             class="d-flex justify-start align-center text-none px-4 text-high-emphasis"
@@ -217,6 +222,8 @@
       <div v-else>
         <v-btn
             variant="text"
+            color="on-surface"
+            rounded="lg"
             block
             height="50"
             class="d-flex justify-start align-center text-none px-4 text-high-emphasis"
