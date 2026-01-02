@@ -1,2 +1,10 @@
-@import './base.css';
-@import './colors.css';
+/* 1. Import Tailwind */
+@import "tailwindcss";
+
+/* 2. Global Resets */
+/* Prevent the browser window from scrolling. */
+html, body, #app {
+    height: 100%;
+    margin: 0;
+    overflow: hidden !important;
+}

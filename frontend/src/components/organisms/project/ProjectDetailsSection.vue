@@ -5,7 +5,7 @@ import {
   VContainer,
   VTooltip
 } from 'vuetify/components';
-import { Pencil, Trash2 } from 'lucide-vue-next';
+import { Pencil, Sparkles, Trash2 } from 'lucide-vue-next';
 import type { Paper, PaperMenuOption } from '@/types/content';
 
 import RenameProjectDialog from '@/components/dialogs/RenameProjectDialog.vue';
@@ -19,6 +19,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'remove', paper: Paper): void;
   (e: 'rename', newName: string): void;
+  (e: 'view', paper: Paper): void;
 }>();
 
 const isRenameDialogOpen = ref(false);
@@ -28,7 +29,9 @@ const handleRenameSubmit = (newName: string) => {
   isRenameDialogOpen.value = false;
 };
 
+
 const menuOptions: PaperMenuOption[] = [
+  { label: 'Summarise Paper', value: 'summarise', icon: Sparkles },
   { label: 'Remove from Project', value: 'remove', icon: Trash2 },
 ];
 
@@ -59,7 +62,6 @@ const handleMenuSelect = ({
         variant="text"
         size="small"
         color="medium-emphasis"
-        :ripple="false"
         @click="isRenameDialogOpen = true"
       >
         <v-icon :icon="Pencil" size="20" />
@@ -78,6 +80,7 @@ const handleMenuSelect = ({
       empty-message="This project does not yet have any saved papers."
       :expand-all-on-change="false"
       @menu-select="handleMenuSelect"
+      @view="(p) => emit('view', p)"
     />
 
     <RenameProjectDialog

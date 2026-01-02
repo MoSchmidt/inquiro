@@ -1,61 +1,108 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
-import {
-  VAlert,
-  VBtn,
-  VCard,
-  VCardActions,
-  VCardText,
-  VCardTitle,
-  VDialog,
-  VProgressLinear,
-  VSelect,
-  VSpacer,
-} from 'vuetify/components';
+import { computed, onMounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { VAlert, VProgressLinear, VDialog, VCard, VCardTitle, VCardText, VSelect, VCardActions, VSpacer, VBtn } from 'vuetify/components';
 
-import SearchInputSection from '@/components/organisms/search/SearchInputSection.vue';
 import SearchResultsSection from '@/components/organisms/search/SearchResultsSection.vue';
+import PdfViewerDialog from '@/components/organisms/pdf/PdfViewerDialog.vue';
 import type { Paper } from '@/types/content';
 
-import { searchPapers } from '@/services/search';
+import { searchPapers, searchPapersByPdf } from '@/services/search';
 import { useAuthStore } from '@/stores/auth';
 import { useProjectsStore } from '@/stores/projects';
+import { useSearchStore } from '@/stores/search';
 import { mapSearchResponseToPapers } from '@/mappers/paper-mapper';
 
+const route = useRoute();
+const router = useRouter();
 const authStore = useAuthStore();
 const projectsStore = useProjectsStore();
+const searchStore = useSearchStore();
 
-const currentQuery = ref<string | null>(null);
+// ----- state -----
+const currentQueryText = ref('');
+const currentFile = ref<File | null>(null);
+
 const outputs = ref<Paper[]>([]);
 const isLoading = ref(false);
 const errorMessage = ref<string | null>(null);
 
-// add-to-project dialog state
+// Dialog states
 const addToProjectDialogOpen = ref(false);
 const paperToAdd = ref<Paper | null>(null);
 const selectedProjectIdForAdd = ref<number | null>(null);
+const pdfViewerOpen = ref(false);
+const pdfPaperId = ref<number | null>(null);
+const pdfPaperTitle = ref('');
 
-// derived state
+// ----- derived state -----
 const isAuthenticated = computed(() => authStore.isAuthenticated);
 const projects = computed(() => projectsStore.projects);
 const projectOptions = computed(() => projectsStore.projects);
 
-onMounted(() => {
+// ----- lifecycle -----
+
+onMounted(async () => {
   if (isAuthenticated.value) {
-    projectsStore.loadProjects();
+    await projectsStore.loadProjects();
+  }
+  await initializeSearch();
+});
+
+// Watcher: Handles Search when URL changes
+watch(() => route.query.q, async (newQuery) => {
+  if (newQuery !== currentQueryText.value || searchStore.stagedFile) {
+    await initializeSearch();
   }
 });
 
-// ----- search flow -----
+// ----- search logic -----
 
-const handleSubmitQuery = async (query: string) => {
-  currentQuery.value = query;
+const initializeSearch = async () => {
+  // 1. Check Pinia store for a File
+  const storedFile = searchStore.stagedFile;
+
+  // 2. Check URL query for text
+  const queryParam = route.query.q?.toString() || '';
+
+  // If we have neither, clear the results
+  if (!queryParam && !storedFile) {
+    outputs.value = [];
+    currentQueryText.value = '';
+    currentFile.value = null;
+    errorMessage.value = null;
+    return;
+  }
+
+  // 3. Consume the file from the store
+  if (storedFile) {
+    searchStore.setStagedFile(null);
+  }
+
+  await performSearch(queryParam, storedFile || null);
+};
+
+const performSearch = async (query: string, file: File | null) => {
+  // Guard clause: If no query AND no file, do not call API.
+  if (!query.trim() && !file) {
+    isLoading.value = false;
+    return;
+  }
+
+  currentQueryText.value = query;
+  currentFile.value = file;
+
   outputs.value = [];
   errorMessage.value = null;
   isLoading.value = true;
 
   try {
-    const response = await searchPapers(query);
+    let response;
+    if (file) {
+      response = await searchPapersByPdf(file, query || undefined);
+    } else {
+      response = await searchPapers(query);
+    }
     outputs.value = mapSearchResponseToPapers(response);
   } catch (err) {
     console.error('Search failed', err);
@@ -65,13 +112,35 @@ const handleSubmitQuery = async (query: string) => {
   }
 };
 
-// ----- add-from-search flow -----
+// Handle new search from within the Results Page
+const handleUpdateQuery = async (payload: { query: string; file: File | null } | string) => {
+  const query = typeof payload === 'string' ? payload : payload.query;
+  const file = typeof payload !== 'string' && payload.file ? payload.file : null;
 
-const handleAddFromSearch = (paper: Paper) => {
-  if (!isAuthenticated.value || !projects.value.length) {
-    return;
+  // 1. If we have a file, put it in the Store. If NOT, clear it to prevent stale state.
+  if (file) {
+    searchStore.setStagedFile(file);
+  } else {
+    searchStore.setStagedFile(null);
   }
 
+  const isTextSame = query === currentQueryText.value;
+  const isFileSame = file === currentFile.value;
+
+  // 2. Update URL
+  await router.push({ query: { q: query } });
+
+  // 3. Edge Case: If text is same but file changed (or removed), watcher won't fire.
+  // We must manually trigger.
+  if (isTextSame && !isFileSame) {
+    await initializeSearch();
+  }
+};
+
+// ----- add-to-project & view logic -----
+
+const handleAddFromSearch = (paper: Paper) => {
+  if (!isAuthenticated.value || !projects.value.length) return;
   paperToAdd.value = paper;
   selectedProjectIdForAdd.value = projects.value[0]?.project_id ?? null;
   addToProjectDialogOpen.value = true;
@@ -82,14 +151,15 @@ const confirmAddToProject = async () => {
     addToProjectDialogOpen.value = false;
     return;
   }
-
-  await projectsStore.addPaper(
-    selectedProjectIdForAdd.value,
-    paperToAdd.value.paper_id
-  );
-
+  await projectsStore.addPaper(selectedProjectIdForAdd.value, paperToAdd.value.paper_id);
   addToProjectDialogOpen.value = false;
   paperToAdd.value = null;
+};
+
+const handleViewPaper = (paper: Paper) => {
+  pdfPaperId.value = paper.paper_id;
+  pdfPaperTitle.value = paper.title;
+  pdfViewerOpen.value = true;
 };
 </script>
 
@@ -103,19 +173,16 @@ const confirmAddToProject = async () => {
       {{ errorMessage }}
     </v-alert>
 
-    <div v-if="!currentQuery">
-      <SearchInputSection @submit="handleSubmitQuery" />
-    </div>
-    <div v-else>
-      <SearchResultsSection
-        :query="currentQuery || ''"
+    <SearchResultsSection
+        :query="currentQueryText"
+        :file="currentFile"
         :outputs="outputs"
         :show-abstract="true"
         :show-add="isAuthenticated"
         @add="handleAddFromSearch"
-        @update-query="handleSubmitQuery"
-      />
-    </div>
+        @view="handleViewPaper"
+        @update-query="handleUpdateQuery"
+    />
 
     <v-dialog v-model="addToProjectDialogOpen" max-width="500">
       <v-card>
@@ -125,12 +192,12 @@ const confirmAddToProject = async () => {
             Choose a project to add this paper to.
           </p>
           <v-select
-            v-model="selectedProjectIdForAdd"
-            :items="projectOptions"
-            item-title="project_name"
-            item-value="project_id"
-            label="Project"
-            variant="outlined"
+              v-model="selectedProjectIdForAdd"
+              :items="projectOptions"
+              item-title="project_name"
+              item-value="project_id"
+              label="Project"
+              variant="outlined"
           />
         </v-card-text>
         <v-card-actions>
@@ -142,6 +209,13 @@ const confirmAddToProject = async () => {
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <PdfViewerDialog
+        :open="pdfViewerOpen"
+        :paper-id="pdfPaperId"
+        :paper-title="pdfPaperTitle"
+        @close="pdfViewerOpen = false"
+    />
   </div>
 </template>
 

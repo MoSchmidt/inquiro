@@ -1,6 +1,6 @@
 import axios from "axios";
 import type { AxiosRequestHeaders } from "axios";
-import { useAuthStore } from "../stores/auth";
+import { useAuthStore } from '@/stores/auth';
 
 export const apiAxios = axios.create();
 

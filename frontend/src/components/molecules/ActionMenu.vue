@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import type { Component } from 'vue';
 import {
   VBtn, VIcon, VList, VListItem, VMenu, VListItemTitle
 } from 'vuetify/components';
@@ -8,14 +9,14 @@ import { MoreHorizontal } from 'lucide-vue-next';
 export interface ActionMenuItem {
   title: string;
   value: string | number;
-  icon?: any;
+  icon?: Component;
   color?: string;
   action?: () => void;
 }
 
 defineProps<{
   items: ActionMenuItem[];
-  icon?: any;
+  icon?: Component;
 }>();
 
 const emit = defineEmits<{

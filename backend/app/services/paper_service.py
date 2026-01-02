@@ -69,8 +69,8 @@ class PaperService:
             )
 
             openai_provider = get_openai_provider()
-            summary = await openai_provider.summarise_paper(pdf_text, query)
-            return PaperSummaryResponse(summary=summary)
+            summary_payload = await openai_provider.summarise_paper(pdf_text, query)
+            return PaperSummaryResponse.model_validate(summary_payload)
         except httpx.HTTPStatusError as exc:
             # arXiv returned 404 or similar error
             logger.warning("Failed to fetch arXiv paper %s: %s", external_id, exc, exc_info=True)
@@ -91,10 +91,52 @@ class PaperService:
             ) from exc
 
     @staticmethod
+    async def get_paper_pdf(paper_id: int, session: AsyncSession) -> bytes:
+        """
+        Retrieves the PDF bytes for the specified paper.
+        Used by the frontend PDF viewer.
+        """
+        paper = await PaperRepository.get_paper_by_id(session, paper_id)
+
+        if not paper:
+            logger.warning("Failed to find specified paper in DB: %s", paper_id)
+            raise HTTPException(status_code=404, detail=f"Paper {paper_id} not found")
+
+        if paper.source != PaperSource.ARXIV:
+            logger.warning("Unsupported paper source for PDF retrieval: %s", paper.source)
+            raise HTTPException(
+                status_code=422,
+                detail=f"Unsupported paper source '{paper.source}'. Only ARXIV is supported.",
+            )
+
+        try:
+            return await PaperService._fetch_arxiv_pdf(arxiv_id=paper.paper_id_external)
+        except httpx.HTTPStatusError as exc:
+            logger.warning(
+                "Failed to fetch arXiv paper %s: %s",
+                paper.paper_id_external,
+                exc,
+                exc_info=True,
+            )
+            raise HTTPException(status_code=404, detail="Paper not found") from exc
+        except httpx.RequestError as exc:
+            logger.warning(
+                "Network error while fetching arXiv paper %s: %s",
+                paper.paper_id_external,
+                exc,
+                exc_info=True,
+            )
+            raise HTTPException(
+                status_code=503,
+                detail="Upstream arXiv service unavailable, please try again later.",
+            ) from exc
+
+    @staticmethod
     async def _fetch_arxiv_pdf(arxiv_id: str) -> bytes:
         """
         Fetch arXiv PDF and return its raw bytes.
         """
+
         url = f"https://arxiv.org/pdf/{arxiv_id}.pdf"
         async with httpx.AsyncClient(timeout=30, follow_redirects=True) as client:
             resp = await client.get(url)

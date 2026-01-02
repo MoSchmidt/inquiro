@@ -17,13 +17,25 @@ export default createVuetify({
         colors: {
           background: '#F9FAFB',
           surface: '#FFFFFF',
+
           primary: '#0065bd',
           secondary: '#005293',
-          accent: '#64a0c8',
           error: '#EF4444',
           info: '#3B82F6',
           success: '#10B981',
           warning: '#F59E0B',
+
+          // Custom Semantic Colors
+          'search-surface': '#e9f2ff',
+          'step-surface': '#E3F2FD',
+          'step-text': '#1976D2',
+          'success-surface': '#F1F8E9',
+          'snackbar-success': '#10B981',
+
+          // Borders
+          'border-light': '#E0E0E0',
+          'border-highlight': '#BBDEFB',
+          'success-border': '#8BC34A',
         },
         variables: {
           'font-family': defaultFont,
@@ -34,13 +46,26 @@ export default createVuetify({
         colors: {
           background: '#0F172A',
           surface: '#1E293B',
-          primary: '#0065bd',
-          secondary: '#005293',
-          accent: '#64a0c8',
+
+          primary: '#60A5FA',
+          secondary: '#7DD3FC',
+
           error: '#F87171',
           info: '#60A5FA',
           success: '#34D399',
           warning: '#FBBF24',
+
+          // Custom Semantic Colors
+          'search-surface': '#1e293b',
+          'step-surface': '#0f172a',
+          'step-text': '#60A5FA',
+          'success-surface': '#064e3b',
+          'snackbar-success': '#2E7D32',
+
+          // Borders
+          'border-light': '#334155',
+          'border-highlight': '#1e40af',
+          'success-border': '#15803d',
         },
         variables: {
           'font-family': defaultFont,
@@ -57,7 +82,7 @@ export default createVuetify({
   },
   defaults: {
     global: {
-      ripple: true,
+      ripple: false,
     },
     VTextField: {
       variant: 'outlined',

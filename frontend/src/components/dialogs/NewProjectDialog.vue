@@ -18,7 +18,6 @@ const projectName = ref('');
 
 const close = () => {
   projectName.value = '';
-  projectName.value = '';
   emit('update:modelValue', false);
 };
 
