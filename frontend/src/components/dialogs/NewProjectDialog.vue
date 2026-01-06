@@ -11,21 +11,28 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void;
-  (e: 'submit', name: string): void;
+  (e: 'submit', name: string, openImmediately: boolean): void;
 }>();
 
 const projectName = ref('');
+const openAfterCreate = ref(false);
 
 const close = () => {
   projectName.value = '';
+  openAfterCreate.value = false;
   emit('update:modelValue', false);
 };
 
 const handleSubmit = () => {
   if (!projectName.value) return;
-  emit('submit', projectName.value.trim());
+  emit('submit', projectName.value.trim(), openAfterCreate.value);
   projectName.value = '';
+  openAfterCreate.value = false;
   close();
+};
+
+const toggleCheckbox = () => {
+  openAfterCreate.value = !openAfterCreate.value;
 };
 </script>
 
@@ -47,9 +54,32 @@ const handleSubmit = () => {
               label="Project name"
               variant="outlined"
               required
-              class="mb-4"
+              class="mb-2"
               autofocus
           />
+
+          <div
+              class="d-flex align-center mb-4 cursor-pointer"
+              @click="toggleCheckbox"
+          >
+            <v-btn
+                variant="outlined"
+                class="pa-0 mr-3 rounded"
+                :color="openAfterCreate ? 'black' : 'medium-emphasis'"
+                height="20"
+                width="20"
+                min-width="20"
+                flat
+                :ripple="false"
+            >
+              <span v-if="openAfterCreate" class="text-caption font-weight-bold">✕</span>
+            </v-btn>
+
+            <span class="text-medium-emphasis user-select-none">
+              Open project after create
+            </span>
+          </div>
+
           <v-btn type="submit" color="primary" block>Create Project</v-btn>
         </v-form>
       </v-card-text>
@@ -62,3 +92,9 @@ const handleSubmit = () => {
     </v-card>
   </v-dialog>
 </template>
+
+<style scoped>
+.user-select-none {
+  user-select: none;
+}
+</style>

@@ -7,6 +7,7 @@
     VIcon,
     VList,
     VListItem,
+    VDivider,
   } from 'vuetify/components';
   import {
     FolderOpen,
@@ -19,9 +20,8 @@
     SquarePen
   } from 'lucide-vue-next';
   import type { Project } from '@/types/content';
-  import type { ActionMenuItem } from '@/types/ui'; // Import Shared Type
+  import type { ActionMenuItem } from '@/types/ui';
 
-  // Import Dialogs
   import LoginDialog from '@/components/dialogs/LoginDialog.vue';
   import LogoutDialog from '@/components/dialogs/LogoutDialog.vue';
   import NewProjectDialog from '@/components/dialogs/NewProjectDialog.vue';
@@ -39,7 +39,7 @@
   const emit = defineEmits<{
     (e: 'close'): void;
     (e: 'projectSelect', projectId: number): void;
-    (e: 'newProject', name: string): void;
+    (e: 'newProject', name: string, openImmediately: boolean): void;
     (e: 'logout'): void;
     (e: 'newQuery'): void;
     (e: 'loginSuccess'): void;
@@ -99,9 +99,8 @@
     newProjectDialogOpen.value = true;
   };
 
-  const onNewProjectSubmit = (name: string) => {
-    emit('newProject', name);
-    emit('close');
+  const onNewProjectSubmit = (name: string, openImmediately: boolean) => {
+    emit('newProject', name, openImmediately);
   };
 
   const onLoginSuccess = () => {
@@ -240,7 +239,9 @@
     </div>
 
     <LoginDialog v-model="loginDialogOpen" @success="onLoginSuccess" />
+
     <NewProjectDialog v-model="newProjectDialogOpen" @submit="onNewProjectSubmit" />
+
     <RenameProjectDialog
         v-model="renameDialogOpen"
         :current-name="projectToAction?.name || ''"

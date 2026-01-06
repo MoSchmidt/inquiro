@@ -3,8 +3,6 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { RouterView, useRoute, useRouter } from 'vue-router'
 import { VApp, VLayout, VNavigationDrawer, VMain, VSnackbar } from 'vuetify/components'
 import { X } from 'lucide-vue-next'
-// We can remove useTheme since we don't need manual checking anymore
-// import { useTheme } from 'vuetify'
 
 import AppHeader from '@/components/organisms/layout/AppHeader.vue'
 import Sidebar from '@/components/organisms/navigation/Sidebar.vue'
@@ -19,7 +17,6 @@ const createAccountOpen = ref(false)
 
 const route = useRoute()
 const router = useRouter()
-// const theme = useTheme() // Removed
 
 const authStore = useAuthStore()
 const projectsStore = useProjectsStore()
@@ -87,10 +84,18 @@ const handleProjectSelect = async (projectId: number) => {
   sidebarOpen.value = false
 }
 
-const handleNewProject = async (name: string) => {
+const handleNewProject = async (name: string, openImmediately: boolean) => {
   const project = await projectsStore.createNewProject(name)
+
   if (project) {
-    await handleProjectSelect(project.project_id)
+    if (openImmediately) {
+      // If checked, open the project immediately
+      await handleProjectSelect(project.project_id)
+    } else {
+      // If unchecked, just notify user
+      showNotification(`Project "${name}" created successfully`, 'success')
+      // Sidebar closes automatically via the Sidebar component event flow
+    }
   }
 }
 
