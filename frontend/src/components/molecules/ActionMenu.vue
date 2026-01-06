@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import type { Component } from 'vue';
 import {
   VBtn, VIcon, VList, VListItem, VMenu, VListItemTitle
 } from 'vuetify/components';
@@ -9,7 +8,7 @@ import type { ActionMenuItem } from '@/types/ui';
 
 defineProps<{
   items: ActionMenuItem[];
-  icon?: Component;
+  icon?: any;
 }>();
 
 const emit = defineEmits<{
@@ -42,12 +41,12 @@ const handleItemClick = (item: ActionMenuItem) => {
             class="action-menu-btn"
             @click.stop
         >
-          <v-icon :icon="icon || MoreHorizontal" size="18" />
+          <v-icon :icon="(icon || MoreHorizontal) as any" size="18" />
         </v-btn>
       </template>
 
       <v-list density="compact">
-        <template v-for="(item, index) in items" :key="item.value || index">
+        <template v-for="item in items" :key="item.value || item.title">
           <v-list-item
               v-if="!item.hidden"
               :value="item.value"
@@ -56,7 +55,7 @@ const handleItemClick = (item: ActionMenuItem) => {
               @click.stop="handleItemClick(item)"
           >
             <template v-if="item.icon" #prepend>
-              <v-icon :icon="item.icon" size="18" class="me-2" />
+              <v-icon :icon="item.icon as any" size="18" class="me-2" />
             </template>
 
             <v-list-item-title>{{ item.title }}</v-list-item-title>

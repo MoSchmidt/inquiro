@@ -2,9 +2,10 @@ import type { Component } from 'vue';
 
 export interface ActionMenuItem {
     title: string;
-    value?: string; // Optional now, mostly for keys
+    value?: string | number;
     icon?: Component;
     color?: string;
-    action?: () => void; // The logic lives here
+    action?: () => void;
     disabled?: boolean;
+    hidden?: boolean;
 }

@@ -13,8 +13,7 @@ import type { ActionMenuItem } from '@/types/ui';
 import { usePaperSummariesStore } from '@/stores/paperSummaries';
 
 import RenameProjectDialog from '@/components/dialogs/RenameProjectDialog.vue';
-
-const props = defineProps<{
+defineProps<{
   projectName: string;
   papers: Paper[];
   showAbstract?: boolean;

@@ -29,7 +29,6 @@ interface Props {
   title?: string;
   emptyMessage?: string;
   expandAllOnChange?: boolean;
-  // Factory function: Given a paper, return its actions
   actionProvider?: (paper: Paper) => ActionMenuItem[];
   searchContext?: string;
 }
