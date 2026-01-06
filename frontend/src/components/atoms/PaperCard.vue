@@ -4,11 +4,17 @@ import {
   VExpansionPanelText,
   VExpansionPanelTitle,
   VIcon,
+  VChip,
+  VTooltip,
+  VDivider,
+  VAlert,
+  VSkeletonLoader
 } from 'vuetify/components';
 import { ChevronDown, Copy, Eye, FolderPlus, RotateCcw, Sparkles } from 'lucide-vue-next';
 import { computed, withDefaults } from 'vue';
-import type { Paper, PaperMenuOption } from '@/types/content';
-import ActionMenu, { type ActionMenuItem } from '@/components/molecules/ActionMenu.vue';
+import type { Paper } from '@/types/content';
+import type { ActionMenuItem } from '@/types/ui';
+import ActionMenu from '@/components/molecules/ActionMenu.vue';
 import { usePaperSummariesStore } from '@/stores/paperSummaries';
 import FormattedMarkdown from '@/components/atoms/FormattedMarkdown.vue';
 
@@ -17,21 +23,19 @@ const props = withDefaults(
       paper: Paper;
       showAbstract?: boolean;
       showAdd?: boolean;
-      menuOptions?: PaperMenuOption[];
+      actions?: ActionMenuItem[];
       queryContext?: string;
     }>(),
     {
       showAbstract: true,
       showAdd: false,
-      menuOptions: () => [] as PaperMenuOption[],
+      actions: () => [],
       queryContext: '',
     }
 );
 
-
 const emit = defineEmits<{
   (e: 'add', paper: Paper): void;
-  (e: 'menu-select', payload: { option: PaperMenuOption; paper: Paper }): void;
   (e: 'view', paper: Paper): void;
 }>();
 
@@ -54,18 +58,8 @@ const copySummary = async () => {
     // ignore
   }
 };
-
-// Transform PaperMenuOption to ActionMenuItem
-const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
-  return props.menuOptions.map(option => ({
-    title: option.label,
-    value: option.value,
-    icon: option.icon,
-    // When clicked, we emit the original event format expected by the parent
-    action: () => emit('menu-select', { option, paper: props.paper })
-  }));
-});
 </script>
+
 <template>
   <v-expansion-panel-title v-slot="{ expanded }">
     <div class="paper-header w-100">
@@ -136,8 +130,8 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
         </v-btn>
 
         <ActionMenu
-            v-if="transformedMenuOptions.length"
-            :items="transformedMenuOptions"
+            v-if="actions.length"
+            :items="actions"
         />
       </div>
     </div>

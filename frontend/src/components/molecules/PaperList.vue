@@ -14,12 +14,13 @@ import {
   VExpansionPanels,
   VIcon,
   VTextField,
+  VTooltip
 } from 'vuetify/components';
-import type { Paper, PaperMenuOption } from '@/types/content';
+import type { Paper } from '@/types/content';
+import type { ActionMenuItem } from '@/types/ui';
 import PaperCard from '@/components/atoms/PaperCard.vue';
 import { ArrowUp, Search, X } from 'lucide-vue-next';
 import { useScrollToTop } from '@/composables/useScrollToTop';
-import { usePaperSummariesStore } from '@/stores/paperSummaries';
 
 interface Props {
   papers: Paper[];
@@ -28,7 +29,8 @@ interface Props {
   title?: string;
   emptyMessage?: string;
   expandAllOnChange?: boolean;
-  menuOptions?: PaperMenuOption[];
+  // Factory function: Given a paper, return its actions
+  actionProvider?: (paper: Paper) => ActionMenuItem[];
   searchContext?: string;
 }
 
@@ -38,12 +40,11 @@ const props = withDefaults(defineProps<Props>(), {
   title: 'Articles',
   emptyMessage: 'This project has no saved papers yet.',
   expandAllOnChange: false,
-  menuOptions: () => [] as PaperMenuOption[],
+  actionProvider: () => [],
 });
 
 const emit = defineEmits<{
   add: [paper: Paper];
-  'menu-select': [{ option: PaperMenuOption; paper: Paper }];
   view: [paper: Paper];
 }>();
 
@@ -81,9 +82,9 @@ const filteredPapers = computed(() => {
       paper.abstract,
       paper.year?.toString(),
     ]
-      .filter(Boolean)
-      .join(' ')
-      .toLowerCase();
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
 
     return haystack.includes(searchQuery.value);
   });
@@ -92,19 +93,19 @@ const filteredPapers = computed(() => {
 // ----- keep expansion state in sync -----
 
 watch(
-  () => filteredPapers.value,
-  (newPapers) => {
-    if (props.expandAllOnChange && newPapers.length) {
-      nextTick(() => {
-        expanded.value = newPapers.map((p) => p.paper_id);
-      });
-    } else {
-      expanded.value = expanded.value.filter((id) =>
-        newPapers.some((p) => p.paper_id === id)
-      );
-    }
-  },
-  { immediate: props.expandAllOnChange }
+    () => filteredPapers.value,
+    (newPapers) => {
+      if (props.expandAllOnChange && newPapers.length) {
+        nextTick(() => {
+          expanded.value = newPapers.map((p) => p.paper_id);
+        });
+      } else {
+        expanded.value = expanded.value.filter((id) =>
+            newPapers.some((p) => p.paper_id === id)
+        );
+      }
+    },
+    { immediate: props.expandAllOnChange }
 );
 
 // ----- floating "back to top" button -----
@@ -118,11 +119,11 @@ onMounted(() => {
   if (!searchFieldRef.value || !('IntersectionObserver' in window)) return;
 
   observer = new IntersectionObserver(
-    ([entry]) => {
-      // show button when search field is NOT visible
-      showScrollTop.value = !entry.isIntersecting;
-    },
-    { threshold: 0 }
+      ([entry]) => {
+        // show button when search field is NOT visible
+        showScrollTop.value = !entry.isIntersecting;
+      },
+      { threshold: 0 }
   );
 
   observer.observe(searchFieldRef.value);
@@ -138,28 +139,9 @@ const handleScrollToTop = () => {
   scrollToTop(searchFieldRef.value);
 };
 
-// ----- summarise paper -----
-
-const summariesStore = usePaperSummariesStore();
-
 // ----- events -----
 
 const handleAdd = (paper: Paper) => emit('add', paper);
-const handleMenuSelect = async (payload: { option: PaperMenuOption; paper: Paper }) => {
-  if (payload.option.value === 'summarise') {
-    const queryToUse = props.searchContext || "";
-
-    if (!expanded.value.includes(payload.paper.paper_id)) {
-      expanded.value = [...expanded.value, payload.paper.paper_id];
-    }
-
-    await summariesStore.summarise(payload.paper.paper_id, { query: queryToUse });
-
-    return;
-  }
-
-  emit('menu-select', payload);
-};
 const handleView = (paper: Paper) => emit('view', paper);
 </script>
 
@@ -167,13 +149,13 @@ const handleView = (paper: Paper) => emit('view', paper);
   <section class="paper-list">
     <div ref="searchFieldRef">
       <v-text-field
-        v-model="rawSearch"
-        placeholder="Search papers"
-        variant="outlined"
-        clearable
-        :clear-icon="X"
-        class="mt-4"
-        aria-label="Search research papers"
+          v-model="rawSearch"
+          placeholder="Search papers"
+          variant="outlined"
+          clearable
+          :clear-icon="X"
+          class="mt-4"
+          aria-label="Search research papers"
       >
         <template #prepend-inner>
           <v-icon :icon="Search" size="18" />
@@ -187,29 +169,28 @@ const handleView = (paper: Paper) => emit('view', paper);
     </h3>
 
     <v-expansion-panels
-      v-if="filteredPapers.length"
-      v-model="expanded"
-      multiple
-      class="paper-panels"
-      :rounded="false"
+        v-if="filteredPapers.length"
+        v-model="expanded"
+        multiple
+        class="paper-panels"
+        :rounded="false"
     >
       <v-expansion-panel
-        v-for="paper in filteredPapers"
-        :key="paper.paper_id"
-        :value="paper.paper_id"
-        elevation="1"
-        class="paper-panel mb-3"
-        rounded="xl"
-        style="border-radius: 12px !important"
+          v-for="paper in filteredPapers"
+          :key="paper.paper_id"
+          :value="paper.paper_id"
+          elevation="1"
+          class="paper-panel mb-3"
+          rounded="xl"
+          style="border-radius: 12px !important"
       >
         <PaperCard
             :paper="paper"
             :show-abstract="showAbstract"
             :show-add="showAdd"
-            :menu-options="menuOptions"
+            :actions="actionProvider(paper)"
             :query-context="searchContext"
             @add="handleAdd"
-            @menu-select="handleMenuSelect"
             @view="handleView"
         />
       </v-expansion-panel>
@@ -221,7 +202,6 @@ const handleView = (paper: Paper) => emit('view', paper);
       </p>
     </div>
 
-    <!-- floating back-to-top button -->
     <v-btn
       v-if="showScrollTop"
       class="scroll-top-btn"

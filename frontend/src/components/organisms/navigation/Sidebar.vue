@@ -19,6 +19,7 @@
     SquarePen
   } from 'lucide-vue-next';
   import type { Project } from '@/types/content';
+  import type { ActionMenuItem } from '@/types/ui'; // Import Shared Type
 
   // Import Dialogs
   import LoginDialog from '@/components/dialogs/LoginDialog.vue';
@@ -27,7 +28,7 @@
   import RenameProjectDialog from '@/components/dialogs/RenameProjectDialog.vue';
   import DeleteProjectDialog from '@/components/dialogs/DeleteProjectDialog.vue';
 
-  import ActionMenu, { type ActionMenuItem } from '@/components/molecules/ActionMenu.vue';
+  import ActionMenu from '@/components/molecules/ActionMenu.vue';
 
   const props = defineProps<{
     isOpen: boolean;
@@ -132,17 +133,21 @@
 </script>
 
 <template>
-  <div class="d-flex flex-column h-100">
+  <div class="d-flex flex-column h-100 bg-background">
+
     <v-card
         flat
+        color="transparent"
         height="64"
-        class="px-4 d-flex align-center justify-space-between border-b border-border-light"
+        class="px-4 d-flex align-center justify-space-between"
     >
       <h2 class="text-h6">Menu</h2>
       <v-btn icon variant="text" @click="emit('close')">
         <v-icon :icon="X" size="24" />
       </v-btn>
     </v-card>
+
+    <v-divider />
 
     <div class="flex-grow-1 overflow-y-auto">
       <div class="px-4 pb-2 pt-4">
@@ -165,7 +170,7 @@
           Projects
         </h3>
 
-        <v-list nav class="pa-0">
+        <v-list nav class="pa-0 bg-transparent">
           <v-list-item
               v-for="project in projects"
               :key="project.id"
@@ -201,9 +206,8 @@
       </div>
     </div>
 
-    <div class="border-t border-border-light px-4 py-2">
+    <div class="px-4 py-2">
       <h3 class="text-subtitle-1 mb-2 d-flex align-center">Account</h3>
-
       <div v-if="!isLoggedIn">
         <v-btn
             variant="text"
@@ -247,7 +251,6 @@
         :project-name="projectToAction?.name || ''"
         @submit="onDeleteSubmit"
     />
-
     <LogoutDialog
         v-model="logoutDialogOpen"
         @logout="onLogoutConfirm"

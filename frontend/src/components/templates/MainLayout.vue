@@ -155,6 +155,7 @@ const handleAccountCreated = async () => {
 
       <v-navigation-drawer
           v-model="sidebarOpen"
+          color="background"
           location="left"
           temporary
           width="320"
