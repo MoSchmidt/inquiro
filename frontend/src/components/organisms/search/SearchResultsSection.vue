@@ -12,8 +12,10 @@ import {
 } from 'vuetify/components';
 import { FileText, Edit3, Paperclip, Sparkles, X } from 'lucide-vue-next';
 import PaperList from '@/components/molecules/PaperList.vue';
-import type { Paper, PaperMenuOption } from '@/types/content';
+import type { Paper } from '@/types/content';
+import type { ActionMenuItem } from '@/types/ui';
 import { useFileSelection } from '@/composables/useFileSelection';
+import { usePaperSummariesStore } from '@/stores/paperSummaries';
 
 const props = defineProps<{
   query: string;
@@ -29,8 +31,17 @@ const emit = defineEmits<{
   (e: 'view', paper: Paper): void;
 }>();
 
-const menuOptions: PaperMenuOption[] = [
-  { label: 'Summarise Paper', value: 'summarise', icon: Sparkles },
+// ----- Stores -----
+const summariesStore = usePaperSummariesStore();
+
+// ----- Logic Definition -----
+const getSearchActions = (paper: Paper): ActionMenuItem[] => [
+  {
+    title: 'Summarise Paper',
+    value: 'summarise',
+    icon: Sparkles,
+    action: () => summariesStore.summarise(paper.paper_id, { query: props.query })
+  },
 ];
 
 // ----- Query & File State -----
@@ -146,7 +157,7 @@ const handleQueryUpdate = () => {
         title="Papers"
         empty-message="No results yet"
         :expand-all-on-change="true"
-        :menu-options="menuOptions"
+        :action-provider="getSearchActions"
         :search-context="query"
         @add="paper => emit('add', paper)"
         @view="paper => emit('view', paper)"
