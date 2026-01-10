@@ -19,6 +19,7 @@ from sqlalchemy.sql import func
 
 from app.constants.database_constants import PaperSource, PaperType
 from app.core.database import Base
+from .paper_content import PaperContent
 
 
 class Paper(Base):
@@ -60,6 +61,14 @@ class Paper(Base):
 
     projects: Mapped[List["Project"]] = relationship(
         "Project", secondary="project_paper", back_populates="papers"
+    )
+
+    content: Mapped[Optional["PaperContent"]] = relationship(
+        "PaperContent",
+        back_populates="paper",
+        uselist=False,
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 
     # Indexes (HNSW)

@@ -18,3 +18,11 @@ class PaperType(Enum):
     WORKSHOP = "WORKSHOP"
     THESIS = "THESIS"
     OTHER = "OTHER"
+
+
+class PaperContentStatus(Enum):
+    """Lifecycle status of paper content parsing and storage."""
+    PENDING = "PENDING"
+    PROCESSING = "PROCESSING"
+    SUCCEEDED = "SUCCEEDED"
+    FAILED = "FAILED"
