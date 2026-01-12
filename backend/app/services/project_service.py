@@ -1,3 +1,4 @@
+import logging
 import re
 from typing import List
 
@@ -13,7 +14,10 @@ from app.schemas.project_dto import (
     ProjectUpdate,
     ProjectWithPapersResponse,
 )
+from app.services.paper_service import PaperService
 from app.utils.author_utils import normalize_authors
+
+logger = logging.getLogger("inquiro")
 
 
 class ProjectService:
@@ -100,7 +104,12 @@ class ProjectService:
         project_id: int,
         paper_id: int,
     ) -> ProjectWithPapersResponse:
-        """Add a paper reference to the given project."""
+        """
+        Add a paper reference to the given project.
+
+        Also triggers PDF-to-markdown conversion in the background for preemptive caching.
+        """
+
         await ProjectService._validate_project_access(session, project_id, user_id)
 
         try:
@@ -115,6 +124,13 @@ class ProjectService:
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=str(exc),
             ) from exc
+
+        # Trigger PDF conversion in background (fire-and-forget)
+        try:
+            await PaperService.trigger_conversion(paper_id, session)
+        except Exception as e:
+            # Don't fail the add operation if conversion trigger fails
+            logger.error("Failed to trigger conversion for paper %d: %s", paper_id, e)
 
         return ProjectService._build_project_with_papers_response(project)
 

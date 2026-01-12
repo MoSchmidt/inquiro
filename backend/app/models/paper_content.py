@@ -1,13 +1,15 @@
 from datetime import datetime
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import BigInteger, ForeignKey, Index, func, DateTime, Integer, String, Text
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import BigInteger, ForeignKey, func, DateTime, Integer, Text
 from sqlalchemy import Enum as SqlEnum
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.constants.database_constants import PaperContentStatus
 from app.core.database import Base
-from app.models import Paper
+
+if TYPE_CHECKING:
+    from app.models.paper import Paper
 
 
 class PaperContent(Base):
@@ -47,11 +49,10 @@ class PaperContent(Base):
     started_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     finished_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
-    
+
+    # Retry tracking
+    retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
+
     # Relationship
     paper: Mapped["Paper"] = relationship("Paper", back_populates="content")
-
-    __table_args__ = (
-        Index("ix_paper_content_status_updated_at", "status", "updated_at"),
-    )
 

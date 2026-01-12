@@ -1,12 +1,16 @@
+import asyncio
 import io
+import logging
 
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.database import get_db
+from app.core.database import async_session_local, get_db
 from app.schemas.paper_dto import PaperSummaryRequest, PaperSummaryResponse
 from app.services.paper_service import PaperService
+
+logger = logging.getLogger("inquiro")
 
 router = APIRouter(prefix="/papers", tags=["Paper"])
 
@@ -28,6 +32,15 @@ async def summary(
     return result
 
 
+async def _trigger_conversion_background(paper_id: int) -> None:
+    """Fire-and-forget task to trigger PDF conversion."""
+    try:
+        async with async_session_local() as session:
+            await PaperService.trigger_conversion(paper_id, session)
+    except Exception as e:
+        logger.error("Background conversion trigger failed for paper %d: %s", paper_id, e)
+
+
 @router.get(
     "/{paper_id}/pdf",
     response_class=StreamingResponse,
@@ -41,12 +54,17 @@ async def get_paper_pdf(
     """
     Stream the PDF file of the specified paper.
     This URL can be used directly as the source for frontend PDF viewers.
+
+    Also triggers PDF-to-markdown conversion in the background if not already done.
     """
-    # 1. Get raw bytes from service
+    # Trigger conversion in background (fire-and-forget)
+    # Uses its own session since the request session closes after response
+    asyncio.create_task(_trigger_conversion_background(paper_id))
+
+    # Get raw bytes from service
     pdf_bytes = await PaperService.get_paper_pdf(paper_id=paper_id, session=db)
 
-    # 2. Wrap bytes in a stream and return StreamingResponse
-    # io.BytesIO turns the bytes into a file-like object that StreamingResponse can read
+    # Wrap bytes in a stream and return StreamingResponse
     return StreamingResponse(
         io.BytesIO(pdf_bytes),
         media_type="application/pdf",

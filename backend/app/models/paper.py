@@ -60,7 +60,7 @@ class Paper(Base):
     )
 
     projects: Mapped[List["Project"]] = relationship(
-        "Project", secondary="project_paper", back_populates="papers"
+        "Project", secondary="project_paper", back_populates="papers", viewonly=True
     )
 
     content: Mapped[Optional["PaperContent"]] = relationship(
