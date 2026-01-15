@@ -9,7 +9,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, List
 
-from app.core.config import settings
+from app.llm.evaluation.common import (
+    add_delay_argument,
+    add_dataset_argument,
+    call_openai_api,
+    validate_openai_api_key,
+)
 from app.llm.evaluation.metrics import calculate_all_metrics
 from app.llm.openai.provider import OpenAIProvider
 
@@ -37,30 +42,15 @@ async def extract_keywords_with_prompt(
         List of extracted keywords
     """
     try:
-        # Accessing _model is necessary for evaluation scripts
-        # pylint: disable=protected-access
-        response = await provider.client.responses.create(
-            model=provider._model,
-            reasoning={"effort": "low"},
-            input=[
-                {
-                    "role": "developer",
-                    "content": prompt,
-                },
-                {
-                    "role": "user",
-                    "content": user_input,
-                },
-            ],
-        )
+        response_text = await call_openai_api(provider, prompt, user_input, reasoning_effort="low")
 
         try:
-            keyword_list = json.loads(response.output_text)
+            keyword_list = json.loads(response_text)
             if isinstance(keyword_list, list):
                 return keyword_list
             return []
         except json.decoder.JSONDecodeError:
-            preview = response.output_text[:100]
+            preview = response_text[:100]
             logger.warning("Failed to parse JSON from response: %s", preview)
             return []
 
@@ -258,12 +248,7 @@ async def main() -> None:
         required=True,
         help="Path to text file containing the prompt to evaluate",
     )
-    parser.add_argument(
-        "--dataset",
-        type=str,
-        required=True,
-        help="Path to dataset JSON file",
-    )
+    add_dataset_argument(parser)
     parser.add_argument(
         "--output",
         type=str,
@@ -271,18 +256,12 @@ async def main() -> None:
         help="Output path for evaluation results JSON file "
         "(default: evaluation_results/results.json)",
     )
-    parser.add_argument(
-        "--delay",
-        type=float,
-        default=20.0,
-        help="Delay in seconds between API requests (default: 20.0 for 3 RPM limit)",
-    )
+    add_delay_argument(parser)
 
     args = parser.parse_args()
 
     # Validate OpenAI API key
-    if settings.OPENAI_API_KEY is None:
-        logger.error("OPENAI_API_KEY is not set. Please configure it in your environment.")
+    if not validate_openai_api_key():
         return
 
     # Load prompt

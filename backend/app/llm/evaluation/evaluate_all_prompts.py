@@ -7,7 +7,7 @@ import logging
 from pathlib import Path
 from typing import List
 
-from app.core.config import settings
+from app.llm.evaluation.common import add_delay_argument, add_dataset_argument, validate_openai_api_key
 from app.llm.evaluation.prompt_evaluator import evaluate_prompt, load_dataset, load_prompt
 from app.llm.openai.provider import OpenAIProvider
 
@@ -33,8 +33,7 @@ async def evaluate_all_prompts(  # pylint: disable=too-many-locals
         output_dir: Directory to save individual results and comparison
         delay_seconds: Delay between API requests
     """
-    if settings.OPENAI_API_KEY is None:
-        logger.error("OPENAI_API_KEY is not set. Please configure it in your environment.")
+    if not validate_openai_api_key():
         return
 
     # Load dataset once
@@ -151,12 +150,7 @@ async def main() -> None:
         default="prompt_*.txt",
         help="Glob pattern to match prompt files (default: prompt_*.txt)",
     )
-    parser.add_argument(
-        "--dataset",
-        type=str,
-        required=True,
-        help="Path to dataset JSON file",
-    )
+    add_dataset_argument(parser)
     parser.add_argument(
         "--output-dir",
         type=str,
@@ -164,12 +158,7 @@ async def main() -> None:
         help="Directory to save results and comparison report "
         "(default: evaluation_results/)",
     )
-    parser.add_argument(
-        "--delay",
-        type=float,
-        default=20.0,
-        help="Delay in seconds between API requests (default: 20.0 for 3 RPM limit)",
-    )
+    add_delay_argument(parser)
     parser.add_argument(
         "--include-baseline",
         action="store_true",

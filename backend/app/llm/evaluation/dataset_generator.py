@@ -8,7 +8,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import List
 
-from app.core.config import settings
+from app.llm.evaluation.common import add_delay_argument, call_openai_api, validate_openai_api_key
 from app.llm.openai.provider import OpenAIProvider
 
 logger = logging.getLogger(__name__)
@@ -47,19 +47,7 @@ async def generate_user_input(provider: OpenAIProvider, keywords: List[str]) -> 
     prompt = DATASET_GENERATION_PROMPT.format(keywords=keywords_str)
 
     try:
-        # Accessing _model is necessary for evaluation scripts
-        # pylint: disable=protected-access
-        response = await provider.client.responses.create(
-            model=provider._model,
-            reasoning={"effort": "low"},
-            input=[
-                {
-                    "role": "developer",
-                    "content": prompt,
-                },
-            ],
-        )
-        return response.output_text.strip()
+        return await call_openai_api(provider, prompt, reasoning_effort="low")
     except Exception as exc:  # pylint: disable=broad-exception-caught
         logger.error("Failed to generate user input for keywords %s: %s", keywords, exc)
         raise
@@ -198,18 +186,12 @@ async def main() -> None:
         help="Output path for generated dataset JSON file "
         "(default: evaluation_data/dataset.json)",
     )
-    parser.add_argument(
-        "--delay",
-        type=float,
-        default=20.0,
-        help="Delay in seconds between API requests (default: 20.0 for 3 RPM limit)",
-    )
+    add_delay_argument(parser)
 
     args = parser.parse_args()
 
     # Validate OpenAI API key
-    if settings.OPENAI_API_KEY is None:
-        logger.error("OPENAI_API_KEY is not set. Please configure it in your environment.")
+    if not validate_openai_api_key():
         return
 
     # Load keywords
