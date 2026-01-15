@@ -119,7 +119,8 @@ async def evaluate_prompt(  # pylint: disable=too-many-locals
         })
 
         logger.info(
-            "  Ground truth: %s | Extracted: %s | Jaccard: %.3f | Precision: %.3f | Recall: %.3f | F1: %.3f",
+            "  Ground truth: %s | Extracted: %s | Jaccard: %.3f | "
+            "Precision: %.3f | Recall: %.3f | F1: %.3f",
             ground_truth,
             extracted,
             metrics["jaccard"],
@@ -314,29 +315,37 @@ async def main() -> None:
     logger.info("Test Cases:         %d", results["num_test_cases"])
     logger.info("")
     logger.info("JACCARD SIMILARITY:")
-    logger.info("  Mean: %.4f  Std: %.4f  Min: %.4f  Max: %.4f", 
-                 results["metrics"]["jaccard"]["mean"],
-                 results["metrics"]["jaccard"]["std"],
-                 results["metrics"]["jaccard"]["min"],
-                 results["metrics"]["jaccard"]["max"])
+    logger.info(
+        "  Mean: %.4f  Std: %.4f  Min: %.4f  Max: %.4f",
+        results["metrics"]["jaccard"]["mean"],
+        results["metrics"]["jaccard"]["std"],
+        results["metrics"]["jaccard"]["min"],
+        results["metrics"]["jaccard"]["max"],
+    )
     logger.info("PRECISION:")
-    logger.info("  Mean: %.4f  Std: %.4f  Min: %.4f  Max: %.4f",
-                 results["metrics"]["precision"]["mean"],
-                 results["metrics"]["precision"]["std"],
-                 results["metrics"]["precision"]["min"],
-                 results["metrics"]["precision"]["max"])
+    logger.info(
+        "  Mean: %.4f  Std: %.4f  Min: %.4f  Max: %.4f",
+        results["metrics"]["precision"]["mean"],
+        results["metrics"]["precision"]["std"],
+        results["metrics"]["precision"]["min"],
+        results["metrics"]["precision"]["max"],
+    )
     logger.info("RECALL:")
-    logger.info("  Mean: %.4f  Std: %.4f  Min: %.4f  Max: %.4f",
-                 results["metrics"]["recall"]["mean"],
-                 results["metrics"]["recall"]["std"],
-                 results["metrics"]["recall"]["min"],
-                 results["metrics"]["recall"]["max"])
+    logger.info(
+        "  Mean: %.4f  Std: %.4f  Min: %.4f  Max: %.4f",
+        results["metrics"]["recall"]["mean"],
+        results["metrics"]["recall"]["std"],
+        results["metrics"]["recall"]["min"],
+        results["metrics"]["recall"]["max"],
+    )
     logger.info("F1 SCORE:")
-    logger.info("  Mean: %.4f  Std: %.4f  Min: %.4f  Max: %.4f",
-                 results["metrics"]["f1"]["mean"],
-                 results["metrics"]["f1"]["std"],
-                 results["metrics"]["f1"]["min"],
-                 results["metrics"]["f1"]["max"])
+    logger.info(
+        "  Mean: %.4f  Std: %.4f  Min: %.4f  Max: %.4f",
+        results["metrics"]["f1"]["mean"],
+        results["metrics"]["f1"]["std"],
+        results["metrics"]["f1"]["min"],
+        results["metrics"]["f1"]["max"],
+    )
     logger.info("=" * 60)
     # Using % formatting is appropriate here for file path
     logger.info("✓ Results saved to %s", output_path)  # pylint: disable=logging-not-lazy
