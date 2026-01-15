@@ -21,7 +21,6 @@ class OpenAIProvider:
         # self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
         self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
         self._model = "gpt-5-nano-2025-08-07"
-        
     async def extract_keywords(self, user_text: str) -> List[str]:
         """
         Extracts a list of keywords from a given user text using the OpenAI model.
