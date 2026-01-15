@@ -7,7 +7,11 @@ import logging
 from pathlib import Path
 from typing import List
 
-from app.llm.evaluation.common import add_delay_argument, add_dataset_argument, validate_openai_api_key
+from app.llm.evaluation.common import (
+    add_delay_argument,
+    add_dataset_argument,
+    validate_openai_api_key,
+)
 from app.llm.evaluation.prompt_evaluator import evaluate_prompt, load_dataset, load_prompt
 from app.llm.openai.provider import OpenAIProvider
 
