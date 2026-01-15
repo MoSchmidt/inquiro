@@ -70,6 +70,8 @@ async def evaluate_all_prompts(  # pylint: disable=too-many-locals
             all_results.append({
                 "prompt_file": str(prompt_file),
                 "prompt_name": prompt_file.stem,
+                "metrics": results["metrics"],
+                # Keep legacy fields for backward compatibility
                 "mean_jaccard": results["mean_jaccard"],
                 "std_jaccard": results["std_jaccard"],
                 "min_jaccard": results["min_jaccard"],
@@ -103,26 +105,32 @@ async def evaluate_all_prompts(  # pylint: disable=too-many-locals
             )
 
         # Print summary
-        logger.info("\n" + "=" * 60)  # pylint: disable=logging-not-lazy
+        logger.info("\n" + "=" * 80)  # pylint: disable=logging-not-lazy
         logger.info("COMPARISON SUMMARY")
-        logger.info("=" * 60)  # pylint: disable=logging-not-lazy
-        logger.info("%-30s %10s %10s %10s %10s", "Prompt", "Mean", "Std", "Min", "Max")
-        logger.info("-" * 60)
+        logger.info("=" * 80)  # pylint: disable=logging-not-lazy
+        logger.info("%-30s %8s %8s %8s %8s", "Prompt", "Jaccard", "Prec", "Recall", "F1")
+        logger.info("-" * 80)
 
         for result in all_results:
+            metrics = result["metrics"]
             logger.info(
-                "%-30s %10.4f %10.4f %10.4f %10.4f",
+                "%-30s %8.4f %8.4f %8.4f %8.4f",
                 result["prompt_name"][:30],
-                result["mean_jaccard"],
-                result["std_jaccard"],
-                result["min_jaccard"],
-                result["max_jaccard"],
+                metrics["jaccard"]["mean"],
+                metrics["precision"]["mean"],
+                metrics["recall"]["mean"],
+                metrics["f1"]["mean"],
             )
 
-        logger.info("=" * 60)
+        logger.info("=" * 80)
         best_name = all_results[0]["prompt_name"]
-        best_score = all_results[0]["mean_jaccard"]
-        logger.info("Best performing prompt: %s (Mean Jaccard: %.4f)", best_name, best_score)
+        best_metrics = all_results[0]["metrics"]
+        logger.info("Best performing prompt: %s", best_name)
+        logger.info("  Jaccard: %.4f | Precision: %.4f | Recall: %.4f | F1: %.4f",
+                     best_metrics["jaccard"]["mean"],
+                     best_metrics["precision"]["mean"],
+                     best_metrics["recall"]["mean"],
+                     best_metrics["f1"]["mean"])
         logger.info("✓ Comparison report saved to %s", comparison_file)
 
 

@@ -1,0 +1,14 @@
+Extract exactly 5 keywords from the user query. Each keyword should be:
+- A single word or short phrase (1-3 words max)
+- A core technical term, algorithm, model, or concept
+- Directly relevant to the query
+
+OUTPUT SPECIFICATIONS:
+- Format: JSON array
+- Type: Array of exactly 5 strings
+- Encoding: UTF-8
+- Structure: ["string1", "string2", "string3", "string4", "string5"]
+- Constraints: No additional whitespace, no comments, no trailing commas
+- Validation: Must be valid JSON that can be parsed by json.loads()
+
+Output only a JSON list: ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"].

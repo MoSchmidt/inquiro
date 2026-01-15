@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Dict, List
 
 from app.core.config import settings
-from app.llm.evaluation.metrics import calculate_keyword_jaccard
+from app.llm.evaluation.metrics import calculate_all_metrics
 from app.llm.openai.provider import OpenAIProvider
 
 logger = logging.getLogger(__name__)
@@ -105,21 +105,27 @@ async def evaluate_prompt(  # pylint: disable=too-many-locals
 
         extracted = await extract_keywords_with_prompt(provider, user_input, prompt)
 
-        jaccard = calculate_keyword_jaccard(extracted, ground_truth)
+        metrics = calculate_all_metrics(extracted, ground_truth)
 
         per_case_results.append({
             "test_case_idx": i - 1,  # 0-indexed
             "ground_truth_keywords": ground_truth,
             "user_input": user_input,
             "extracted_keywords": extracted,
-            "jaccard_score": jaccard,
+            "jaccard_score": metrics["jaccard"],
+            "precision": metrics["precision"],
+            "recall": metrics["recall"],
+            "f1_score": metrics["f1"],
         })
 
         logger.info(
-            "  Ground truth: %s | Extracted: %s | Jaccard: %.3f",
+            "  Ground truth: %s | Extracted: %s | Jaccard: %.3f | Precision: %.3f | Recall: %.3f | F1: %.3f",
             ground_truth,
             extracted,
-            jaccard,
+            metrics["jaccard"],
+            metrics["precision"],
+            metrics["recall"],
+            metrics["f1"],
         )
 
         # Add delay between requests (except for the last one)
@@ -128,26 +134,48 @@ async def evaluate_prompt(  # pylint: disable=too-many-locals
             await asyncio.sleep(delay_seconds)
 
     # Extract scores for aggregate statistics
-    per_case_scores = [result["jaccard_score"] for result in per_case_results]
+    jaccard_scores = [result["jaccard_score"] for result in per_case_results]
+    precision_scores = [result["precision"] for result in per_case_results]
+    recall_scores = [result["recall"] for result in per_case_results]
+    f1_scores = [result["f1_score"] for result in per_case_results]
 
-    # Calculate aggregate statistics
-    mean_jaccard = sum(per_case_scores) / len(per_case_scores) if per_case_scores else 0.0
+    def calculate_stats(scores: List[float]) -> Dict[str, float]:
+        """Calculate mean, std, min, max for a list of scores."""
+        if not scores:
+            return {"mean": 0.0, "std": 0.0, "min": 0.0, "max": 0.0}
+        mean_score = sum(scores) / len(scores)
+        if len(scores) > 1:
+            variance = sum((x - mean_score) ** 2 for x in scores) / len(scores)
+            std_score = variance ** 0.5
+        else:
+            std_score = 0.0
+        return {
+            "mean": mean_score,
+            "std": std_score,
+            "min": min(scores),
+            "max": max(scores),
+        }
 
-    # Calculate standard deviation
-    if len(per_case_scores) > 1:
-        variance = sum((x - mean_jaccard) ** 2 for x in per_case_scores) / len(per_case_scores)
-        std_jaccard = variance ** 0.5
-    else:
-        std_jaccard = 0.0
+    jaccard_stats = calculate_stats(jaccard_scores)
+    precision_stats = calculate_stats(precision_scores)
+    recall_stats = calculate_stats(recall_scores)
+    f1_stats = calculate_stats(f1_scores)
 
     # Accessing _model is necessary for evaluation scripts
     # pylint: disable=protected-access
     results = {
         "prompt": prompt,
-        "mean_jaccard": mean_jaccard,
-        "std_jaccard": std_jaccard,
-        "min_jaccard": min(per_case_scores) if per_case_scores else 0.0,
-        "max_jaccard": max(per_case_scores) if per_case_scores else 0.0,
+        "metrics": {
+            "jaccard": jaccard_stats,
+            "precision": precision_stats,
+            "recall": recall_stats,
+            "f1": f1_stats,
+        },
+        # Keep legacy fields for backward compatibility
+        "mean_jaccard": jaccard_stats["mean"],
+        "std_jaccard": jaccard_stats["std"],
+        "min_jaccard": jaccard_stats["min"],
+        "max_jaccard": jaccard_stats["max"],
         "num_test_cases": len(dataset),
         "per_case_scores": per_case_results,
         "metadata": {
@@ -283,11 +311,32 @@ async def main() -> None:
     logger.info("\n" + "=" * 60)  # pylint: disable=logging-not-lazy
     logger.info("EVALUATION SUMMARY")
     logger.info("=" * 60)  # pylint: disable=logging-not-lazy
-    logger.info("Mean Jaccard Score: %.4f", results["mean_jaccard"])
-    logger.info("Std Jaccard Score:  %.4f", results["std_jaccard"])
-    logger.info("Min Jaccard Score:  %.4f", results["min_jaccard"])
-    logger.info("Max Jaccard Score:  %.4f", results["max_jaccard"])
     logger.info("Test Cases:         %d", results["num_test_cases"])
+    logger.info("")
+    logger.info("JACCARD SIMILARITY:")
+    logger.info("  Mean: %.4f  Std: %.4f  Min: %.4f  Max: %.4f", 
+                 results["metrics"]["jaccard"]["mean"],
+                 results["metrics"]["jaccard"]["std"],
+                 results["metrics"]["jaccard"]["min"],
+                 results["metrics"]["jaccard"]["max"])
+    logger.info("PRECISION:")
+    logger.info("  Mean: %.4f  Std: %.4f  Min: %.4f  Max: %.4f",
+                 results["metrics"]["precision"]["mean"],
+                 results["metrics"]["precision"]["std"],
+                 results["metrics"]["precision"]["min"],
+                 results["metrics"]["precision"]["max"])
+    logger.info("RECALL:")
+    logger.info("  Mean: %.4f  Std: %.4f  Min: %.4f  Max: %.4f",
+                 results["metrics"]["recall"]["mean"],
+                 results["metrics"]["recall"]["std"],
+                 results["metrics"]["recall"]["min"],
+                 results["metrics"]["recall"]["max"])
+    logger.info("F1 SCORE:")
+    logger.info("  Mean: %.4f  Std: %.4f  Min: %.4f  Max: %.4f",
+                 results["metrics"]["f1"]["mean"],
+                 results["metrics"]["f1"]["std"],
+                 results["metrics"]["f1"]["min"],
+                 results["metrics"]["f1"]["max"])
     logger.info("=" * 60)
     # Using % formatting is appropriate here for file path
     logger.info("✓ Results saved to %s", output_path)  # pylint: disable=logging-not-lazy

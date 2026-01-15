@@ -2,6 +2,7 @@
 # Format: One keyword set per line, keywords separated by commas
 # Lines starting with # are ignored
 
+# Core ML/NLP topics
 transformer, attention mechanism, BERT
 reinforcement learning, Q-learning, DQN, policy gradient
 convolutional neural network, CNN, image classification, ResNet
@@ -12,3 +13,27 @@ machine learning, supervised learning, classification
 deep learning, neural network, backpropagation
 transfer learning, fine-tuning, pre-trained model
 generative adversarial network, GAN, discriminator
+
+# Advanced ML topics
+variational autoencoder, VAE, latent space
+long short-term memory, LSTM, sequence modeling
+support vector machine, SVM, kernel method
+random forest, ensemble learning, decision tree
+gradient boosting, XGBoost, AdaBoost
+clustering, k-means, unsupervised learning
+dimensionality reduction, PCA, t-SNE
+optimization, gradient descent, Adam optimizer
+
+# NLP specific
+word embedding, Word2Vec, GloVe
+named entity recognition, NER, information extraction
+machine translation, neural machine translation, attention
+question answering, QA, reading comprehension
+text summarization, abstractive summarization, extractive
+language model, GPT, autoregressive
+
+# Computer Vision specific
+semantic segmentation, image segmentation, FCN
+object detection, Faster R-CNN, anchor box
+image generation, diffusion model, stable diffusion
+video analysis, action recognition, temporal modeling

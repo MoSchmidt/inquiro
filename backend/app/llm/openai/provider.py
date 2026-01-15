@@ -6,6 +6,8 @@ from openai import AsyncOpenAI
 from app.core.config import settings
 from app.llm.openai.prompts import KEYWORD_PROMPT, SUMMARIZATION_PROMPT
 
+from openai import OpenAI
+
 
 class OpenAIProvider:
     """Wrapper around the OpenAI client."""
@@ -18,8 +20,9 @@ class OpenAIProvider:
                 "OPENAI_API_KEY is not set. Please configure it in your environment."
             )
 
-        self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
-        self._model = "gpt-5-nano-2025-08-07"
+        #self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
+        self.client = AsyncOpenAI(base_url="https://openrouter.ai/api/v1", api_key="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")
+        self._model = "openai/gpt-4o-mini"
 
     async def extract_keywords(self, user_text: str) -> List[str]:
         """
