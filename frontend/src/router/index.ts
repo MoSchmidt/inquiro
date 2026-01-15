@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import HomeView from '../components/HomeView.vue';
-import LoginView from '../components/LoginView.vue';
+import HomePage from '@/pages/HomePage.vue';
+import SearchPage from '@/pages/SearchPage.vue';
+import ProjectPage from '@/pages/ProjectPage.vue';
 import { useAuthStore } from '@/stores/auth';
 
 const router = createRouter({
@@ -8,28 +9,37 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomeView,
-      //meta: { requiresAuth: true },
-    }, /*
+      redirect: '/home',
+    },
     {
-      path: '/login',
-      name: 'login',
-      component: LoginView,
-    }, */
+      path: '/home',
+      name: 'home',
+      component: HomePage,
+    },
+    {
+      path: '/search',
+      name: 'search',
+      component: SearchPage,
+    },
+    {
+      path: '/projects/:projectId',
+      name: 'project',
+      component: ProjectPage,
+      props: true,
+    },
   ],
 });
-/*
-router.beforeEach((to, from, next) => {
-  const auth = useAuthStore();
 
-  if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    next({ name: 'login' });
-  } else if (to.name === 'login' && auth.isAuthenticated) {
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore();
+
+  // If trying to access a project page AND not logged in
+  if (to.name === 'project' && !authStore.isAuthenticated) {
+    // Redirect to home/search
     next({ name: 'home' });
   } else {
     next();
   }
-}); */
+});
 
 export default router;

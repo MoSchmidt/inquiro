@@ -1,5 +1,6 @@
 api.ts
 apis/authentication-api.ts
+apis/paper-api.ts
 apis/projects-api.ts
 apis/search-api.ts
 apis/users-api.ts
@@ -12,6 +13,8 @@ models/index.ts
 models/login-request.ts
 models/login-response.ts
 models/paper-dto.ts
+models/paper-summary-request.ts
+models/paper-summary-response.ts
 models/project-create.ts
 models/project-response.ts
 models/project-update.ts
