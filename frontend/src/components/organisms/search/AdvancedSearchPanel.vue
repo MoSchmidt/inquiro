@@ -4,6 +4,7 @@ import type { AdvancedSearchOptions, ConditionGroup } from '@/types/search';
 import AdvancedSearchGroup from '@/components/molecules/AdvancedSearchGroup.vue';
 import { ChevronDown, X } from 'lucide-vue-next';
 import ExpansionChevron from '@/components/atoms/ExpansionChevron.vue';
+import { isAdvancedSearchValid } from '@/composables/useAdvancedSearchUrl';
 
 const props = withDefaults(defineProps<{
   initialYearFrom?: number;
@@ -16,7 +17,7 @@ const props = withDefaults(defineProps<{
 });
 
 const emit = defineEmits<{
-  (e: 'update', value: AdvancedSearchOptions): void;
+  (e: 'update', value: AdvancedSearchOptions, isValid: boolean): void;
 }>();
 
 const currentYear = new Date().getFullYear();
@@ -30,16 +31,18 @@ const allYears = computed(() =>
 );
 
 // Filtered options for "Published from" - only years <= yearTo (if set)
+// Note: v-autocomplete sets cleared values to null, so check for both null and undefined
 const yearsFromOptions = computed(() => {
-  if (yearTo.value === undefined) {
+  if (yearTo.value == null) {
     return allYears.value;
   }
   return allYears.value.filter(year => year <= yearTo.value!);
 });
 
 // Filtered options for "Published to" - only years >= yearFrom (if set)
+// Note: v-autocomplete sets cleared values to null, so check for both null and undefined
 const yearsToOptions = computed(() => {
-  if (yearFrom.value === undefined) {
+  if (yearFrom.value == null) {
     return allYears.value;
   }
   return allYears.value.filter(year => year >= yearFrom.value!);
@@ -58,8 +61,8 @@ watch(() => props.initialRoot, (val) => {
 
 const hasActiveFilters = computed(() => {
   return (
-    yearFrom.value !== undefined ||
-    yearTo.value !== undefined ||
+    yearFrom.value != null ||
+    yearTo.value != null ||
     root.value.children.length > 0
   );
 });
@@ -78,11 +81,12 @@ const clearAll = () => {
 watch(
   [yearFrom, yearTo, root],
   () => {
-    emit('update', {
+    const options: AdvancedSearchOptions = {
       yearFrom: yearFrom.value ?? undefined,
       yearTo: yearTo.value ?? undefined,
       root: root.value,
-    });
+    };
+    emit('update', options, isAdvancedSearchValid(options));
   },
   { deep: true }
 );

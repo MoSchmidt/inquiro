@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, watchEffect } from 'vue';
+import { computed, ref, watchEffect } from 'vue';
 import { VBtn, VIcon, VSelect, VTextField, VTooltip } from 'vuetify/components';
 import { ChevronDown, X } from 'lucide-vue-next';
 import type { TextCondition } from '@/types/search';
@@ -57,6 +57,10 @@ const text = computed<TextCondition['value']>({
 });
 
 const emit = defineEmits<{ (e: 'remove'): void }>();
+
+// Track if field has been blurred (touched)
+const touched = ref(false);
+
 </script>
 
 <template>
@@ -93,7 +97,9 @@ const emit = defineEmits<{ (e: 'remove'): void }>();
       variant="outlined"
       density="compact"
       hide-details
+      :error="!text.trim()"
       class="flex-grow-1"
+      @blur="touched = true"
     />
 
     <v-tooltip text="Remove condition">

@@ -1,4 +1,4 @@
-import type { AdvancedSearchOptions } from '@/types/search';
+import type { AdvancedSearchOptions, ConditionGroup, TextCondition } from '@/types/search';
 
 /**
  * Check if advanced options have any active filters
@@ -43,4 +43,29 @@ export function deserializeAdvancedOptions(encoded: string | null | undefined): 
   } catch {
     return null;
   }
+}
+
+/**
+ * Check if a TextCondition has a valid (non-empty) value
+ */
+function isValidCondition(condition: TextCondition): boolean {
+  return !!condition.value?.trim();
+}
+
+/**
+ * Recursively check if all conditions in a group are valid
+ */
+function isValidGroup(group: ConditionGroup): boolean {
+  return group.children.every((child) =>
+    child.type === 'condition' ? isValidCondition(child) : isValidGroup(child)
+  );
+}
+
+/**
+ * Check if advanced search options are valid for submission
+ * Returns true if there are no conditions, or all conditions have valid values
+ */
+export function isAdvancedSearchValid(options: AdvancedSearchOptions | null | undefined): boolean {
+  if (!options) return true;
+  return isValidGroup(options.root);
 }

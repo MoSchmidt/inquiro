@@ -65,6 +65,8 @@ const advancedOptions = ref<AdvancedSearchOptions>(
   props.advanced ?? getDefaultAdvancedOptions()
 );
 
+const isAdvancedValid = ref(true);
+
 // Watch for external prop changes to keep local state in sync
 watch(
   () => props.query,
@@ -172,11 +174,11 @@ const handleQueryUpdate = () => {
         :initial-year-from="advancedOptions.yearFrom"
         :initial-year-to="advancedOptions.yearTo"
         :initial-root="advancedOptions.root"
-        @update="(val) => (advancedOptions = val)"
+        @update="(val, valid) => { advancedOptions = val; isAdvancedValid = valid; }"
       />
 
       <v-btn
-        :disabled="!isChanged"
+        :disabled="!isChanged || !isAdvancedValid"
         color="primary"
         variant="outlined"
         size="small"

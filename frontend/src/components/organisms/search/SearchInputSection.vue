@@ -48,6 +48,8 @@ const advancedOptions = ref<AdvancedSearchOptions>({
   },
 });
 
+const isAdvancedValid = ref(true);
+
 const handleSubmit = () => {
   if (input.value.trim() || selectedFile.value) {
     emit('submit', {
@@ -137,7 +139,7 @@ const handleSubmit = () => {
 
           <AdvancedSearchPanel
             class="mb-4"
-            @update="(val) => (advancedOptions = val)"
+            @update="(val, valid) => { advancedOptions = val; isAdvancedValid = valid; }"
           />
 
           <v-btn
@@ -145,7 +147,7 @@ const handleSubmit = () => {
             color="primary"
             block
             size="large"
-            :disabled="!input.trim() && !selectedFile"
+            :disabled="(!input.trim() && !selectedFile) || !isAdvancedValid"
             class="generate-btn"
           >
             <v-icon :icon="Send" start />
