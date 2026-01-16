@@ -5,6 +5,16 @@ import AdvancedSearchGroup from '@/components/molecules/AdvancedSearchGroup.vue'
 import { ChevronDown, X } from 'lucide-vue-next';
 import ExpansionChevron from '@/components/atoms/ExpansionChevron.vue';
 
+const props = withDefaults(defineProps<{
+  initialYearFrom?: number;
+  initialYearTo?: number;
+  initialRoot?: ConditionGroup;
+}>(), {
+  initialYearFrom: undefined,
+  initialYearTo: undefined,
+  initialRoot: undefined,
+});
+
 const emit = defineEmits<{
   (e: 'update', value: AdvancedSearchOptions): void;
 }>();
@@ -14,13 +24,18 @@ const years = computed(() =>
   Array.from({ length: 100 }, (_, i) => currentYear - i)
 );
 
-const yearFrom = ref<number | undefined>();
-const yearTo = ref<number | undefined>();
+const yearFrom = ref<number | undefined>(props.initialYearFrom);
+const yearTo = ref<number | undefined>(props.initialYearTo);
 
-const root = ref<ConditionGroup>({
-  type: 'group',
-  operator: 'AND',
-  children: [],
+const root = ref<ConditionGroup>(
+  props.initialRoot ?? { type: 'group', operator: 'AND', children: [] }
+);
+
+// Sync with prop changes from parent
+watch(() => props.initialYearFrom, (val) => { yearFrom.value = val; });
+watch(() => props.initialYearTo, (val) => { yearTo.value = val; });
+watch(() => props.initialRoot, (val) => {
+  root.value = val ?? { type: 'group', operator: 'AND', children: [] };
 });
 
 const hasActiveFilters = computed(() => {

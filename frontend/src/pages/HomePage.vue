@@ -2,23 +2,30 @@
 import { useRouter } from 'vue-router';
 import SearchInputSection from '@/components/organisms/search/SearchInputSection.vue';
 import { useSearchStore } from '@/stores/search';
+import type { AdvancedSearchOptions } from '@/types/search';
+import { serializeAdvancedOptions } from '@/composables/useAdvancedSearchUrl';
 
 const router = useRouter();
 const searchStore = useSearchStore();
 
-const handleSearch = (payload: { query: string; file: File | null } | string) => {
+const handleSearch = (payload: { query: string; file: File | null; advanced?: AdvancedSearchOptions } | string) => {
   const query = typeof payload === 'string' ? payload : payload.query;
   const file = typeof payload !== 'string' && payload.file ? payload.file : null;
+  const advanced = typeof payload !== 'string' ? payload.advanced : undefined;
 
-  // 1. Store the file in Pinia
   if (file) {
     searchStore.setStagedFile(file);
   }
 
-  // 2. Navigate
+  const queryParams: Record<string, string> = { q: query };
+  const serializedFilter = serializeAdvancedOptions(advanced);
+  if (serializedFilter) {
+    queryParams.filter = serializedFilter;
+  }
+
   router.push({
     name: 'search',
-    query: { q: query }
+    query: queryParams
   });
 };
 </script>
