@@ -20,12 +20,30 @@ const emit = defineEmits<{
 }>();
 
 const currentYear = new Date().getFullYear();
-const years = computed(() =>
-  Array.from({ length: 100 }, (_, i) => currentYear - i)
-);
 
 const yearFrom = ref<number | undefined>(props.initialYearFrom);
 const yearTo = ref<number | undefined>(props.initialYearTo);
+
+// Base years array (last 100 years in descending order)
+const allYears = computed(() =>
+  Array.from({ length: 100 }, (_, i) => currentYear - i)
+);
+
+// Filtered options for "Published from" - only years <= yearTo (if set)
+const yearsFromOptions = computed(() => {
+  if (yearTo.value === undefined) {
+    return allYears.value;
+  }
+  return allYears.value.filter(year => year <= yearTo.value!);
+});
+
+// Filtered options for "Published to" - only years >= yearFrom (if set)
+const yearsToOptions = computed(() => {
+  if (yearFrom.value === undefined) {
+    return allYears.value;
+  }
+  return allYears.value.filter(year => year >= yearFrom.value!);
+});
 
 const root = ref<ConditionGroup>(
   props.initialRoot ?? { type: 'group', operator: 'AND', children: [] }
@@ -96,7 +114,7 @@ watch(
           <v-col cols="6">
             <v-autocomplete
               v-model="yearFrom"
-              :items="years"
+              :items="yearsFromOptions"
               variant="outlined"
               label="Published from"
               clearable
@@ -110,7 +128,7 @@ watch(
           <v-col cols="6">
             <v-autocomplete
               v-model="yearTo"
-              :items="years"
+              :items="yearsToOptions"
               variant="outlined"
               label="Published to"
               clearable
