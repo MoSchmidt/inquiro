@@ -188,7 +188,7 @@ const transformedMenuOptions = computed<ActionMenuItem[]>(() => {
 
         <v-skeleton-loader v-if="isLoading" type="paragraph, paragraph, paragraph" />
 
-        <div v-else class="summary-content">
+        <div v-else>
           <FormattedMarkdown :markdown="summaryMarkdown" />
         </div>
       </div>

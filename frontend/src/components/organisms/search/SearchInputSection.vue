@@ -57,6 +57,15 @@ const handleSubmit = () => {
     });
     input.value = '';
     removeFile();
+    advancedOptions.value = {
+      yearFrom: undefined,
+      yearTo: undefined,
+      root: {
+        type: 'group',
+        operator: 'AND',
+        children: [],
+      },
+    };
   }
 };
 </script>

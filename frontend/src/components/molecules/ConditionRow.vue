@@ -56,7 +56,7 @@ const text = computed<TextCondition['value']>({
   set: (v) => (model.value = { ...model.value, value: v }),
 });
 
-const remove = defineEmits<{ (e: 'remove'): void }>();
+const emit = defineEmits<{ (e: 'remove'): void }>();
 </script>
 
 <template>
@@ -102,7 +102,7 @@ const remove = defineEmits<{ (e: 'remove'): void }>();
           v-bind="tooltipProps"
           icon
           variant="text"
-          @click="remove('remove')"
+          @click="emit('remove')"
         >
           <v-icon :icon="X" />
         </v-btn>
