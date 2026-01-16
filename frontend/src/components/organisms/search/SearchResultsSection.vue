@@ -111,7 +111,7 @@ const handleQueryUpdate = () => {
 
 <template>
   <v-container class="results-section">
-    <v-card flat class="mb-8 pa-4 border-sm" color="search-surface">
+    <v-card flat class="mb-8 pa-4 border-sm" color="surface">
       <v-card-text class="d-flex align-start pa-0">
         <div class="flex-grow-1">
           <input
