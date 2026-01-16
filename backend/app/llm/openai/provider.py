@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from openai import AsyncOpenAI
 
@@ -171,7 +171,7 @@ class OpenAIProvider:
         Handles a chat turn using the full paper text as context.
         """
 
-        input_messages = [
+        input_messages: List[Dict[str, str]] = [
             {"role": "developer", "content": CHAT_PROMPT},
             {"role": "developer", "content": f"RESEARCH PAPER TEXT:\n\n{paper_text}"},
         ]
@@ -182,7 +182,7 @@ class OpenAIProvider:
         input_messages.append({"role": "user", "content": user_query})
 
         response = await self.client.responses.create(
-            model=self._model, reasoning={"effort": "medium"}, input=input_messages
+            model=self._model, reasoning={"effort": "medium"}, input=cast(Any, input_messages)
         )
 
         return response.output_text.strip()
