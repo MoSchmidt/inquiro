@@ -14,10 +14,13 @@
 
 
 
-export * from './apis/authentication-api';
-export * from './apis/paper-api';
-export * from './apis/paper-chat-api';
-export * from './apis/projects-api';
-export * from './apis/search-api';
-export * from './apis/users-api';
+/**
+ * The AI generated response for the chat. Supports Markdown and LaTeX.
+ */
+export interface PaperChatResponse {
+    /**
+     * The AI\'s response to the user\'s question.
+     */
+    'answer': string;
+}
 

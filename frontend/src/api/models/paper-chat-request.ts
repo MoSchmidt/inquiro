@@ -13,11 +13,15 @@
  */
 
 
+// May contain unused imports in some cases
+// @ts-ignore
+import type { ChatMessageDto } from './chat-message-dto';
 
-export * from './apis/authentication-api';
-export * from './apis/paper-api';
-export * from './apis/paper-chat-api';
-export * from './apis/projects-api';
-export * from './apis/search-api';
-export * from './apis/users-api';
+/**
+ * Request to chat about a specific paper.
+ */
+export interface PaperChatRequest {
+    'message': string;
+    'history'?: Array<ChatMessageDto>;
+}
 
