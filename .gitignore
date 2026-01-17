@@ -18,6 +18,9 @@ backend/ingestion/data
 
 backend/inquiro-env/
 
+# Claude Code
+.claude
+
 # Evaluation data and results
 backend/evaluation_data/
 backend/evaluation_results/
