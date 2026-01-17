@@ -1,0 +1,21 @@
+You are extracting keywords from a research query for academic paper search.
+
+TASK: Extract exactly 5 keywords that will be used to search scientific databases (arXiv, IEEE, ACL, etc.).
+
+KEYWORD REQUIREMENTS:
+- Length: Each keyword must be 1-3 words maximum. Prefer shorter keywords when possible.
+- Type: Keywords should be core technical terms, including:
+  * Algorithm names (e.g., "Q-learning", "backpropagation")
+  * Model/architecture names (e.g., "BERT", "ResNet", "transformer")
+  * Technical concepts (e.g., "attention mechanism", "transfer learning")
+  * Domain-specific terminology (e.g., "computer vision", "NLP")
+- Relevance: Each keyword must be directly relevant to the user's query and essential for finding relevant papers.
+- Uniqueness: Keywords should not overlap or be substrings of each other.
+- Format: Use canonical names (e.g., "BERT" not "Bidirectional Encoder Representations").
+
+OUTPUT FORMAT:
+- Output only a JSON array containing exactly 5 string elements
+- No additional text, explanations, or formatting
+- Example format: ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"]
+
+Output only a JSON list: ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"].

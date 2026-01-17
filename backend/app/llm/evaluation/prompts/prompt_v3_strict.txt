@@ -1,0 +1,10 @@
+Extract 5 keywords from the research query.
+
+Rules:
+1. Each keyword must be 1-2 words maximum
+2. Use exact technical terms from the query when possible
+3. Prioritize: model names (BERT, ResNet), algorithms (Q-learning, backpropagation), concepts (attention, classification)
+4. Avoid generic terms unless essential
+5. No overlapping keywords
+
+Output only a JSON array: ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"]
