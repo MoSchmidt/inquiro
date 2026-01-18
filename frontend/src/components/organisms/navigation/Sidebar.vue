@@ -8,10 +8,12 @@
     VList,
     VListItem,
     VDivider,
+    VMenu,
   } from 'vuetify/components';
   import {
     FolderOpen,
     LogIn,
+    LogOut,
     FolderPlus,
     X,
     Trash2,
@@ -223,18 +225,45 @@
       </div>
 
       <div v-else>
-        <v-btn
-            variant="text"
-            color="on-surface"
-            rounded="lg"
-            block
-            height="50"
-            class="d-flex justify-start align-center text-none px-4 text-high-emphasis"
-            @click="logoutDialogOpen = true"
+        <v-menu
+            location="top center"
+            offset="12"
+            transition="slide-y-reverse-transition"
         >
-          <v-icon :icon="User" size="20" class="me-3" />
-          <span class="font-weight-medium text-body-2">{{ formattedUsername }}</span>
-        </v-btn>
+          <template #activator="{ props: menuProps }">
+            <div v-bind="menuProps" class="cursor-pointer">
+              <v-btn
+                  variant="text"
+                  color="on-surface"
+                  rounded="lg"
+                  block
+                  height="50"
+                  class="d-flex justify-start align-center text-none px-4 text-high-emphasis profile-btn"
+              >
+                <v-icon :icon="User" size="20" class="me-3" />
+                <span class="font-weight-medium text-body-2 flex-grow-1 text-start text-truncate">
+                  {{ formattedUsername }}
+                </span>
+                <v-icon size="16" class="text-disabled ms-2" />
+              </v-btn>
+            </div>
+          </template>
+
+          <v-card min-width="300" rounded="lg" elevation="16" class="border pa-2">
+            <v-list density="compact" nav class="pa-0">
+              <v-list-item
+                  rounded="lg"
+                  class="text-error"
+                  @click="logoutDialogOpen = true"
+              >
+                <template #prepend>
+                  <v-icon :icon="LogOut" size="18" />
+                </template>
+                <v-list-item-title class="font-weight-medium">Log out</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-card>
+        </v-menu>
       </div>
     </div>
 
@@ -260,7 +289,6 @@
 </template>
 
 <style scoped>
-  /* --- Action Button Opacity Logic --- */
   .project-action-btn {
     opacity: 0;
     transition: opacity 0.2s ease-in-out;
