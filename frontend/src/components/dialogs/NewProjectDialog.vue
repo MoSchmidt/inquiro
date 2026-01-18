@@ -15,11 +15,11 @@ const emit = defineEmits<{
 }>();
 
 const projectName = ref('');
-const openAfterCreate = ref(false);
+const openAfterCreate = ref(true);
 
 const close = () => {
   projectName.value = '';
-  openAfterCreate.value = false;
+  openAfterCreate.value = true;
   emit('update:modelValue', false);
 };
 
@@ -27,7 +27,7 @@ const handleSubmit = () => {
   if (!projectName.value) return;
   emit('submit', projectName.value.trim(), openAfterCreate.value);
   projectName.value = '';
-  openAfterCreate.value = false;
+  openAfterCreate.value = true;
   close();
 };
 
@@ -45,9 +45,6 @@ const toggleCheckbox = () => {
     <v-card>
       <v-card-title class="text-h5">New Project</v-card-title>
       <v-card-text>
-        <p class="mb-4 text-medium-emphasis">
-          Enter a name for your new project.
-        </p>
         <v-form @submit.prevent="handleSubmit">
           <v-text-field
               v-model="projectName"
