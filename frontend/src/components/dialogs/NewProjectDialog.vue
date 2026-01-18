@@ -62,7 +62,7 @@ const toggleCheckbox = () => {
             <v-btn
                 variant="outlined"
                 class="pa-0 mr-3 rounded"
-                :color="openAfterCreate ? 'black' : 'medium-emphasis'"
+                :color="openAfterCreate ? 'secondary' : 'medium-emphasis'"
                 height="20"
                 width="20"
                 min-width="20"
