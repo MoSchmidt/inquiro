@@ -35,28 +35,23 @@ const save = () => {
 
 <template>
   <v-dialog :model-value="modelValue" @update:model-value="close" max-width="500">
-    <v-card class="pa-4">
-      <h3 class="text-h6 mb-4">Rename Project</h3>
-
-      <v-text-field
-          v-model="tempName"
-          label="Project Name"
-          variant="outlined"
-          autofocus
-          @keyup.enter="save"
-      ></v-text-field>
-
-      <v-card-actions class="px-0">
-        <v-spacer></v-spacer>
-        <v-btn variant="text" color="grey-darken-1" @click="close">
-          Cancel
-        </v-btn>
-        <v-btn
-            color="primary"
-            variant="flat"
-            :disabled="!tempName || tempName.trim() === ''"
-            @click="save"
-        >
+    <v-card>
+      <v-card-title class="text-h6 pa-4 pb-0">Rename Project</v-card-title>
+      <v-card-text class="pa-4">
+        <v-form @submit.prevent="save">
+          <v-text-field
+              v-model="tempName"
+              label="Project Name"
+              variant="outlined"
+              hide-details
+              autofocus
+          />
+        </v-form>
+      </v-card-text>
+      <v-card-actions class="pa-4 pt-0">
+        <v-spacer />
+        <v-btn variant="text" class="text-medium-emphasis text-none" @click="close">Cancel</v-btn>
+        <v-btn variant="text" color="secondary" class="text-none" :disabled="!tempName || tempName.trim() === ''" @click="save">
           Save
         </v-btn>
       </v-card-actions>
