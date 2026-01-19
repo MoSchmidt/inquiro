@@ -1,5 +1,6 @@
 export * from './chat-message-dto';
 export * from './httpvalidation-error';
+export * from './location-inner';
 export * from './login-request';
 export * from './login-response';
 export * from './paper-chat-request';
@@ -18,4 +19,3 @@ export * from './search-response';
 export * from './user-create';
 export * from './user-response';
 export * from './validation-error';
-export * from './validation-error-loc-inner';
