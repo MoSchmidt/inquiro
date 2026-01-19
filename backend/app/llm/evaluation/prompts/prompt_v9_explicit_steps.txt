@@ -1,0 +1,14 @@
+Extract exactly 5 keywords from the user query by following these steps:
+
+Step 1: Read and understand the user's research query
+Step 2: Identify all technical terms, algorithms, models, or domain concepts mentioned
+Step 3: Select the 5 most important keywords that capture the core intent
+Step 4: Ensure each keyword is 1-3 words maximum
+Step 5: Format as a JSON list
+
+Each keyword should be:
+- A single word or short phrase (1-3 words max)
+- A core technical term, algorithm, model, or concept
+- Directly relevant to the query
+
+Output only a JSON list: ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"].

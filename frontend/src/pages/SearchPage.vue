@@ -6,12 +6,14 @@ import { VAlert, VProgressLinear, VDialog, VCard, VCardTitle, VCardText, VSelect
 import SearchResultsSection from '@/components/organisms/search/SearchResultsSection.vue';
 import PdfViewerDialog from '@/components/organisms/pdf/PdfViewerDialog.vue';
 import type { Paper } from '@/types/content';
+import type { AdvancedSearchOptions } from '@/types/search';
 
 import { searchPapers, searchPapersByPdf } from '@/services/search';
 import { useAuthStore } from '@/stores/auth';
 import { useProjectsStore } from '@/stores/projects';
 import { useSearchStore } from '@/stores/search';
 import { mapSearchResponseToPapers } from '@/mappers/paper-mapper';
+import { serializeAdvancedOptions, deserializeAdvancedOptions } from '@/composables/useAdvancedSearchUrl';
 
 const route = useRoute();
 const router = useRouter();
@@ -22,6 +24,7 @@ const searchStore = useSearchStore();
 // ----- state -----
 const currentQueryText = ref('');
 const currentFile = ref<File | null>(null);
+const currentAdvanced = ref<AdvancedSearchOptions | null>(null);
 
 const outputs = ref<Paper[]>([]);
 const isLoading = ref(false);
@@ -49,27 +52,28 @@ onMounted(async () => {
   await initializeSearch();
 });
 
-// Watcher: Handles Search when URL changes
-watch(() => route.query.q, async (newQuery) => {
-  if (newQuery !== currentQueryText.value || searchStore.stagedFile) {
+// Watcher: Handles Search when URL changes (query or filter)
+watch(
+  () => [route.query.q, route.query.filter],
+  async () => {
     await initializeSearch();
   }
-});
+);
 
 // ----- search logic -----
 
 const initializeSearch = async () => {
-  // 1. Check Pinia store for a File
   const storedFile = searchStore.stagedFile;
 
-  // 2. Check URL query for text
   const queryParam = route.query.q?.toString() || '';
+  const filterParam = route.query.filter?.toString() || '';
+  const urlAdvanced = deserializeAdvancedOptions(filterParam);
 
-  // If we have neither, clear the results
   if (!queryParam && !storedFile) {
     outputs.value = [];
     currentQueryText.value = '';
     currentFile.value = null;
+    currentAdvanced.value = null;
     errorMessage.value = null;
     return;
   }
@@ -79,10 +83,10 @@ const initializeSearch = async () => {
     searchStore.setStagedFile(null);
   }
 
-  await performSearch(queryParam, storedFile || null);
+  await performSearch(queryParam, storedFile || null, urlAdvanced || undefined);
 };
 
-const performSearch = async (query: string, file: File | null) => {
+const performSearch = async (query: string, file: File | null, advanced?: AdvancedSearchOptions) => {
   // Guard clause: If no query AND no file, do not call API.
   if (!query.trim() && !file) {
     isLoading.value = false;
@@ -91,6 +95,7 @@ const performSearch = async (query: string, file: File | null) => {
 
   currentQueryText.value = query;
   currentFile.value = file;
+  currentAdvanced.value = advanced ?? null;
 
   outputs.value = [];
   errorMessage.value = null;
@@ -99,8 +104,10 @@ const performSearch = async (query: string, file: File | null) => {
   try {
     let response;
     if (file) {
+      // Note: advanced options will be passed to backend when API is updated
       response = await searchPapersByPdf(file, query || undefined);
     } else {
+      // Note: advanced options will be passed to backend when API is updated
       response = await searchPapers(query);
     }
     outputs.value = mapSearchResponseToPapers(response);
@@ -113,28 +120,25 @@ const performSearch = async (query: string, file: File | null) => {
 };
 
 // Handle new search from within the Results Page
-const handleUpdateQuery = async (payload: { query: string; file: File | null } | string) => {
+const handleUpdateQuery = async (payload: { query: string; file: File | null; advanced?: AdvancedSearchOptions } | string) => {
   const query = typeof payload === 'string' ? payload : payload.query;
   const file = typeof payload !== 'string' && payload.file ? payload.file : null;
+  const advanced = typeof payload !== 'string' ? payload.advanced : undefined;
 
-  // 1. If we have a file, put it in the Store. If NOT, clear it to prevent stale state.
   if (file) {
     searchStore.setStagedFile(file);
   } else {
     searchStore.setStagedFile(null);
   }
 
-  const isTextSame = query === currentQueryText.value;
-  const isFileSame = file === currentFile.value;
-
-  // 2. Update URL
-  await router.push({ query: { q: query } });
-
-  // 3. Edge Case: If text is same but file changed (or removed), watcher won't fire.
-  // We must manually trigger.
-  if (isTextSame && !isFileSame) {
-    await initializeSearch();
+  const queryParams: Record<string, string> = { q: query };
+  const serializedFilter = serializeAdvancedOptions(advanced);
+  if (serializedFilter) {
+    queryParams.filter = serializedFilter;
   }
+
+  // 3. Update URL (watcher will trigger initializeSearch)
+  await router.push({ query: queryParams });
 };
 
 // ----- add-to-project & view logic -----
@@ -177,6 +181,7 @@ const handleViewPaper = (paper: Paper) => {
         :query="currentQueryText"
         :file="currentFile"
         :outputs="outputs"
+        :advanced="currentAdvanced ?? undefined"
         :show-abstract="true"
         :show-add="isAuthenticated"
         @add="handleAddFromSearch"
