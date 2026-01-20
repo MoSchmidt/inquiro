@@ -24,6 +24,10 @@ import { BASE_PATH, COLLECTION_FORMATS, type RequestArgs, BaseAPI, RequiredError
 // @ts-ignore
 import type { HTTPValidationError } from '../models';
 // @ts-ignore
+import type { PaperChatRequest } from '../models';
+// @ts-ignore
+import type { PaperChatResponse } from '../models';
+// @ts-ignore
 import type { PaperSummaryRequest } from '../models';
 // @ts-ignore
 import type { PaperSummaryResponse } from '../models';
@@ -32,6 +36,45 @@ import type { PaperSummaryResponse } from '../models';
  */
 export const PaperApiAxiosParamCreator = function (configuration?: Configuration) {
     return {
+        /**
+         * Allows the user to ask questions about the paper currently being viewed.
+         * @summary Chat with the specified paper
+         * @param {number} paperId 
+         * @param {PaperChatRequest} paperChatRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        chatWithPaperPapersPaperIdChatPost: async (paperId: number, paperChatRequest: PaperChatRequest, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'paperId' is not null or undefined
+            assertParamExists('chatWithPaperPapersPaperIdChatPost', 'paperId', paperId)
+            // verify required parameter 'paperChatRequest' is not null or undefined
+            assertParamExists('chatWithPaperPapersPaperIdChatPost', 'paperChatRequest', paperChatRequest)
+            const localVarPath = `/papers/{paper_id}/chat`
+                .replace(`{${"paper_id"}}`, encodeURIComponent(String(paperId)));
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            localVarHeaderParameter['Content-Type'] = 'application/json';
+            localVarHeaderParameter['Accept'] = 'application/json';
+
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+            localVarRequestOptions.data = serializeDataIfNeeded(paperChatRequest, localVarRequestOptions, configuration)
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
         /**
          * Stream the PDF file of the specified paper. This URL can be used directly as the source for frontend PDF viewers.
          * @summary Get the PDF of the specified paper
@@ -115,6 +158,20 @@ export const PaperApiFp = function(configuration?: Configuration) {
     const localVarAxiosParamCreator = PaperApiAxiosParamCreator(configuration)
     return {
         /**
+         * Allows the user to ask questions about the paper currently being viewed.
+         * @summary Chat with the specified paper
+         * @param {number} paperId 
+         * @param {PaperChatRequest} paperChatRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async chatWithPaperPapersPaperIdChatPost(paperId: number, paperChatRequest: PaperChatRequest, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<PaperChatResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.chatWithPaperPapersPaperIdChatPost(paperId, paperChatRequest, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['PaperApi.chatWithPaperPapersPaperIdChatPost']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
          * Stream the PDF file of the specified paper. This URL can be used directly as the source for frontend PDF viewers.
          * @summary Get the PDF of the specified paper
          * @param {number} paperId 
@@ -151,6 +208,17 @@ export const PaperApiFactory = function (configuration?: Configuration, basePath
     const localVarFp = PaperApiFp(configuration)
     return {
         /**
+         * Allows the user to ask questions about the paper currently being viewed.
+         * @summary Chat with the specified paper
+         * @param {number} paperId 
+         * @param {PaperChatRequest} paperChatRequest 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        chatWithPaperPapersPaperIdChatPost(paperId: number, paperChatRequest: PaperChatRequest, options?: RawAxiosRequestConfig): AxiosPromise<PaperChatResponse> {
+            return localVarFp.chatWithPaperPapersPaperIdChatPost(paperId, paperChatRequest, options).then((request) => request(axios, basePath));
+        },
+        /**
          * Stream the PDF file of the specified paper. This URL can be used directly as the source for frontend PDF viewers.
          * @summary Get the PDF of the specified paper
          * @param {number} paperId 
@@ -178,6 +246,18 @@ export const PaperApiFactory = function (configuration?: Configuration, basePath
  * PaperApi - object-oriented interface
  */
 export class PaperApi extends BaseAPI {
+    /**
+     * Allows the user to ask questions about the paper currently being viewed.
+     * @summary Chat with the specified paper
+     * @param {number} paperId 
+     * @param {PaperChatRequest} paperChatRequest 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public chatWithPaperPapersPaperIdChatPost(paperId: number, paperChatRequest: PaperChatRequest, options?: RawAxiosRequestConfig) {
+        return PaperApiFp(this.configuration).chatWithPaperPapersPaperIdChatPost(paperId, paperChatRequest, options).then((request) => request(this.axios, this.basePath));
+    }
+
     /**
      * Stream the PDF file of the specified paper. This URL can be used directly as the source for frontend PDF viewers.
      * @summary Get the PDF of the specified paper

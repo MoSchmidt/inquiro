@@ -9,7 +9,6 @@ from app.core.config import settings
 from app.core.database import init_db
 from app.routes import (
     auth_routes,
-    chat_routes,
     paper_routes,
     project_routes,
     search_routes,
@@ -78,4 +77,3 @@ app.include_router(auth_routes.router)
 app.include_router(search_routes.router)
 app.include_router(project_routes.router)
 app.include_router(paper_routes.router)
-app.include_router(chat_routes.router)

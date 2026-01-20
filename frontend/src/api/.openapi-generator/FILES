@@ -1,7 +1,6 @@
 api.ts
 apis/authentication-api.ts
 apis/paper-api.ts
-apis/paper-chat-api.ts
 apis/projects-api.ts
 apis/search-api.ts
 apis/users-api.ts

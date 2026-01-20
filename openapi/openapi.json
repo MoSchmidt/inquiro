@@ -629,49 +629,13 @@
         }
       }
     },
-    "/papers/{paper_id}/pdf": {
-      "get": {
-        "tags": [
-          "Paper"
-        ],
-        "summary": "Get the PDF of the specified paper",
-        "description": "Stream the PDF file of the specified paper.\nThis URL can be used directly as the source for frontend PDF viewers.",
-        "operationId": "get_paper_pdf_papers__paper_id__pdf_get",
-        "parameters": [
-          {
-            "name": "paper_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "title": "Paper Id"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Successful Response"
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/papers/{paper_id}/chat": {
       "post": {
         "tags": [
-          "Paper Chat"
+          "Paper"
         ],
         "summary": "Chat with the specified paper",
-        "description": "Allows the user to ask questions about the paper currently being viewed.\nContext is derived from the full PDF text and optional chat history.",
+        "description": "Allows the user to ask questions about the paper currently being viewed.",
         "operationId": "chat_with_paper_papers__paper_id__chat_post",
         "parameters": [
           {
@@ -704,6 +668,42 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/papers/{paper_id}/pdf": {
+      "get": {
+        "tags": [
+          "Paper"
+        ],
+        "summary": "Get the PDF of the specified paper",
+        "description": "Stream the PDF file of the specified paper.\nThis URL can be used directly as the source for frontend PDF viewers.",
+        "operationId": "get_paper_pdf_papers__paper_id__pdf_get",
+        "parameters": [
+          {
+            "name": "paper_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Paper Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response"
           },
           "422": {
             "description": "Validation Error",
