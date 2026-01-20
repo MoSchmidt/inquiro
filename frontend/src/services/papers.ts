@@ -1,8 +1,13 @@
-import { PaperApi, PaperChatApi, PaperSummaryRequest, PaperSummaryResponse, PaperChatRequest, PaperChatResponse } from '@/api';
+import {
+    PaperApi,
+    type PaperSummaryRequest,
+    type PaperSummaryResponse,
+    type PaperChatRequest,
+    type PaperChatResponse
+} from '@/api';
 import { apiAxios } from '@/auth/axios-auth';
 
 const paperApi = new PaperApi(undefined, undefined, apiAxios);
-const paperChatApi = new PaperChatApi(undefined, undefined, apiAxios);
 
 export async function fetchPaperPdf(paperId: number): Promise<Blob> {
     const response = await paperApi.getPaperPdfPapersPaperIdPdfGet(paperId, {
@@ -24,7 +29,6 @@ export async function chatWithPaper(
     paperId: number,
     request: PaperChatRequest
 ): Promise<PaperChatResponse> {
-    const response = await paperChatApi.chatWithPaperPapersPaperIdChatPost(paperId, request);
+    const response = await paperApi.chatWithPaperPapersPaperIdChatPost(paperId, request);
     return response.data;
 }
-
