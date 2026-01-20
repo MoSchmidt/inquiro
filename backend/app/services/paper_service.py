@@ -32,6 +32,7 @@ class PaperService:
         Retrieves paper specified by id, retrieves its pdf version, and summarises it.
         Returns a summary of the specified paper
         """
+        external_id = "unknown"
 
         try:
             pdf_text, external_id = await PaperService._prepare_paper_text(paper_id, session)
@@ -65,9 +66,11 @@ class PaperService:
         """
         Generates an AI response based on paper content and chat history.
         """
-        pdf_text, external_id = await PaperService._prepare_paper_text(paper_id, session)
+        external_id = "unknown"
 
         try:
+            pdf_text, external_id = await PaperService._prepare_paper_text(paper_id, session)
+
             openai_provider = get_openai_provider()
             answer = await openai_provider.chat_about_paper(
                 paper_text=pdf_text, user_query=user_query, chat_history=history
@@ -119,7 +122,7 @@ class PaperService:
             ) from exc
 
     @staticmethod
-    async def _prepare_paper_text(paper_id: int, session: AsyncSession) -> (str, str):
+    async def _prepare_paper_text(paper_id: int, session: AsyncSession) -> tuple[str, str]:
         """
         Shared internal logic to fetch paper and prepare text for LLM consumption.
         Returns a tuple of (extracted_text, external_id).
