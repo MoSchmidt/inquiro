@@ -18,11 +18,11 @@ const isUser = computed(() => props.message.role === 'user');
     :class="{ 'user-message': isUser, 'assistant-message': !isUser }"
   >
     <v-avatar
-      :color="isUser ? 'primary' : 'secondary'"
+      :color="isUser ? '#1976D2' : '#FF6B35'"
       size="32"
       class="flex-shrink-0"
     >
-      <v-icon :icon="isUser ? User : Sparkles" size="18" />
+      <v-icon :icon="isUser ? User : Sparkles" size="18" color="white" />
     </v-avatar>
 
     <div class="message-content flex-grow-1">
@@ -52,11 +52,12 @@ const isUser = computed(() => props.message.role === 'user');
 }
 
 .assistant-message .message-body {
-  background-color: rgb(var(--v-theme-surface-variant));
-  border: 1px solid rgb(var(--v-theme-outline-variant), 0.3);
+  background-color: rgb(var(--v-theme-surface));
+  border: 1px solid rgb(var(--v-theme-outline-variant), 0.2);
 }
 
 .message-role {
-  color: rgb(var(--v-theme-on-surface-variant));
+  color: rgb(var(--v-theme-on-surface));
+  opacity: 0.8;
 }
 </style>

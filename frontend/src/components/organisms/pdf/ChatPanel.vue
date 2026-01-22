@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue';
 import { VBtn, VIcon, VTextarea, VProgressCircular, VDivider } from 'vuetify/components';
-import { Send, Trash2, MessageSquare, X, GripVertical } from 'lucide-vue-next';
+import { Send, Trash2, MessageSquare, X, GripVertical, Maximize2, Minimize2 } from 'lucide-vue-next';
 import { useChatStore } from '@/stores/chat';
 import ChatMessage from '@/components/atoms/ChatMessage.vue';
 
@@ -21,6 +21,7 @@ const messagesContainer = ref<HTMLElement | null>(null);
 // Panel width for resizing
 const panelWidth = ref(400);
 const isResizing = ref(false);
+const isMaximized = ref(false);
 const minWidth = 300;
 const maxWidth = 700;
 
@@ -57,6 +58,11 @@ const handleKeydown = (event: KeyboardEvent) => {
     event.preventDefault();
     sendMessage();
   }
+};
+
+const toggleMaximize = () => {
+  isMaximized.value = !isMaximized.value;
+  panelWidth.value = isMaximized.value ? 600 : 400;
 };
 
 // Resize handling
@@ -106,6 +112,17 @@ watch(messages, () => {
       <div class="chat-header d-flex align-center px-4 py-3 border-b">
         <v-icon :icon="MessageSquare" size="20" class="text-primary me-2" />
         <span class="text-subtitle-2 font-weight-medium flex-grow-1">Chat with Paper</span>
+
+        <v-btn
+          icon
+          title="Maximize/Minimize chat"
+          variant="text"
+          size="x-small"
+          class="me-1"
+          @click="toggleMaximize"
+        >
+          <v-icon :icon="isMaximized ? Minimize2 : Maximize2" size="16" />
+        </v-btn>
 
         <v-btn
           v-if="hasMessages"
@@ -241,7 +258,10 @@ watch(messages, () => {
 }
 
 .messages-container {
-  background-color: rgb(var(--v-theme-background));
+  background-color: rgb(var(--v-theme-surface));
+  border: 1px solid rgb(var(--v-theme-outline-variant), 0.1);
+  border-radius: 8px;
+  margin: 8px;
 }
 
 .empty-state {
@@ -250,6 +270,7 @@ watch(messages, () => {
 
 .chat-input-area {
   background-color: rgb(var(--v-theme-surface));
+  border-top: 1px solid rgb(var(--v-theme-outline-variant), 0.2);
   flex-shrink: 0;
 }
 

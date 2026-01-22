@@ -1,11 +1,12 @@
 <script lang="ts" setup>
 import { onUnmounted, ref, watch, nextTick } from 'vue';
 import { VAlert, VBtn, VCard, VCardText, VDialog, VIcon, VProgressCircular, VSpacer, VDivider, VTooltip } from 'vuetify/components';
-import { Download, X, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, RotateCw, MessageSquare } from 'lucide-vue-next';
+import { Download, X, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, RotateCw, MessageSquare, Sun, Moon } from 'lucide-vue-next';
 import VuePdfEmbed from 'vue-pdf-embed';
 import { usePaperStore } from '@/stores/papers';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
 import ChatPanel from './ChatPanel.vue';
+import { useTheme } from '@/composables/useTheme';
 
 import 'vue-pdf-embed/dist/styles/textLayer.css';
 import 'vue-pdf-embed/dist/styles/annotationLayer.css';
@@ -37,6 +38,8 @@ const isAutoScrolling = ref(false);
 
 // Chat panel visibility
 const isChatOpen = ref(false);
+
+const { isDark, toggleTheme } = useTheme();
 
 const paperStore = usePaperStore();
 let observer: IntersectionObserver | null = null;
@@ -163,6 +166,12 @@ const toggleChat = () => {
   isChatOpen.value = !isChatOpen.value;
 };
 
+const handleThemeToggle = () => {
+  console.log('Theme toggle clicked, current isDark:', isDark.value);
+  toggleTheme();
+  console.log('After toggle, isDark:', isDark.value);
+};
+
 const handleLinkClick = (pageNumber: number) => scrollToPage(pageNumber);
 
 const handleDownload = () => {
@@ -273,6 +282,19 @@ onUnmounted(() => {
         </v-btn>
 
         <v-btn
+            icon
+            variant="text"
+            size="small"
+            class="me-2"
+            @click="handleThemeToggle"
+        >
+          <v-icon :icon="isDark ? Sun : Moon" size="18" />
+          <v-tooltip activator="parent" location="bottom">
+            {{ isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode' }}
+          </v-tooltip>
+        </v-btn>
+
+        <v-btn
             :color="isChatOpen ? 'primary' : 'default'"
             :variant="isChatOpen ? 'flat' : 'outlined'"
             class="me-2 text-none"
@@ -370,6 +392,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   padding: 32px 0;
+  background-color: rgb(var(--v-theme-background));
 }
 
 .pdf-document {
@@ -412,6 +435,8 @@ onUnmounted(() => {
   position: relative !important;
   margin-bottom: 24px;
   background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 :deep(.textLayer) {
