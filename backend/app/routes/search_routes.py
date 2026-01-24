@@ -1,7 +1,8 @@
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.core.limiter import limiter
 from app.schemas.search_dto import SearchRequest, SearchResponse
 from app.services.search_service import SearchService
 
@@ -14,7 +15,10 @@ router = APIRouter(prefix="/search", tags=["Search"])
     status_code=status.HTTP_200_OK,
     summary="Search for papers",
 )
-async def search(request: SearchRequest, db: AsyncSession = Depends(get_db)) -> SearchResponse:
+@limiter.limit("5/minute")
+async def search(
+    request: Request, payload: SearchRequest, db: AsyncSession = Depends(get_db)
+) -> SearchResponse:
     """
     Returns a list of papers that match the search query.
 
@@ -22,7 +26,7 @@ async def search(request: SearchRequest, db: AsyncSession = Depends(get_db)) -> 
     of the query string.
     """
 
-    papers = await SearchService.search_papers(request.query, db)
+    papers = await SearchService.search_papers(payload.query, db)
     return SearchResponse.model_validate(papers)
 
 
@@ -32,11 +36,14 @@ async def search(request: SearchRequest, db: AsyncSession = Depends(get_db)) -> 
     status_code=status.HTTP_200_OK,
     summary="Search for papers using a PDF",
 )
+@limiter.limit("3/minute")
 async def search_by_pdf(
+    request: Request,
     pdf: UploadFile = File(..., description="Research paper PDF"),
     # Optional: user can also input a query
     query: str | None = Form(
         default=None,
+        max_length=5000,
         description="Optional: query specifying what you want to find in relation to the paper",
     ),
     db: AsyncSession = Depends(get_db),

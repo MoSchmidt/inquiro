@@ -3,10 +3,14 @@ from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator
 
 from fastapi import FastAPI
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 from starlette.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.core.database import init_db
+from app.core.limiter import limiter
 from app.routes import (
     auth_routes,
     paper_routes,
@@ -52,6 +56,10 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 # ---------------------------------------------------------
 # Development-only CORS configuration
