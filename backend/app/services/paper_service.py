@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import Dict, List
 
@@ -7,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.constants.database_constants import PaperSource
 from app.core.deps import get_openai_provider
+from app.core.safety import SafetyService
 from app.repositories.paper_repository import PaperRepository
 from app.schemas.paper_dto import PaperSummaryResponse
 from app.utils.pdf_utils import pdf_bytes_to_text
@@ -32,6 +34,11 @@ class PaperService:
         Retrieves paper specified by id, retrieves its pdf version, and summarises it.
         Returns a summary of the specified paper
         """
+        if query and query.strip():
+            if not await SafetyService.check_moderation(query):
+                logger.warning(f"Blocked toxic summary query: {query}")
+                raise HTTPException(status_code=400, detail="Query violates content safety policy.")
+
         external_id = "unknown"
 
         try:
@@ -39,6 +46,12 @@ class PaperService:
 
             openai_provider = get_openai_provider()
             summary_payload = await openai_provider.summarise_paper(pdf_text, query)
+
+            raw_dump = json.dumps(summary_payload)
+            if not SafetyService.validate_output(raw_dump):
+                logger.critical(f"Canary triggered in summary for {external_id}")
+                raise HTTPException(status_code=500, detail="Generation failed safety check.")
+
             return PaperSummaryResponse.model_validate(summary_payload)
         except httpx.HTTPStatusError as exc:
             # arXiv returned 404 or similar error
@@ -66,6 +79,10 @@ class PaperService:
         """
         Generates an AI response based on paper content and chat history.
         """
+        if not await SafetyService.check_moderation(user_query):
+            logger.warning(f"Blocked toxic user query: {user_query}")
+            return "I cannot answer this query as it violates our safety policies."
+
         external_id = "unknown"
 
         try:
@@ -75,6 +92,10 @@ class PaperService:
             answer = await openai_provider.chat_about_paper(
                 paper_text=pdf_text, user_query=user_query, chat_history=history
             )
+
+            if not SafetyService.validate_output(answer):
+                return "I apologize, but I encountered an error while generating the response."
+
             return answer
         except Exception as exc:
             logger.exception("Chat error for paper %s", external_id)

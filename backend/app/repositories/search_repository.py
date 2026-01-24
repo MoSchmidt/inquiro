@@ -11,7 +11,7 @@ class SearchRepository:
 
     @staticmethod
     async def search_papers_by_embeddings(
-        db: AsyncSession, embeddings: List[List[float]], limit: int = 5
+        db: AsyncSession, embeddings: List[List[float]], limit: int = 5, threshold: float = 0.4
     ) -> List[Tuple[PaperModel, float]]:
         """
         Perform a vector search for papers based on a list of embeddings.
@@ -25,6 +25,7 @@ class SearchRepository:
 
         stmt = (
             select(PaperModel, avg_distance.label("avg_distance"))
+            .where(avg_distance < threshold)
             .order_by(avg_distance.asc())
             .limit(limit)
         )

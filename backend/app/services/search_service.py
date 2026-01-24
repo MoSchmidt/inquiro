@@ -6,6 +6,7 @@ from fastapi import HTTPException, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_openai_provider, get_specter2_query_embedder
+from app.core.safety import SafetyService
 from app.repositories.search_repository import SearchRepository
 from app.schemas.search_dto import PaperDto, SearchResponse
 from app.utils.author_utils import normalize_authors
@@ -29,6 +30,10 @@ class SearchService:
         Search using a free-text query
         """
         openai_provider = get_openai_provider()
+
+        if not await SafetyService.check_moderation(query):
+            logger.warning(f"Blocked toxic search query: {query}")
+            raise HTTPException(status_code=400, detail="Search query violates safety policies.")
 
         # Extract + normalize keywords with retry
         keywords = await SearchService._extract_keywords_with_retry(
@@ -57,6 +62,13 @@ class SearchService:
         3. Let the LLM derive search keywords from this context.
         4. Use keywords for vector search.
         """
+        if query and query.strip():
+            if not await SafetyService.check_moderation(query):
+                logger.warning(f"Blocked toxic PDF context query: {query}")
+                raise HTTPException(
+                    status_code=400, detail="Context query violates safety policies."
+                )
+
         content = await pdf_file.read()
         if not content:
             logger.warning("Empty PDF uploaded for search")

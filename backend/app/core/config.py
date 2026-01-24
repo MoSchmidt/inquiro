@@ -29,6 +29,9 @@ class Settings(BaseSettings):
     # --- OpenAI ---
     OPENAI_API_KEY: Optional[str] = None
 
+    # --- Safety Canary ---
+    SAFETY_CANARY: str
+
     model_config = SettingsConfigDict(
         env_file=os.getenv("ENV_FILE", "dev.env"),
         extra="ignore",
