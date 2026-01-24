@@ -15,11 +15,13 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { LocationInner } from './location-inner';
+import type { ChatMessageDto } from './chat-message-dto';
 
-export interface ValidationError {
-    'loc': Array<LocationInner>;
-    'msg': string;
-    'type': string;
+/**
+ * Request to chat about a specific paper.
+ */
+export interface PaperChatRequest {
+    'message': string;
+    'history'?: Array<ChatMessageDto>;
 }
 
