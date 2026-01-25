@@ -15,7 +15,7 @@ export default createVuetify({
       light: {
         dark: false,
         colors: {
-          background: '#F9FAFB',
+          background: '#F3F4F6',
           surface: '#FFFFFF',
 
           primary: '#0065bd',
@@ -26,7 +26,6 @@ export default createVuetify({
           warning: '#F59E0B',
 
           // Custom Semantic Colors
-          'search-surface': '#e9f2ff',
           'step-surface': '#E3F2FD',
           'step-text': '#1976D2',
           'success-surface': '#F1F8E9',
@@ -56,7 +55,6 @@ export default createVuetify({
           warning: '#FBBF24',
 
           // Custom Semantic Colors
-          'search-surface': '#1e293b',
           'step-surface': '#0f172a',
           'step-text': '#60A5FA',
           'success-surface': '#064e3b',

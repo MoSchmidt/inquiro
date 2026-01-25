@@ -8,10 +8,14 @@ base.ts
 common.ts
 configuration.ts
 index.ts
+models/chat-message-dto.ts
 models/httpvalidation-error.ts
 models/index.ts
+models/location-inner.ts
 models/login-request.ts
 models/login-response.ts
+models/paper-chat-request.ts
+models/paper-chat-response.ts
 models/paper-dto.ts
 models/paper-summary-request.ts
 models/paper-summary-response.ts
@@ -25,5 +29,4 @@ models/search-request.ts
 models/search-response.ts
 models/user-create.ts
 models/user-response.ts
-models/validation-error-loc-inner.ts
 models/validation-error.ts

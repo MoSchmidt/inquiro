@@ -629,6 +629,59 @@
         }
       }
     },
+    "/papers/{paper_id}/chat": {
+      "post": {
+        "tags": [
+          "Paper"
+        ],
+        "summary": "Chat with the specified paper",
+        "description": "Allows the user to ask questions about the paper currently being viewed.",
+        "operationId": "chat_with_paper_papers__paper_id__chat_post",
+        "parameters": [
+          {
+            "name": "paper_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Paper Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaperChatRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaperChatResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/papers/{paper_id}/pdf": {
       "get": {
         "tags": [
@@ -695,6 +748,25 @@
         ],
         "title": "Body_search_by_pdf_search_pdf_post"
       },
+      "ChatMessageDto": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "content": {
+            "type": "string",
+            "title": "Content"
+          }
+        },
+        "type": "object",
+        "required": [
+          "role",
+          "content"
+        ],
+        "title": "ChatMessageDto",
+        "description": "Represents a single message in the chat history."
+      },
       "HTTPValidationError": {
         "properties": {
           "detail": {
@@ -749,6 +821,42 @@
         ],
         "title": "LoginResponse",
         "description": "Response returned after a successful login."
+      },
+      "PaperChatRequest": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/ChatMessageDto"
+            },
+            "type": "array",
+            "title": "History"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "PaperChatRequest",
+        "description": "Request to chat about a specific paper."
+      },
+      "PaperChatResponse": {
+        "properties": {
+          "answer": {
+            "type": "string",
+            "title": "Answer",
+            "description": "The AI's response to the user's question."
+          }
+        },
+        "type": "object",
+        "required": [
+          "answer"
+        ],
+        "title": "PaperChatResponse",
+        "description": "The AI generated response for the chat.\nSupports Markdown and LaTeX."
       },
       "PaperDto": {
         "properties": {
@@ -851,10 +959,16 @@
             "description": "A high-level, 2-3 sentence overview of the paper's core contribution."
           },
           "relevance_to_query": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Relevance To Query",
-            "description": "Direct answer to how this paper relates to the user's specific query.",
-            "default": null
+            "description": "Direct answer to how this paper relates to the user's specific query."
           },
           "methodology_points": {
             "items": {

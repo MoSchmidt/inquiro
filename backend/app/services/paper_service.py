@@ -1,4 +1,5 @@
 import logging
+from typing import Dict, List
 
 import httpx
 from fastapi import HTTPException
@@ -15,8 +16,7 @@ logger = logging.getLogger("inquiro")
 
 
 class PaperService:
-    """Service for summarising research papers"""
-
+    """Service for interacting with research papers (Summarization, Chat, and PDF retrieval)"""
     # GPT 5 nano has a max. content size of 400k tokens, combining input and output.
     # This represents a conservative estimate, leaving enough space for the prompt and output.
     MAX_INPUT_TOKENS = 280_000
@@ -34,18 +34,7 @@ class PaperService:
         """
         try:
             # Get markdown content (waits for conversion if needed)
-            pdf_text = await PaperContentService.get_or_wait_for_markdown(paper_id, session)
-
-            # If the content is of excessive length, it's too big for a single request
-            ensure_fits_token_limit(
-                pdf_text,
-                max_tokens=PaperService.MAX_INPUT_TOKENS,
-                error_status=413,
-                error_detail=(
-                    "Paper is too long to be summarised at the moment. "
-                    "Please try a shorter document."
-                ),
-            )
+            pdf_text = await PaperService._get_paper_text(paper_id, session)
 
             openai_provider = get_openai_provider()
             summary_payload = await openai_provider.summarise_paper(pdf_text, query)
@@ -59,6 +48,25 @@ class PaperService:
             raise HTTPException(
                 status_code=500, detail="An unexpected error occurred while summarising the paper."
             ) from exc
+
+    @staticmethod
+    async def get_chat_answer(
+            paper_id: int, user_query: str, history: List[Dict[str, str]], session: AsyncSession
+    ) -> str:
+        """
+        Generates an AI response based on paper content and chat history.
+        """
+        try:
+            pdf_text = await PaperService._get_paper_text(paper_id, session)
+
+            openai_provider = get_openai_provider()
+            answer = await openai_provider.chat_about_paper(
+                paper_text=pdf_text, user_query=user_query, chat_history=history
+            )
+            return answer
+        except Exception as exc:
+            logger.exception("Chat error for paper %s", paper_id)
+            raise HTTPException(status_code=500, detail="Failed to generate AI response.") from exc
 
     @staticmethod
     async def get_paper_pdf(paper_id: int, session: AsyncSession) -> bytes:
@@ -105,15 +113,30 @@ class PaperService:
             ) from exc
 
     @staticmethod
+    async def _get_paper_text(paper_id: int, session: AsyncSession) -> str:
+        """Shared internal logic to convert paper to markdown."""
+        pdf_text = await PaperContentService.get_or_wait_for_markdown(paper_id, session)
+
+        # If the pdf is of excessive length (> few hundred pages) it is too big for a single
+        # request. We could process the paper in multiple parts but that would be a lot of
+        # effort for a tiny proportion of all papers.
+        ensure_fits_token_limit(
+            pdf_text,
+            max_tokens=PaperService.MAX_INPUT_TOKENS,
+            error_status=413,
+            error_detail="Paper content exceeds context limits.",
+        )
+
+        return pdf_text
+
+    @staticmethod
     def arxiv_pdf_url(arxiv_id: str) -> str:
         """Get the Arxiv-PDF URL."""
         return f"https://arxiv.org/pdf/{arxiv_id}.pdf"
 
     @staticmethod
     async def _fetch_arxiv_pdf(arxiv_id: str) -> bytes:
-        """
-        Fetch arXiv PDF and return its raw bytes.
-        """
+        """Fetch arXiv PDF and return its raw bytes."""
 
         url = PaperService.arxiv_pdf_url(arxiv_id)
         async with httpx.AsyncClient(timeout=30, follow_redirects=True) as client:
