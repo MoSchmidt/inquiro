@@ -83,8 +83,11 @@ class PaperContentRepository:
                     or_(
                         # Claim PENDING jobs
                         PaperContent.status == PaperContentStatus.PENDING,
-                        # Claim FAILED jobs (retry logic handled by service)
-                        PaperContent.status == PaperContentStatus.FAILED,
+                        # Claim FAILED jobs only if still retryable
+                        and_(
+                            PaperContent.status == PaperContentStatus.FAILED,
+                            PaperContent.retry_count < settings.DOCLING_MAX_RETRIES,
+                        ),
                         # Reclaim stale PROCESSING jobs (worker died)
                         and_(
                             PaperContent.status == PaperContentStatus.PROCESSING,
