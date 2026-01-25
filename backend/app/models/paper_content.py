@@ -13,6 +13,8 @@ if TYPE_CHECKING:
 
 
 class PaperContent(Base):
+    """ORM model for paper content including markdown and conversion status."""
+
     __tablename__ = "paper_content"
 
     # Primary key

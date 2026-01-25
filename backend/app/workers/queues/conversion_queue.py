@@ -97,6 +97,7 @@ class ConversionQueue:
             return
 
         # Import here to avoid circular imports
+        # pylint: disable=import-outside-toplevel
         from app.workers.conversion_worker import conversion_worker
 
         self._running = True
@@ -126,7 +127,7 @@ class ConversionQueue:
 
         # Wait for graceful completion
         if self._workers:
-            done, pending = await asyncio.wait(
+            _, pending = await asyncio.wait(
                 self._workers,
                 timeout=graceful_timeout,
                 return_when=asyncio.ALL_COMPLETED,
