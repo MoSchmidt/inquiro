@@ -88,6 +88,7 @@ The Docker command includes these options:
 - `withSeparateModelsAndApi=true` - Separate models and API files
 - `apiPackage=apis` - Place API files in `apis/` subdirectory
 - `modelPackage=models` - Place model files in `models/` subdirectory
+- `--global-property=apiDocs=false,modelDocs=false,apiTests=false,modelTests=false` - Disable generation of API docs, model docs, and test files
 
 ## Custom Templates
 
