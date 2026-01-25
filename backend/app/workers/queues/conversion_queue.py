@@ -78,8 +78,8 @@ class ConversionQueue:
         """
         Get next job from queue with timeout.
 
-        Returns None if timeout expires or shutdown is requested.
-        Workers should call this in a loop, checking shutdown_requested.
+        Returns None if timeout expires, allowing workers to periodically
+        check shutdown_requested and the running property.
         """
         try:
             job = await asyncio.wait_for(self._queue.get(), timeout=timeout)

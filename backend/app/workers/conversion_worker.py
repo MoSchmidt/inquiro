@@ -47,6 +47,7 @@ async def conversion_worker(queue: ConversionQueue, worker_id: str) -> None:
             if queue.shutdown_requested:
                 # Re-queue for another worker or next startup
                 await queue.enqueue(job)
+                queue.mark_done()
                 logger.info(
                     "Worker %s: Shutdown requested, re-queued job %s",
                     worker_id,
@@ -62,13 +63,22 @@ async def conversion_worker(queue: ConversionQueue, worker_id: str) -> None:
             if job is not None:
                 try:
                     await queue.enqueue(job)
+                    queue.mark_done()
                     logger.info(
                         "Worker %s: Re-queued job %s after cancellation",
                         worker_id,
                         job.job_id,
                     )
-                except Exception:  # pylint: disable=broad-exception-caught
-                    pass
+                except Exception as enqueue_error:
+                    # Still need to mark done even if re-enqueue fails
+                    queue.mark_done()
+                    logger.error(
+                        "Worker %s: Failed to re-queue job %s after cancellation: %s",
+                        worker_id,
+                        getattr(job, "job_id", "unknown"),
+                        enqueue_error,
+                        exc_info=True,
+                    )
             raise
         except Exception as e:  # pylint: disable=broad-exception-caught
             logger.error("Worker %s: Unexpected error: %s", worker_id, e, exc_info=True)
