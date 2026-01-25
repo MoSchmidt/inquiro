@@ -10,33 +10,34 @@ from docling.document_converter import DocumentConverter, PdfFormatOption
 logger = logging.getLogger("inquiro")
 
 # Module-level cached converter (singleton)
-_converter: DocumentConverter | None = None
-_converter_lock = threading.Lock()
+_CONVERTER: DocumentConverter | None = None
+_CONVERTER_LOCK = threading.Lock()
 
 
 def _get_converter() -> DocumentConverter:
     """Get or create the cached DocumentConverter instance (thread-safe)."""
-    global _converter
-    if _converter is None:
-        with _converter_lock:
+    global _CONVERTER  # pylint: disable=global-statement
+    if _CONVERTER is None:
+        with _CONVERTER_LOCK:
             # Double-check after acquiring lock
-            if _converter is None:
+            if _CONVERTER is None:
                 pdf_options = PdfPipelineOptions(
                     do_ocr=False,
                     do_table_structure=False,
                 )
-                _converter = DocumentConverter(
+                _CONVERTER = DocumentConverter(
                     format_options={
                         InputFormat.PDF: PdfFormatOption(pipeline_options=pdf_options),
                     }
                 )
                 logger.info("Initialized Docling converter with fast dev configuration")
-    return _converter
+    return _CONVERTER
 
 
 class DoclingConverter:
     """Wrapper around Docling for PDF to Markdown conversion."""
-    
+
+
     @staticmethod
     def convert_pdf_to_markdown(path: str) -> str:
         """

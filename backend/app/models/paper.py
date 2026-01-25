@@ -4,6 +4,7 @@ from datetime import date, datetime
 from typing import TYPE_CHECKING, List, Optional
 
 from pgvector.sqlalchemy import Vector
+from sqlalchemy import Enum as SqlEnum
 from sqlalchemy import (
     JSON,
     BigInteger,
@@ -13,7 +14,6 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 

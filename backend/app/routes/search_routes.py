@@ -33,13 +33,13 @@ async def search(request: SearchRequest, db: AsyncSession = Depends(get_db)) -> 
     summary="Search for papers using a PDF",
 )
 async def search_by_pdf(
-    pdf: UploadFile = File(..., description="Research paper PDF"),
-    # Optional: user can also input a query
-    query: str | None = Form(
-        default=None,
-        description="Optional: query specifying what you want to find in relation to the paper",
-    ),
-    db: AsyncSession = Depends(get_db),
+        pdf: UploadFile = File(..., description="Research paper PDF"),
+        # Optional: user can also input a query
+        query: str | None = Form(
+            default=None,
+            description="Optional: query specifying what you want to find in relation to the paper",
+        ),
+        db: AsyncSession = Depends(get_db),
 ) -> SearchResponse:
     """
     Returns a list of papers that are relevant to the uploaded PDF

@@ -91,9 +91,9 @@ class PaperContentService:
 
     @staticmethod
     async def wait_for_completion(
-        paper_id: int,
-        session: AsyncSession,
-        timeout: Optional[float] = None,
+            paper_id: int,
+            session: AsyncSession,
+            timeout: Optional[float] = None,
     ) -> PaperContentStatus:
         """
         Wait for paper conversion to reach a terminal state.
@@ -192,11 +192,11 @@ class PaperContentService:
         # Wait for completion
         try:
             final_status = await PaperContentService.wait_for_completion(paper_id, session)
-        except asyncio.TimeoutError:
+        except asyncio.TimeoutError as exc:
             raise HTTPException(
                 status_code=504,
                 detail="PDF conversion timed out. Please try again later.",
-            )
+            ) from exc
 
         # Check final result
         if final_status == PaperContentStatus.SUCCEEDED:

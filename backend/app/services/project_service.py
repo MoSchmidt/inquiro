@@ -28,8 +28,8 @@ class ProjectService:
     # ------------------------------------------------------------------
     @staticmethod
     async def list_projects(
-        session: AsyncSession,
-        user_id: int,
+            session: AsyncSession,
+            user_id: int,
     ) -> List[ProjectResponse]:
         """List all projects owned by the given user."""
         projects = await ProjectRepository.list_for_user(session, user_id)
@@ -37,9 +37,9 @@ class ProjectService:
 
     @staticmethod
     async def create_project(
-        session: AsyncSession,
-        user_id: int,
-        payload: ProjectCreate,
+            session: AsyncSession,
+            user_id: int,
+            payload: ProjectCreate,
     ) -> ProjectResponse:
         """Create a new project for the given user."""
         ProjectService._validate_project_name(payload.project_name)
@@ -50,10 +50,10 @@ class ProjectService:
 
     @staticmethod
     async def update_project(
-        session: AsyncSession,
-        user_id: int,
-        project_id: int,
-        payload: ProjectUpdate,
+            session: AsyncSession,
+            user_id: int,
+            project_id: int,
+            payload: ProjectUpdate,
     ) -> ProjectResponse:
         """Update metadata of an existing project."""
         await ProjectService._validate_project_access(session, project_id, user_id)
@@ -68,9 +68,9 @@ class ProjectService:
 
     @staticmethod
     async def delete_project(
-        session: AsyncSession,
-        user_id: int,
-        project_id: int,
+            session: AsyncSession,
+            user_id: int,
+            project_id: int,
     ) -> None:
         """Delete a project that belongs to the given user."""
         # Enforce 404 vs 403 semantics
@@ -83,9 +83,9 @@ class ProjectService:
     # ------------------------------------------------------------------
     @staticmethod
     async def list_project_papers(
-        session: AsyncSession,
-        project_id: int,
-        user_id: int,
+            session: AsyncSession,
+            project_id: int,
+            user_id: int,
     ) -> ProjectWithPapersResponse:
         """Load all papers for a project."""
         await ProjectService._validate_project_access(session, project_id, user_id)
@@ -99,10 +99,10 @@ class ProjectService:
     # ------------------------------------------------------------------
     @staticmethod
     async def add_paper_to_project(
-        session: AsyncSession,
-        user_id: int,
-        project_id: int,
-        paper_id: int,
+            session: AsyncSession,
+            user_id: int,
+            project_id: int,
+            paper_id: int,
     ) -> ProjectWithPapersResponse:
         """
         Add a paper reference to the given project.
@@ -128,7 +128,7 @@ class ProjectService:
         # Trigger PDF conversion in background (fire-and-forget)
         try:
             await PaperContentService.trigger_conversion(paper_id, session)
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             # Don't fail the add operation if conversion trigger fails
             logger.error("Failed to trigger conversion for paper %d: %s", paper_id, e)
 
@@ -136,10 +136,10 @@ class ProjectService:
 
     @staticmethod
     async def remove_paper_from_project(
-        session: AsyncSession,
-        user_id: int,
-        project_id: int,
-        paper_id: int,
+            session: AsyncSession,
+            user_id: int,
+            project_id: int,
+            paper_id: int,
     ) -> ProjectWithPapersResponse:
         """Remove a paper reference from the given project."""
         await ProjectService._validate_project_access(session, project_id, user_id)
@@ -164,9 +164,9 @@ class ProjectService:
     # ------------------------------------------------------------------
     @staticmethod
     async def _validate_project_access(
-        session: AsyncSession,
-        project_id: int,
-        user_id: int,
+            session: AsyncSession,
+            project_id: int,
+            user_id: int,
     ) -> None:
         """Ensure: project exists AND user is owner."""
         exists = await ProjectRepository.exists(session, project_id)
@@ -185,7 +185,7 @@ class ProjectService:
 
     @staticmethod
     def _build_project_with_papers_response(
-        project: Project,
+            project: Project,
     ) -> ProjectWithPapersResponse:
         """Map a Project ORM entity (with .papers) to a response DTO."""
         papers = ProjectService._build_paper_summaries(project)
@@ -196,7 +196,7 @@ class ProjectService:
 
     @staticmethod
     def _build_paper_summaries(
-        project: Project,
+            project: Project,
     ) -> list[PaperDto]:
         """Convert project.papers into PaperDtos."""
         summaries: list[PaperDto] = []
@@ -224,5 +224,5 @@ class ProjectService:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Project name must be 1-100 characters and can only contain letters,"
-                " numbers, spaces, underscores, and hyphens.",
+                       " numbers, spaces, underscores, and hyphens.",
             )

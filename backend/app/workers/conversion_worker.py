@@ -67,20 +67,20 @@ async def conversion_worker(queue: ConversionQueue, worker_id: str) -> None:
                         worker_id,
                         job.job_id,
                     )
-                except Exception:
+                except Exception:  # pylint: disable=broad-exception-caught
                     pass
             raise
-        except Exception as e:
+        except Exception as e:  # pylint: disable=broad-exception-caught
             logger.error("Worker %s: Unexpected error: %s", worker_id, e, exc_info=True)
 
     logger.info("Worker %s: Stopped", worker_id)
 
 
 async def _process_job(
-    queue: ConversionQueue,
-    job: ConversionJob,
-    worker_id: str,
-    converter: DoclingConverter,
+        queue: ConversionQueue,
+        job: ConversionJob,
+        worker_id: str,
+        converter: DoclingConverter,
 ) -> None:
     """Process a single conversion job."""
     logger.info(
@@ -159,7 +159,7 @@ async def _process_job(
                     job.paper_id,
                 )
 
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-exception-caught
         logger.error(
             "Worker %s: Failed paper %d: %s",
             worker_id,
@@ -174,10 +174,10 @@ async def _process_job(
 
 
 async def _handle_failure(
-    queue: ConversionQueue,
-    job: ConversionJob,
-    worker_id: str,
-    error: str,
+        queue: ConversionQueue,
+        job: ConversionJob,
+        worker_id: str,
+        error: str,
 ) -> None:
     """
     Handle a failed conversion attempt.
@@ -186,6 +186,7 @@ async def _handle_failure(
     - If under max retries: increment count and re-queue with delay
     - If max retries exceeded: mark as permanently failed
     """
+    # pylint: disable=import-outside-toplevel
     from app.workers.queues.conversion_queue import ConversionJob as CJob
 
     new_retry_count = job.retry_count + 1

@@ -11,7 +11,7 @@ class SearchRepository:
 
     @staticmethod
     async def search_papers_by_embeddings(
-        db: AsyncSession, embeddings: List[List[float]], limit: int = 5
+            db: AsyncSession, embeddings: List[List[float]], limit: int = 5
     ) -> List[Tuple[PaperModel, float]]:
         """
         Perform a vector search for papers based on a list of embeddings.

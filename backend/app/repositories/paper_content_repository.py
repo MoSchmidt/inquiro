@@ -29,7 +29,7 @@ class PaperContentRepository:
 
     @staticmethod
     async def get_or_create_pending_atomic(
-        session: AsyncSession, paper_id: int
+            session: AsyncSession, paper_id: int
     ) -> Tuple[Optional[PaperContent], bool]:
         """
         Atomically get or create a PENDING paper content record.
@@ -56,7 +56,7 @@ class PaperContentRepository:
 
     @staticmethod
     async def try_claim_for_processing(
-        session: AsyncSession, paper_id: int, worker_id: str
+            session: AsyncSession, paper_id: int, worker_id: str
     ) -> Tuple[bool, Optional[PaperContent]]:
         """
         Atomically try to claim a job for processing.
@@ -118,7 +118,7 @@ class PaperContentRepository:
 
     @staticmethod
     async def mark_succeeded(
-        session: AsyncSession, paper_id: int, worker_id: str, markdown: str
+            session: AsyncSession, paper_id: int, worker_id: str, markdown: str
     ) -> bool:
         """
         Mark job as succeeded. Only updates if this worker owns the job.
@@ -148,11 +148,11 @@ class PaperContentRepository:
 
     @staticmethod
     async def mark_failed(
-        session: AsyncSession,
-        paper_id: int,
-        worker_id: str,
-        error_message: str,
-        permanent: bool = False,
+            session: AsyncSession,
+            paper_id: int,
+            worker_id: str,
+            error_message: str,
+            permanent: bool = False,
     ) -> bool:
         """
         Mark job as failed. Only updates if this worker owns the job.
@@ -187,7 +187,7 @@ class PaperContentRepository:
 
     @staticmethod
     async def is_conversion_complete(
-        session: AsyncSession, paper_id: int
+            session: AsyncSession, paper_id: int
     ) -> Tuple[bool, Optional[PaperContentStatus]]:
         """
         Check if paper content conversion is complete (terminal state).
