@@ -1,10 +1,15 @@
 import json
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, cast
 
 from openai import AsyncOpenAI
 
 from app.core.config import settings
-from app.llm.openai.prompts import KEYWORD_PROMPT, PDF_KEYWORD_PROMPT, SUMMARIZATION_PROMPT
+from app.llm.openai.prompts import (
+    CHAT_PROMPT,
+    KEYWORD_PROMPT,
+    PDF_KEYWORD_PROMPT,
+    SUMMARIZATION_PROMPT,
+)
 
 
 class OpenAIProvider:
@@ -158,3 +163,26 @@ class OpenAIProvider:
                 data["relevance_to_query"] = "Could not parse specific section."
 
         return data
+
+    async def chat_about_paper(
+        self, paper_text: str, user_query: str, chat_history: List[Dict[str, str]]
+    ) -> str:
+        """
+        Handles a chat turn using the full paper text as context.
+        """
+
+        input_messages: List[Dict[str, str]] = [
+            {"role": "developer", "content": CHAT_PROMPT},
+            {"role": "developer", "content": f"RESEARCH PAPER TEXT:\n\n{paper_text}"},
+        ]
+
+        if chat_history:
+            input_messages.extend(chat_history)
+
+        input_messages.append({"role": "user", "content": user_query})
+
+        response = await self.client.responses.create(
+            model=self._model, reasoning={"effort": "medium"}, input=cast(Any, input_messages)
+        )
+
+        return response.output_text.strip()

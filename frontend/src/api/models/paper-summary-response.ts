@@ -26,10 +26,7 @@ export interface PaperSummaryResponse {
      * A high-level, 2-3 sentence overview of the paper\'s core contribution.
      */
     'executive_summary': string;
-    /**
-     * Direct answer to how this paper relates to the user\'s specific query.
-     */
-    'relevance_to_query'?: string;
+    'relevance_to_query'?: string | null;
     /**
      * List of technical steps/architectures (bullet points).
      */

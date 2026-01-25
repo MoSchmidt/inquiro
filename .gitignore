@@ -20,3 +20,9 @@ backend/inquiro-env/
 
 # Claude Code
 .claude
+
+# Evaluation data and results
+backend/evaluation_data/
+backend/evaluation_results/
+backend/dataset.json
+backend/results.json
