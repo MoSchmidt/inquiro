@@ -4,15 +4,12 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import datetime, timezone
 from typing import TYPE_CHECKING
-
-from sqlalchemy import select, update
 
 from app.constants.database_constants import PaperContentStatus
 from app.core.config import settings
 from app.core.database import async_session_local
-from app.models.paper_content import PaperContent
+from app.repositories.paper_content_repository import PaperContentRepository
 from app.services.docling_service import DoclingConverter
 from app.services.paper_service import PaperService
 
@@ -22,12 +19,12 @@ if TYPE_CHECKING:
 logger = logging.getLogger("inquiro")
 
 
-async def conversion_worker(queue: ConversionQueue, worker_id: int) -> None:
+async def conversion_worker(queue: ConversionQueue, worker_id: str) -> None:
     """
     Background worker that processes PDF conversion jobs.
 
     Each worker:
-    1. Gets a job from the queue
+    1. Gets a job from the queue via dequeue()
     2. Applies any delay (for retry backoff)
     3. Claims the job atomically in the database
     4. Fetches the PDF and converts to markdown
@@ -35,123 +32,153 @@ async def conversion_worker(queue: ConversionQueue, worker_id: int) -> None:
     """
     converter = DoclingConverter()
 
+    logger.info("Worker %s: Starting", worker_id)
+
     while queue.running:
+        job = None
         try:
             # Get next job (with timeout to check running status periodically)
-            try:
-                job = await asyncio.wait_for(queue._queue.get(), timeout=1.0)
-            except asyncio.TimeoutError:
+            job = await queue.dequeue(timeout=1.0)
+
+            if job is None:
                 continue
 
-            logger.info("Worker %d: Processing paper %d", worker_id, job.paper_id)
-
-            # Apply delay for retries (exponential backoff)
-            if job.delay_seconds > 0:
+            # Check for shutdown before processing
+            if queue.shutdown_requested:
+                # Re-queue for another worker or next startup
+                await queue.enqueue(job)
                 logger.info(
-                    "Worker %d: Waiting %.1fs before retry for paper %d",
+                    "Worker %s: Shutdown requested, re-queued job %s",
                     worker_id,
-                    job.delay_seconds,
-                    job.paper_id,
+                    job.job_id,
                 )
-                await asyncio.sleep(job.delay_seconds)
+                break
 
-            try:
-                async with async_session_local() as session:
-                    # Try to claim the job atomically
-                    claimed = await _try_claim_job(session, job.paper_id)
-                    if not claimed:
-                        logger.info(
-                            "Worker %d: Paper %d already being processed, skipping",
-                            worker_id,
-                            job.paper_id,
-                        )
-                        continue
-
-                    pdf_url = PaperService.arxiv_pdf_url(job.arxiv_id)
-
-                    # Convert to markdown (CPU-bound, run in executor)
-                    loop = asyncio.get_event_loop()
-                    markdown = await loop.run_in_executor(
-                        None, converter.convert_pdf_to_markdown, pdf_url
-                    )
-
-                    # Update database with successful result
-                    await _mark_succeeded(session, job.paper_id, markdown)
-                    logger.info("Worker %d: Completed paper %d", worker_id, job.paper_id)
-
-            except Exception as e:
-                logger.error(
-                    "Worker %d: Failed paper %d: %s", worker_id, job.paper_id, e, exc_info=True
-                )
-                await _handle_failure(queue, job, str(e))
-
-            finally:
-                queue.signal_completion(job.paper_id)
-                queue._queue.task_done()
+            await _process_job(queue, job, worker_id, converter)
 
         except asyncio.CancelledError:
-            logger.info("Worker %d: Shutting down", worker_id)
-            break
+            logger.info("Worker %s: Cancelled", worker_id)
+            # Re-queue current job if we have one
+            if job is not None:
+                try:
+                    await queue.enqueue(job)
+                    logger.info(
+                        "Worker %s: Re-queued job %s after cancellation",
+                        worker_id,
+                        job.job_id,
+                    )
+                except Exception:
+                    pass
+            raise
         except Exception as e:
-            logger.error("Worker %d: Unexpected error: %s", worker_id, e, exc_info=True)
+            logger.error("Worker %s: Unexpected error: %s", worker_id, e, exc_info=True)
+
+    logger.info("Worker %s: Stopped", worker_id)
 
 
-async def _try_claim_job(session, paper_id: int) -> bool:
-    """
-    Atomically try to claim a conversion job.
-
-    Uses SELECT ... FOR UPDATE SKIP LOCKED to prevent race conditions.
-
-    Returns:
-        True if claimed successfully, False if already processing/completed
-    """
-    # Try to get existing record with lock
-    stmt = (
-        select(PaperContent)
-        .where(PaperContent.paper_id == paper_id)
-        .with_for_update(skip_locked=True)
+async def _process_job(
+    queue: ConversionQueue,
+    job: ConversionJob,
+    worker_id: str,
+    converter: DoclingConverter,
+) -> None:
+    """Process a single conversion job."""
+    logger.info(
+        "Worker %s: Processing job %s (paper %d, retry %d)",
+        worker_id,
+        job.job_id,
+        job.paper_id,
+        job.retry_count,
     )
-    result = await session.execute(stmt)
-    content = result.scalar_one_or_none()
 
-    if content is None:
-        # Create new PaperContent record in PROCESSING state
-        content = PaperContent(
-            paper_id=paper_id,
-            status=PaperContentStatus.PROCESSING,
-            started_at=datetime.now(timezone.utc),
+    try:
+        # Apply delay for retries (exponential backoff)
+        if job.delay_seconds > 0:
+            logger.info(
+                "Worker %s: Waiting %.1fs before retry",
+                worker_id,
+                job.delay_seconds,
+            )
+            await asyncio.sleep(job.delay_seconds)
+
+        async with async_session_local() as session:
+            # Try to claim the job atomically
+            claimed, content = await PaperContentRepository.try_claim_for_processing(
+                session, job.paper_id, worker_id
+            )
+
+            if not claimed:
+                if content is None:
+                    logger.warning(
+                        "Worker %s: Paper %d has no content record, skipping",
+                        worker_id,
+                        job.paper_id,
+                    )
+                elif content.status == PaperContentStatus.SUCCEEDED:
+                    logger.info(
+                        "Worker %s: Paper %d already succeeded, skipping",
+                        worker_id,
+                        job.paper_id,
+                    )
+                elif content.status == PaperContentStatus.PROCESSING:
+                    logger.info(
+                        "Worker %s: Paper %d claimed by %s, skipping",
+                        worker_id,
+                        job.paper_id,
+                        content.worker_id,
+                    )
+                else:
+                    logger.info(
+                        "Worker %s: Paper %d in status %s, skipping",
+                        worker_id,
+                        job.paper_id,
+                        content.status,
+                    )
+                return
+
+            # Get PDF URL and convert
+            pdf_url = PaperService.arxiv_pdf_url(job.arxiv_id)
+
+            # Convert to markdown (CPU-bound, run in executor)
+            loop = asyncio.get_event_loop()
+            markdown = await loop.run_in_executor(
+                None, converter.convert_pdf_to_markdown, pdf_url
+            )
+
+            # Update database with successful result
+            success = await PaperContentRepository.mark_succeeded(
+                session, job.paper_id, worker_id, markdown
+            )
+
+            if success:
+                logger.info("Worker %s: Completed paper %d", worker_id, job.paper_id)
+            else:
+                logger.warning(
+                    "Worker %s: Failed to mark paper %d as succeeded (lost ownership?)",
+                    worker_id,
+                    job.paper_id,
+                )
+
+    except Exception as e:
+        logger.error(
+            "Worker %s: Failed paper %d: %s",
+            worker_id,
+            job.paper_id,
+            e,
+            exc_info=True,
         )
-        session.add(content)
-        await session.commit()
-        return True
+        await _handle_failure(queue, job, worker_id, str(e))
 
-    # Check if already being processed or completed
-    if content.status in (PaperContentStatus.PROCESSING, PaperContentStatus.SUCCEEDED):
-        return False
-
-    # Status is PENDING or FAILED - claim it
-    content.status = PaperContentStatus.PROCESSING
-    content.started_at = datetime.now(timezone.utc)
-    await session.commit()
-    return True
+    finally:
+        queue.mark_done()
 
 
-async def _mark_succeeded(session, paper_id: int, markdown: str) -> None:
-    """Update PaperContent with successful conversion result."""
-    stmt = (
-        update(PaperContent)
-        .where(PaperContent.paper_id == paper_id)
-        .values(
-            status=PaperContentStatus.SUCCEEDED,
-            markdown=markdown,
-            finished_at=datetime.now(timezone.utc),
-        )
-    )
-    await session.execute(stmt)
-    await session.commit()
-
-
-async def _handle_failure(queue: ConversionQueue, job: ConversionJob, error: str) -> None:
+async def _handle_failure(
+    queue: ConversionQueue,
+    job: ConversionJob,
+    worker_id: str,
+    error: str,
+) -> None:
     """
     Handle a failed conversion attempt.
 
@@ -159,57 +186,45 @@ async def _handle_failure(queue: ConversionQueue, job: ConversionJob, error: str
     - If under max retries: increment count and re-queue with delay
     - If max retries exceeded: mark as permanently failed
     """
+    from app.workers.queues.conversion_queue import ConversionJob as CJob
+
     new_retry_count = job.retry_count + 1
+    max_retries = settings.DOCLING_MAX_RETRIES
 
     async with async_session_local() as session:
-        if new_retry_count < settings.DOCLING_MAX_RETRIES:
+        if new_retry_count < max_retries:
+            # Mark for retry (sets status back to PENDING)
+            await PaperContentRepository.mark_failed(
+                session, job.paper_id, worker_id, error, permanent=False
+            )
+
             # Calculate exponential backoff delay
             delay = settings.DOCLING_RETRY_BASE_DELAY * (2 ** (new_retry_count - 1))
 
-            # Update retry count but keep status as PENDING for retry
-            stmt = (
-                update(PaperContent)
-                .where(PaperContent.paper_id == job.paper_id)
-                .values(
-                    status=PaperContentStatus.PENDING,
-                    retry_count=new_retry_count,
-                    finished_at=None,
-                )
-            )
-            await session.execute(stmt)
-            await session.commit()
-
             # Re-queue with delay
-            await queue.enqueue(
+            retry_job = CJob(
                 paper_id=job.paper_id,
                 arxiv_id=job.arxiv_id,
                 retry_count=new_retry_count,
                 delay_seconds=delay,
             )
+            await queue.enqueue(retry_job)
 
             logger.info(
                 "Paper %d: Retry %d/%d scheduled in %ds",
                 job.paper_id,
                 new_retry_count,
-                settings.DOCLING_MAX_RETRIES,
+                max_retries,
                 delay,
             )
         else:
             # Max retries exceeded - mark as permanently failed
-            stmt = (
-                update(PaperContent)
-                .where(PaperContent.paper_id == job.paper_id)
-                .values(
-                    status=PaperContentStatus.FAILED,
-                    retry_count=new_retry_count,
-                    finished_at=datetime.now(timezone.utc),
-                )
+            await PaperContentRepository.mark_failed(
+                session, job.paper_id, worker_id, error, permanent=True
             )
-            await session.execute(stmt)
-            await session.commit()
 
             logger.error(
                 "Paper %d: Max retries (%d) exceeded, marked as FAILED",
                 job.paper_id,
-                settings.DOCLING_MAX_RETRIES,
+                max_retries,
             )

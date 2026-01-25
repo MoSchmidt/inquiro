@@ -36,10 +36,11 @@ def _get_converter() -> DocumentConverter:
 
 class DoclingConverter:
     """Wrapper around Docling for PDF to Markdown conversion."""
-
-    def convert_pdf_to_markdown(self, path: str) -> str:
+    
+    @staticmethod
+    def convert_pdf_to_markdown(path: str) -> str:
         """
-        Convert PDF bytes to markdown string.
+         Convert a PDF at the given path or URL to a markdown string.
 
         Uses a cached converter instance to avoid reloading model weights.
         Thread-safe for parallel worker usage.

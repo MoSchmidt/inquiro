@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Optional
 
-from sqlalchemy import BigInteger, ForeignKey, func, DateTime, Integer, Text
+from sqlalchemy import BigInteger, ForeignKey, func, DateTime, Integer, Text, String
 from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -49,10 +49,13 @@ class PaperContent(Base):
     started_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     finished_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
-
     # Retry tracking
     retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0, server_default="0")
 
+    # Job ownership tracking (for worker coordination)
+    worker_id: Mapped[Optional[str]] = mapped_column(String(50), nullable=True, index=True)
+    claimed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    error_message: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
     # Relationship
     paper: Mapped["Paper"] = relationship("Paper", back_populates="content")
-
