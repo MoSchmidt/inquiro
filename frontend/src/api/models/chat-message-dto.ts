@@ -13,13 +13,12 @@
  */
 
 
-// May contain unused imports in some cases
-// @ts-ignore
-import type { LocationInner } from './location-inner';
 
-export interface ValidationError {
-    'loc': Array<LocationInner>;
-    'msg': string;
-    'type': string;
+/**
+ * Represents a single message in the chat history.
+ */
+export interface ChatMessageDto {
+    'role': string;
+    'content': string;
 }
 

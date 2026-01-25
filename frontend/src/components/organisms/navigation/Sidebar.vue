@@ -1,122 +1,146 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import {
-  VBtn,
-  VCard,
-  VDivider,
-  VIcon,
-  VList,
-  VListItem,
-  VListItemTitle
-} from 'vuetify/components';
-import {
-  Clock, FolderOpen, LogIn, LogOut,
-  Plus, X, Trash2, Pencil
-} from 'lucide-vue-next';
-import type { Project } from '@/types/content';
+  import { computed, ref } from 'vue';
+  import { useAuthStore } from '@/stores/auth';
+  import {
+    VBtn,
+    VCard,
+    VIcon,
+    VList,
+    VListItem,
+    VDivider,
+    VMenu,
+  } from 'vuetify/components';
+  import {
+    FolderOpen,
+    LogIn,
+    LogOut,
+    FolderPlus,
+    X,
+    Trash2,
+    Pencil,
+    User,
+    SquarePen
+  } from 'lucide-vue-next';
+  import type { Project } from '@/types/content';
+  import type { ActionMenuItem } from '@/types/ui';
 
-// Import Dialogs
-import LoginDialog from '@/components/dialogs/LoginDialog.vue';
-import NewProjectDialog from '@/components/dialogs/NewProjectDialog.vue';
-import RenameProjectDialog from '@/components/dialogs/RenameProjectDialog.vue';
-import DeleteProjectDialog from '@/components/dialogs/DeleteProjectDialog.vue';
+  import LoginDialog from '@/components/dialogs/LoginDialog.vue';
+  import LogoutDialog from '@/components/dialogs/LogoutDialog.vue';
+  import NewProjectDialog from '@/components/dialogs/NewProjectDialog.vue';
+  import RenameProjectDialog from '@/components/dialogs/RenameProjectDialog.vue';
+  import DeleteProjectDialog from '@/components/dialogs/DeleteProjectDialog.vue';
 
-import ActionMenu, { type ActionMenuItem } from '@/components/molecules/ActionMenu.vue';
+  import ActionMenu from '@/components/molecules/ActionMenu.vue';
 
-const props = defineProps<{
-  isOpen: boolean;
-  projects: Project[];
-  isLoggedIn: boolean;
-}>();
+  const props = defineProps<{
+    isOpen: boolean;
+    projects: Project[];
+    isLoggedIn: boolean;
+  }>();
 
-const emit = defineEmits<{
-  (e: 'close'): void;
-  (e: 'projectSelect', projectId: number): void;
-  (e: 'newProject', name: string): void;
-  (e: 'logout'): void;
-  (e: 'newQuery'): void;
-  (e: 'loginSuccess'): void;
-  (e: 'deleteProject', projectId: number): void;
-  (e: 'renameProject', projectId: number, newName: string): void;
-}>();
+  const emit = defineEmits<{
+    (e: 'close'): void;
+    (e: 'projectSelect', projectId: number): void;
+    (e: 'newProject', name: string, openImmediately: boolean): void;
+    (e: 'logout'): void;
+    (e: 'newQuery'): void;
+    (e: 'loginSuccess'): void;
+    (e: 'deleteProject', projectId: number): void;
+    (e: 'renameProject', projectId: number, newName: string): void;
+  }>();
 
-// Dialog State
-const loginDialogOpen = ref(false);
-const newProjectDialogOpen = ref(false);
-const renameDialogOpen = ref(false);
-const deleteDialogOpen = ref(false);
+  const authStore = useAuthStore();
 
-const projectToAction = ref<Project | null>(null);
+  const formattedUsername = computed(() => {
+    const name = authStore.user?.username || 'User';
+    return name.charAt(0).toUpperCase() + name.slice(1);
+  });
 
-// Actions
-const openRenameDialog = (project: Project) => {
-  projectToAction.value = project;
-  renameDialogOpen.value = true;
-};
+  // Dialog State
+  const loginDialogOpen = ref(false);
+  const logoutDialogOpen = ref(false);
+  const newProjectDialogOpen = ref(false);
+  const renameDialogOpen = ref(false);
+  const deleteDialogOpen = ref(false);
 
-const openDeleteDialog = (project: Project) => {
-  projectToAction.value = project;
-  deleteDialogOpen.value = true;
-};
+  const projectToAction = ref<Project | null>(null);
 
-// Helper to generate menu items for a specific project
-const getProjectActions = (project: Project): ActionMenuItem[] => [
-  {
-    title: 'Rename',
-    value: 'rename',
-    icon: Pencil,
-    action: () => openRenameDialog(project)
-  },
-  {
-    title: 'Delete',
-    value: 'delete',
-    color: 'error',
-    icon: Trash2,
-    action: () => openDeleteDialog(project)
-  }
-];
+  // Actions
+  const openRenameDialog = (project: Project) => {
+    projectToAction.value = project;
+    renameDialogOpen.value = true;
+  };
 
-const handleNewProjectClick = () => {
-  if (!props.isLoggedIn) {
-    loginDialogOpen.value = true;
-    return;
-  }
-  newProjectDialogOpen.value = true;
-};
+  const openDeleteDialog = (project: Project) => {
+    projectToAction.value = project;
+    deleteDialogOpen.value = true;
+  };
 
-const onNewProjectSubmit = (name: string) => {
-  emit('newProject', name);
-  emit('close');
-};
+  // Helper to generate menu items for a specific project
+  const getProjectActions = (project: Project): ActionMenuItem[] => [
+    {
+      title: 'Rename',
+      value: 'rename',
+      icon: Pencil,
+      action: () => openRenameDialog(project)
+    },
+    {
+      title: 'Delete',
+      value: 'delete',
+      color: 'error',
+      icon: Trash2,
+      action: () => openDeleteDialog(project)
+    }
+  ];
 
-const onLoginSuccess = () => {
-  emit('loginSuccess');
-  emit('close');
-};
+  const handleNewProjectClick = () => {
+    if (!props.isLoggedIn) {
+      loginDialogOpen.value = true;
+      return;
+    }
+    newProjectDialogOpen.value = true;
+  };
 
-const onRenameSubmit = (newName: string) => {
-  if (projectToAction.value) {
-    emit('renameProject', projectToAction.value.id, newName);
-  }
-};
+  const onNewProjectSubmit = (name: string, openImmediately: boolean) => {
+    emit('newProject', name, openImmediately);
+  };
 
-const onDeleteSubmit = () => {
-  if (projectToAction.value) {
-    emit('deleteProject', projectToAction.value.id);
-  }
-};
+  const onLoginSuccess = () => {
+    emit('loginSuccess');
+    emit('close');
+  };
 
-const handleNewQueryClick = () => {
-  emit('newQuery');
-  emit('close');
-};
+  const onRenameSubmit = (newName: string) => {
+    if (projectToAction.value) {
+      emit('renameProject', projectToAction.value.id, newName);
+    }
+  };
+
+  const onDeleteSubmit = () => {
+    if (projectToAction.value) {
+      emit('deleteProject', projectToAction.value.id);
+    }
+  };
+
+  const handleNewQueryClick = () => {
+    emit('newQuery');
+    emit('close');
+  };
+
+  const onLogoutConfirm = () => {
+    emit('logout');
+  };
+
 </script>
 
 <template>
-  <div class="d-flex flex-column h-100">
+  <div class="d-flex flex-column h-100 bg-background">
+
     <v-card
         flat
-        class="pa-4 d-flex align-center justify-space-between border-b border-border-light"
+        color="transparent"
+        height="64"
+        class="px-4 d-flex align-center justify-space-between"
     >
       <h2 class="text-h6">Menu</h2>
       <v-btn icon variant="text" @click="emit('close')">
@@ -124,55 +148,42 @@ const handleNewQueryClick = () => {
       </v-btn>
     </v-card>
 
+    <v-divider />
+
     <div class="flex-grow-1 overflow-y-auto">
-      <div class="pa-4 pb-2">
+      <div class="px-4 pb-2 pt-4">
         <v-btn
-            color="secondary"
-            variant="outlined"
+            variant="text"
+            color="on-surface"
+            rounded="lg"
             block
-            class="aligned-button"
+            height="50"
+            class="d-flex justify-start align-center text-none px-4 text-high-emphasis"
             @click="handleNewQueryClick"
         >
-          <v-icon :icon="Plus" start size="18" />
-          New Query
+          <v-icon :icon="SquarePen" size="20" class="me-3" />
+          <span class="font-weight-medium text-body-2">New Query</span>
         </v-btn>
       </div>
-
-      <div class="pa-4 pb-2">
-        <v-btn
-            color="secondary"
-            variant="outlined"
-            block
-            class="aligned-button"
-            @click="handleNewProjectClick"
-        >
-          <v-icon :icon="Plus" start size="18" />
-          New Project
-        </v-btn>
-      </div>
-
-      <v-divider class="my-3" />
 
       <div class="px-4">
-        <h3 class="text-subtitle-1 mb-3 d-flex align-center">
-          <v-icon :icon="Clock" size="16" class="me-2" />
-          Your Projects
+        <h3 class="text-subtitle-1 mb-2 d-flex align-center">
+          Projects
         </h3>
 
-        <v-list density="compact" nav class="pa-0">
+        <v-list nav class="pa-0 bg-transparent">
           <v-list-item
               v-for="project in projects"
               :key="project.id"
               @click="emit('projectSelect', project.id)"
-              class="mb-2 rounded-lg project-item"
+              class="rounded-lg project-item px-4"
           >
-            <template #prepend>
-              <v-icon :icon="FolderOpen" color="blue-darken-2" class="me-1" />
-            </template>
-
-            <v-list-item-title class="font-weight-medium">
-              {{ project.name }}
-            </v-list-item-title>
+            <div class="d-flex align-center w-100">
+              <v-icon :icon="FolderOpen" size="20" class="me-3" />
+              <span class="font-weight-medium text-truncate text-body-2">
+                {{ project.name }}
+              </span>
+            </div>
 
             <template #append>
               <div class="project-action-btn">
@@ -180,30 +191,86 @@ const handleNewQueryClick = () => {
               </div>
             </template>
           </v-list-item>
+
+          <v-list-item
+              @click="handleNewProjectClick"
+              class="rounded-lg project-item px-4"
+          >
+            <div class="d-flex align-center w-100">
+              <v-icon :icon="FolderPlus" size="20" class="me-3" />
+              <span class="font-weight-medium text-truncate text-body-2">
+                New Project
+              </span>
+            </div>
+          </v-list-item>
         </v-list>
       </div>
     </div>
 
-    <div class="border-t border-border-light pa-4">
-      <h3 class="text-subtitle-1 mb-3 d-flex align-center">Account</h3>
-
+    <div class="px-4 py-2">
+      <h3 class="text-subtitle-1 mb-2 d-flex align-center">Account</h3>
       <div v-if="!isLoggedIn">
-        <v-btn block color="primary" @click="loginDialogOpen = true">
-          <v-icon :icon="LogIn" start size="18" />
-          Login
+        <v-btn
+            variant="text"
+            color="on-surface"
+            rounded="lg"
+            block
+            height="50"
+            class="d-flex justify-start align-center text-none px-4 text-high-emphasis"
+            @click="loginDialogOpen = true"
+        >
+          <v-icon :icon="LogIn" size="20" class="me-3" />
+          <span class="font-weight-medium text-body-2">Login</span>
         </v-btn>
       </div>
 
       <div v-else>
-        <v-btn block variant="outlined" color="secondary" @click="emit('logout')">
-          <v-icon :icon="LogOut" start size="18" />
-          Logout
-        </v-btn>
+        <v-menu
+            location="top center"
+            offset="12"
+            transition="slide-y-reverse-transition"
+        >
+          <template #activator="{ props: menuProps }">
+            <div v-bind="menuProps" class="cursor-pointer">
+              <v-btn
+                  variant="text"
+                  color="on-surface"
+                  rounded="lg"
+                  block
+                  height="50"
+                  class="d-flex justify-start align-center text-none px-4 text-high-emphasis profile-btn"
+              >
+                <v-icon :icon="User" size="20" class="me-3" />
+                <span class="font-weight-medium text-body-2 flex-grow-1 text-start text-truncate">
+                  {{ formattedUsername }}
+                </span>
+                <v-icon size="16" class="text-disabled ms-2" />
+              </v-btn>
+            </div>
+          </template>
+
+          <v-card min-width="300" rounded="lg" elevation="16" class="border pa-2">
+            <v-list density="compact" nav class="pa-0">
+              <v-list-item
+                  rounded="lg"
+                  class="text-error"
+                  @click="logoutDialogOpen = true"
+              >
+                <template #prepend>
+                  <v-icon :icon="LogOut" size="18" />
+                </template>
+                <v-list-item-title class="font-weight-medium">Log out</v-list-item-title>
+              </v-list-item>
+            </v-list>
+          </v-card>
+        </v-menu>
       </div>
     </div>
 
     <LoginDialog v-model="loginDialogOpen" @success="onLoginSuccess" />
+
     <NewProjectDialog v-model="newProjectDialogOpen" @submit="onNewProjectSubmit" />
+
     <RenameProjectDialog
         v-model="renameDialogOpen"
         :current-name="projectToAction?.name || ''"
@@ -214,21 +281,27 @@ const handleNewQueryClick = () => {
         :project-name="projectToAction?.name || ''"
         @submit="onDeleteSubmit"
     />
+    <LogoutDialog
+        v-model="logoutDialogOpen"
+        @logout="onLogoutConfirm"
+    />
   </div>
 </template>
 
 <style scoped>
-.aligned-button {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-  text-align: left;
-}
+  .project-action-btn {
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+  }
 
-.project-action-btn {
-  display: flex;
-  align-items: center;
-  opacity: 1;
-}
+  .project-item:hover .project-action-btn,
+  .project-item:focus-within .project-action-btn {
+    opacity: 1;
+  }
+
+  .project-item {
+    min-height: 50px !important;
+  }
 </style>

@@ -13,13 +13,14 @@
  */
 
 
-// May contain unused imports in some cases
-// @ts-ignore
-import type { LocationInner } from './location-inner';
 
-export interface ValidationError {
-    'loc': Array<LocationInner>;
-    'msg': string;
-    'type': string;
+/**
+ * The AI generated response for the chat. Supports Markdown and LaTeX.
+ */
+export interface PaperChatResponse {
+    /**
+     * The AI\'s response to the user\'s question.
+     */
+    'answer': string;
 }
 

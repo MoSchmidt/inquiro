@@ -11,53 +11,68 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void;
-  (e: 'submit', name: string): void;
+  (e: 'submit', name: string, openImmediately: boolean): void;
 }>();
 
 const projectName = ref('');
+const openAfterCreate = ref(true);
 
 const close = () => {
   projectName.value = '';
-  projectName.value = '';
+  openAfterCreate.value = true;
   emit('update:modelValue', false);
 };
 
 const handleSubmit = () => {
   if (!projectName.value) return;
-  emit('submit', projectName.value.trim());
+  emit('submit', projectName.value.trim(), openAfterCreate.value);
   projectName.value = '';
+  openAfterCreate.value = true;
   close();
 };
+
 </script>
 
 <template>
-  <v-dialog
-      :model-value="modelValue"
-      @update:model-value="emit('update:modelValue', $event)"
-      max-width="500"
-  >
+  <v-dialog :model-value="modelValue" @update:model-value="close" max-width="500">
     <v-card>
-      <v-card-title class="text-h5">New Project</v-card-title>
-      <v-card-text>
-        <p class="mb-4 text-medium-emphasis">
-          Enter a name for your new project.
-        </p>
+      <v-card-title class="text-h6 pa-4 pb-0">New Project</v-card-title>
+      <v-card-text class="pa-4">
         <v-form @submit.prevent="handleSubmit">
           <v-text-field
               v-model="projectName"
               label="Project name"
               variant="outlined"
               required
-              class="mb-4"
               autofocus
+              class="mb-2"
           />
-          <v-btn type="submit" color="primary" block>Create Project</v-btn>
+
+          <div class="d-flex align-center cursor-pointer" @click="openAfterCreate = !openAfterCreate">
+            <v-btn
+                variant="outlined"
+                class="pa-0 mr-3 rounded"
+                :color="openAfterCreate ? 'secondary' : 'medium-emphasis'"
+                height="20" width="20" min-width="20" flat :ripple="false"
+            >
+              <span v-if="openAfterCreate" class="text-caption font-weight-bold">✕</span>
+            </v-btn>
+            <span class="text-medium-emphasis user-select-none">Open project after create</span>
+          </div>
         </v-form>
       </v-card-text>
-      <v-card-actions>
+
+      <v-card-actions class="pa-4 pt-0">
         <v-spacer />
-        <v-btn color="secondary" variant="text" @click="close">
-          Close
+        <v-btn variant="text" class="text-medium-emphasis text-none" @click="close">Cancel</v-btn>
+        <v-btn
+            color="secondary"
+            variant="text"
+            class="text-none"
+            :disabled="!projectName"
+            @click="handleSubmit"
+        >
+          Create Project
         </v-btn>
       </v-card-actions>
     </v-card>

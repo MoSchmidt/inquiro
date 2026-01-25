@@ -3,14 +3,17 @@ import { ref } from 'vue';
 import PaperList from '@/components/molecules/PaperList.vue';
 import {
   VContainer,
-  VTooltip
+  VTooltip,
+  VBtn,
+  VIcon
 } from 'vuetify/components';
 import { Pencil, Sparkles, Trash2 } from 'lucide-vue-next';
-import type { Paper, PaperMenuOption } from '@/types/content';
+import type { Paper } from '@/types/content';
+import type { ActionMenuItem } from '@/types/ui';
+import { usePaperSummariesStore } from '@/stores/paperSummaries';
 
 import RenameProjectDialog from '@/components/dialogs/RenameProjectDialog.vue';
-
-const props = defineProps<{
+defineProps<{
   projectName: string;
   papers: Paper[];
   showAbstract?: boolean;
@@ -23,31 +26,30 @@ const emit = defineEmits<{
 }>();
 
 const isRenameDialogOpen = ref(false);
+const summariesStore = usePaperSummariesStore();
 
 const handleRenameSubmit = (newName: string) => {
   emit('rename', newName);
   isRenameDialogOpen.value = false;
 };
 
-
-const menuOptions: PaperMenuOption[] = [
-  { label: 'Summarise Paper', value: 'summarise', icon: Sparkles },
-  { label: 'Remove from Project', value: 'remove', icon: Trash2 },
+// --- Action Provider ---
+// This function is passed down to PaperList -> PaperCard
+const getPaperActions = (paper: Paper): ActionMenuItem[] => [
+  {
+    title: 'Summarise Paper',
+    value: 'summarise',
+    icon: Sparkles,
+    action: () => summariesStore.summarise(paper.paper_id, { query: '' })
+  },
+  {
+    title: 'Remove from Project',
+    value: 'remove',
+    icon: Trash2,
+    color: 'error',
+    action: () => emit('remove', paper)
+  },
 ];
-
-const handleMenuSelect = ({
-  option,
-  paper,
-}: {
-  option: PaperMenuOption;
-  paper: Paper;
-}) => {
-  switch (option.value) {
-    case 'remove':
-      emit('remove', paper);
-      break;
-  }
-};
 </script>
 
 <template>
@@ -58,11 +60,11 @@ const handleMenuSelect = ({
       </h1>
 
       <v-btn
-        icon
-        variant="text"
-        size="small"
-        color="medium-emphasis"
-        @click="isRenameDialogOpen = true"
+          icon
+          variant="text"
+          size="small"
+          color="medium-emphasis"
+          @click="isRenameDialogOpen = true"
       >
         <v-icon :icon="Pencil" size="20" />
         <v-tooltip activator="parent" location="top">
@@ -72,15 +74,14 @@ const handleMenuSelect = ({
     </div>
 
     <PaperList
-      :papers="papers"
-      :show-abstract="showAbstract"
-      :show-add="false"
-      :menu-options="menuOptions"
-      title="Papers"
-      empty-message="This project does not yet have any saved papers."
-      :expand-all-on-change="false"
-      @menu-select="handleMenuSelect"
-      @view="(p) => emit('view', p)"
+        :papers="papers"
+        :show-abstract="showAbstract"
+        :show-add="false"
+        :action-provider="getPaperActions"
+        title="Papers"
+        empty-message="This project does not yet have any saved papers."
+        :expand-all-on-change="false"
+        @view="(p) => emit('view', p)"
     />
 
     <RenameProjectDialog
