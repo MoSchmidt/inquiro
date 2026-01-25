@@ -69,7 +69,7 @@ async def conversion_worker(queue: ConversionQueue, worker_id: str) -> None:
                         worker_id,
                         job.job_id,
                     )
-                except Exception as enqueue_error:
+                except Exception as enqueue_error: # pylint: disable=broad-exception-caught
                     # Still need to mark done even if re-enqueue fails
                     queue.mark_done()
                     logger.error(
