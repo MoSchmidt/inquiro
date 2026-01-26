@@ -36,7 +36,7 @@ class PaperService:
         """
         if query and query.strip():
             if not await SafetyService.check_moderation(query):
-                logger.warning(f"Blocked toxic summary query: {query}")
+                logger.warning("Blocked toxic summary query: %s", query)
                 raise HTTPException(status_code=400, detail="Query violates content safety policy.")
 
         external_id = "unknown"
@@ -49,7 +49,7 @@ class PaperService:
 
             raw_dump = json.dumps(summary_payload)
             if not SafetyService.validate_output(raw_dump):
-                logger.critical(f"Canary triggered in summary for {external_id}")
+                logger.critical("Canary triggered in summary for %s", external_id)
                 raise HTTPException(status_code=500, detail="Generation failed safety check.")
 
             return PaperSummaryResponse.model_validate(summary_payload)
@@ -80,7 +80,7 @@ class PaperService:
         Generates an AI response based on paper content and chat history.
         """
         if not await SafetyService.check_moderation(user_query):
-            logger.warning(f"Blocked toxic user query: {user_query}")
+            logger.warning("Blocked toxic user query: %s", user_query)
             return "I cannot answer this query as it violates our safety policies."
 
         external_id = "unknown"

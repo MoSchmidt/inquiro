@@ -32,7 +32,7 @@ class SearchService:
         openai_provider = get_openai_provider()
 
         if not await SafetyService.check_moderation(query):
-            logger.warning(f"Blocked toxic search query: {query}")
+            logger.warning("Blocked toxic search query: %s", query)
             raise HTTPException(status_code=400, detail="Search query violates safety policies.")
 
         # Extract + normalize keywords with retry
@@ -64,7 +64,7 @@ class SearchService:
         """
         if query and query.strip():
             if not await SafetyService.check_moderation(query):
-                logger.warning(f"Blocked toxic PDF context query: {query}")
+                logger.warning("Blocked toxic PDF context query: %s", query)
                 raise HTTPException(
                     status_code=400, detail="Context query violates safety policies."
                 )
