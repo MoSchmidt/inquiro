@@ -41,7 +41,7 @@ async def search(
 @limiter.limit("3/minute")
 async def search_by_pdf(
     request: Request,  # pylint: disable=unused-argument
-    pdf: UploadFile = File(..., description="Research paper PDF"),
+    pdf: UploadFile = File(..., description="Research paper PDF", max_size=10 * 1024 * 1024),
     # Optional: user can also input a query
     query: str | None = Form(
         default=None,
