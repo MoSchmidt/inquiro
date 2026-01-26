@@ -3,6 +3,7 @@
 import os
 from typing import Optional
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -30,7 +31,7 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: Optional[str] = None
 
     # --- Safety Canary ---
-    SAFETY_CANARY: str
+    SAFETY_CANARY: str = Field(default="BNZe4fAKVj/DZ/atHZZaVZxpyZGDZt+TqH0sT5J6AMY=")
 
     model_config = SettingsConfigDict(
         env_file=os.getenv("ENV_FILE", "dev.env"),
