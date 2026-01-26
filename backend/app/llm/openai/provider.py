@@ -236,7 +236,7 @@ class OpenAIProvider:
             return True
 
         except (APIConnectionError, RateLimitError) as e:
-            logger.error("Moderation connection error: %s", e)
+            logger.error("Moderation connection or rate limit error: %s", e)
             return False
         except APIStatusError as e:
             logger.error("Moderation API error: %s", e)
