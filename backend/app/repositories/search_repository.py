@@ -101,4 +101,4 @@ class SearchRepository:
 
         if node.operator == "contains":
             return column.ilike(pattern)
-        return ~column.ilike(pattern)
+        return or_(column.is_(None), ~column.ilike(pattern))

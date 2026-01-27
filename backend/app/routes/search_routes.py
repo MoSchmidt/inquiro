@@ -63,10 +63,15 @@ async def search_by_pdf(
     if advanced_filter:
         try:
             search_filter = AdvancedSearchFilter.model_validate(json.loads(advanced_filter))
-        except (json.JSONDecodeError, ValueError) as exc:
+        except json.JSONDecodeError as exc:
             raise HTTPException(
                 status_code=400,
                 detail="Invalid filter JSON.",
+            ) from exc
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid filter.",
             ) from exc
 
     papers = await SearchService.search_papers_from_pdf(

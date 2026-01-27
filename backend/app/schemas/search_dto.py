@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Annotated, List, Literal, Optional, Union
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from app.schemas.paper_dto import PaperDto
 
@@ -29,9 +29,16 @@ class ConditionGroup(BaseModel):
 class AdvancedSearchFilter(BaseModel):
     """Structured filter with optional year range and boolean condition tree."""
 
-    year_from: Optional[int] = None
-    year_to: Optional[int] = None
+    year_from: Optional[int] = Field(default=None, ge=1, le=9999)
+    year_to: Optional[int] = Field(default=None, ge=1, le=9999)
     root: ConditionGroup
+
+    @model_validator(mode="after")
+    def check_year_range(self) -> AdvancedSearchFilter:
+        if self.year_from is not None and self.year_to is not None:
+            if self.year_from > self.year_to:
+                raise ValueError("year_from must be <= year_to")
+        return self
 
 
 class SearchRequest(BaseModel):

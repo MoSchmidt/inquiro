@@ -9,7 +9,7 @@ function toFilterDto(advanced?: AdvancedSearchOptions): AdvancedSearchFilter | u
   return {
     year_from: advanced.yearFrom ?? null,
     year_to: advanced.yearTo ?? null,
-    root: advanced.root as AdvancedSearchFilter['root'],
+    root: advanced.root,
   };
 }
 
