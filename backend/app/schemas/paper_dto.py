@@ -26,7 +26,7 @@ class PaperSummaryRequest(BaseModel):
     Request to summarise a specified paper
     """
 
-    query: str
+    query: str = Field(..., max_length=10000)
 
 
 class PaperSummaryResponse(BaseModel):
@@ -66,7 +66,7 @@ class ChatMessageDto(BaseModel):
     """
 
     role: str  # "user" or "assistant"
-    content: str
+    content: str = Field(..., max_length=100000)
 
 
 class PaperChatRequest(BaseModel):
@@ -74,8 +74,8 @@ class PaperChatRequest(BaseModel):
     Request to chat about a specific paper.
     """
 
-    message: str
-    history: List[ChatMessageDto] = Field(default_factory=list)
+    message: str = Field(..., max_length=5000)
+    history: List[ChatMessageDto] = Field(default_factory=list, max_length=50)
 
 
 class PaperChatResponse(BaseModel):

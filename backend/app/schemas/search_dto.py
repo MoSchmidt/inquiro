@@ -1,6 +1,6 @@
 from typing import List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.schemas.paper_dto import PaperDto
 
@@ -10,7 +10,7 @@ class SearchRequest(BaseModel):
     Request to search for specified query
     """
 
-    query: str
+    query: str = Field(..., max_length=5000)
 
 
 class SearchResponse(BaseModel):
