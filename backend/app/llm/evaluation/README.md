@@ -34,6 +34,7 @@ python -m app.llm.evaluation.dataset_generator \
 Note: The default output is `evaluation_data/dataset.json` (directories are created automatically).
 
 This will create the dataset file with test cases containing:
+
 - `ground_truth_keywords`: The original keywords
 - `user_input`: Generated natural language query
 - `metadata`: Generation info
@@ -58,6 +59,7 @@ python -m app.llm.evaluation.prompt_evaluator \
 Note: The default output is `evaluation_results/results.json` (directories are created automatically).
 
 The results will include:
+
 - `mean_jaccard`: Average Jaccard similarity score
 - `std_jaccard`: Standard deviation
 - `min_jaccard` / `max_jaccard`: Score range
@@ -66,6 +68,7 @@ The results will include:
 ## Metrics
 
 **Jaccard Similarity**: Measures overlap between extracted and ground truth keywords
+
 - Formula: `|A ∩ B| / |A ∪ B|`
 - Range: 0.0 (no overlap) to 1.0 (perfect match)
 - Keywords are normalized (lowercase, stripped) before comparison
@@ -127,6 +130,7 @@ python -m app.llm.evaluation.evaluate_all_prompts \
 ```
 
 This will:
+
 - Evaluate all prompts matching the pattern (default: `prompt_*.txt`)
 - Save individual results for each prompt
 - Generate a comparison report ranking prompts by mean Jaccard score

@@ -36,6 +36,7 @@ async def init_db() -> None:
             "app.models.project",
             "app.models.paper",
             "app.models.project_paper",
+            "app.models.paper_content",
     ):
         import_module(module)
 

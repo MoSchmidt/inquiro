@@ -1,4 +1,5 @@
 import io
+import logging
 
 from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import StreamingResponse
@@ -9,10 +10,11 @@ from app.core.limiter import limiter
 from app.schemas.paper_dto import (
     PaperChatRequest,
     PaperChatResponse,
-    PaperSummaryRequest,
-    PaperSummaryResponse,
 )
+from app.schemas.paper_dto import PaperSummaryRequest, PaperSummaryResponse
 from app.services.paper_service import PaperService
+
+logger = logging.getLogger("inquiro")
 
 router = APIRouter(prefix="/papers", tags=["Paper"])
 
@@ -70,8 +72,8 @@ async def chat_with_paper(
     summary="Get the PDF of the specified paper",
 )
 async def get_paper_pdf(
-    paper_id: int,
-    db: AsyncSession = Depends(get_db),
+        paper_id: int,
+        db: AsyncSession = Depends(get_db),
 ) -> StreamingResponse:
     """
     Stream the PDF file of the specified paper.

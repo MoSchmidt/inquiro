@@ -29,7 +29,7 @@ class Project(Base):
         "ProjectPaper", back_populates="project", cascade="all, delete-orphan"
     )
     papers: Mapped[List["Paper"]] = relationship(
-        "Paper", secondary="project_paper", back_populates="projects"
+        "Paper", secondary="project_paper", back_populates="projects", viewonly=True
     )
 
 
