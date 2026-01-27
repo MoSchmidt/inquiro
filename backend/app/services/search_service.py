@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_openai_provider, get_specter2_query_embedder
 from app.repositories.search_repository import SearchRepository
-from app.schemas.search_dto import PaperDto, SearchResponse
+from app.schemas.search_dto import AdvancedSearchFilter, PaperDto, SearchResponse
 from app.utils.author_utils import normalize_authors
 from app.utils.pdf_utils import pdf_bytes_to_text
 from app.utils.token_utils import ensure_fits_token_limit
@@ -24,7 +24,11 @@ class SearchService:
     MAX_PDF_KEYWORD_INPUT_TOKENS = 280_000
 
     @staticmethod
-    async def search_papers(query: str, db: AsyncSession) -> SearchResponse:
+    async def search_papers(
+        query: str,
+        db: AsyncSession,
+        search_filter: Optional[AdvancedSearchFilter] = None,
+    ) -> SearchResponse:
         """
         Search using a free-text query
         """
@@ -42,6 +46,7 @@ class SearchService:
             keywords=keywords,
             db=db,
             user_query=query,
+            search_filter=search_filter,
         )
 
     @staticmethod
@@ -49,6 +54,7 @@ class SearchService:
         pdf_file: UploadFile,
         db: AsyncSession,
         query: Optional[str] = None,
+        search_filter: Optional[AdvancedSearchFilter] = None,
     ) -> SearchResponse:
         """
         Search using a PDF as the primary signal.
@@ -97,7 +103,9 @@ class SearchService:
         logger.info("PDF search keywords: %s", keywords)
 
         label = query or pdf_file.filename or "pdf-search"
-        return await SearchService._search_with_keywords(keywords=keywords, db=db, user_query=label)
+        return await SearchService._search_with_keywords(
+            keywords=keywords, db=db, user_query=label, search_filter=search_filter
+        )
 
     # ---------- Shared search pipeline ----------
 
@@ -106,6 +114,7 @@ class SearchService:
         keywords: List[str],
         db: AsyncSession,
         user_query: str,
+        search_filter: Optional[AdvancedSearchFilter] = None,
     ) -> SearchResponse:
         """
         Core embedding + vector-search + DTO mapping pipeline.
@@ -122,6 +131,7 @@ class SearchService:
             db=db,
             embeddings=embeddings,
             limit=10,
+            search_filter=search_filter,
         )
 
         results: List[PaperDto] = []

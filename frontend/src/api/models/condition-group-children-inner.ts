@@ -15,13 +15,14 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { AdvancedSearchFilter } from './advanced-search-filter';
+import type { ConditionGroup } from './condition-group';
+// May contain unused imports in some cases
+// @ts-ignore
+import type { TextCondition } from './text-condition';
 
 /**
- * Request to search for specified query
+ * @type ConditionGroupChildrenInner
  */
-export interface SearchRequest {
-    'query': string;
-    'filter'?: AdvancedSearchFilter | null;
-}
+export type ConditionGroupChildrenInner = { type: 'condition' } & TextCondition | { type: 'group' } & ConditionGroup;
+
 

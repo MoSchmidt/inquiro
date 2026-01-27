@@ -104,11 +104,9 @@ const performSearch = async (query: string, file: File | null, advanced?: Advanc
   try {
     let response;
     if (file) {
-      // Note: advanced options will be passed to backend when API is updated
-      response = await searchPapersByPdf(file, query || undefined);
+      response = await searchPapersByPdf(file, query || undefined, advanced);
     } else {
-      // Note: advanced options will be passed to backend when API is updated
-      response = await searchPapers(query);
+      response = await searchPapers(query, advanced);
     }
     outputs.value = mapSearchResponseToPapers(response);
   } catch (err) {

@@ -1,18 +1,6 @@
-export type TextField = 'title' | 'abstract';
-export type MatchOperator = 'contains' | 'not_contains';
+import type { ConditionGroup, TextCondition } from '@/api';
 
-export interface TextCondition {
-  type: 'condition';
-  field: TextField;
-  operator: MatchOperator;
-  value: string;
-}
-
-export interface ConditionGroup {
-  type: 'group';
-  operator: 'AND' | 'OR';
-  children: (TextCondition | ConditionGroup)[];
-}
+export type { ConditionGroup, TextCondition };
 
 export interface AdvancedSearchOptions {
   yearFrom?: number;

@@ -165,7 +165,7 @@
           "Search"
         ],
         "summary": "Search for papers",
-        "description": "Returns a list of papers that match the search query.\n\nCurrently, this returns the 5 most recently fetched papers, regardless\nof the query string.",
+        "description": "Returns a list of papers that match the search query.\nOptionally accepts an advanced filter with year range and text conditions.",
         "operationId": "search_search_post",
         "requestBody": {
           "content": {
@@ -207,7 +207,7 @@
           "Search"
         ],
         "summary": "Search for papers using a PDF",
-        "description": "Returns a list of papers that are relevant to the uploaded PDF\nThe PDF is analyzed, turned into semantic search queries, and used for vector search on our DB.",
+        "description": "Returns a list of papers that are relevant to the uploaded PDF.\nThe PDF is analyzed, turned into semantic search queries, and used for vector search on our DB.\nOptionally accepts a JSON-encoded advanced filter.",
         "operationId": "search_by_pdf_search_pdf_post",
         "requestBody": {
           "content": {
@@ -721,6 +721,41 @@
   },
   "components": {
     "schemas": {
+      "AdvancedSearchFilter": {
+        "properties": {
+          "year_from": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Year From"
+          },
+          "year_to": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Year To"
+          },
+          "root": {
+            "$ref": "#/components/schemas/ConditionGroup"
+          }
+        },
+        "type": "object",
+        "required": [
+          "root"
+        ],
+        "title": "AdvancedSearchFilter",
+        "description": "Structured filter with optional year range and boolean condition tree."
+      },
       "Body_search_by_pdf_search_pdf_post": {
         "properties": {
           "pdf": {
@@ -740,6 +775,18 @@
             ],
             "title": "Query",
             "description": "Optional: query specifying what you want to find in relation to the paper"
+          },
+          "advanced_filter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Advanced Filter",
+            "description": "Optional: JSON-encoded advanced search filter"
           }
         },
         "type": "object",
@@ -766,6 +813,52 @@
         ],
         "title": "ChatMessageDto",
         "description": "Represents a single message in the chat history."
+      },
+      "ConditionGroup": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "group",
+            "title": "Type"
+          },
+          "operator": {
+            "type": "string",
+            "enum": [
+              "AND",
+              "OR"
+            ],
+            "title": "Operator"
+          },
+          "children": {
+            "items": {
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/TextCondition"
+                },
+                {
+                  "$ref": "#/components/schemas/ConditionGroup"
+                }
+              ],
+              "discriminator": {
+                "propertyName": "type",
+                "mapping": {
+                  "condition": "#/components/schemas/TextCondition",
+                  "group": "#/components/schemas/ConditionGroup"
+                }
+              }
+            },
+            "type": "array",
+            "title": "Children"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "operator",
+          "children"
+        ],
+        "title": "ConditionGroup",
+        "description": "Logical group combining multiple conditions with AND / OR."
       },
       "HTTPValidationError": {
         "properties": {
@@ -1119,6 +1212,16 @@
           "query": {
             "type": "string",
             "title": "Query"
+          },
+          "filter": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AdvancedSearchFilter"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -1144,6 +1247,44 @@
         ],
         "title": "SearchResponse",
         "description": "Response to search for specified query"
+      },
+      "TextCondition": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "condition",
+            "title": "Type"
+          },
+          "field": {
+            "type": "string",
+            "enum": [
+              "title",
+              "abstract"
+            ],
+            "title": "Field"
+          },
+          "operator": {
+            "type": "string",
+            "enum": [
+              "contains",
+              "not_contains"
+            ],
+            "title": "Operator"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "field",
+          "operator",
+          "value"
+        ],
+        "title": "TextCondition",
+        "description": "Single text-based filter condition on a paper field."
       },
       "UserCreate": {
         "properties": {
