@@ -51,9 +51,9 @@ class SearchService:
 
     @staticmethod
     async def search_papers_from_pdf(
-        pdf_file: UploadFile,
-        db: AsyncSession,
-        query: Optional[str] = None,
+            pdf_file: UploadFile,
+            db: AsyncSession,
+            query: Optional[str] = None,
     ) -> SearchResponse:
         """
         Search using a PDF as the primary signal.
@@ -115,9 +115,9 @@ class SearchService:
 
     @staticmethod
     async def _search_with_keywords(
-        keywords: List[str],
-        db: AsyncSession,
-        user_query: str,
+            keywords: List[str],
+            db: AsyncSession,
+            user_query: str,
     ) -> SearchResponse:
         """
         Core embedding + vector-search + DTO mapping pipeline.
@@ -165,9 +165,9 @@ class SearchService:
 
     @staticmethod
     async def _extract_keywords_with_retry(
-        openai_provider: Any,
-        query: str,
-        max_retries: int = 2,
+            openai_provider: Any,
+            query: str,
+            max_retries: int = 2,
     ) -> List[str]:
         """
         Extract keywords from the provider with retries and format normalization
@@ -211,10 +211,10 @@ class SearchService:
 
     @staticmethod
     async def _extract_pdf_keywords_with_retry(
-        openai_provider: Any,
-        pdf_text: str,
-        query: Optional[str],
-        max_retries: int = 2,
+            openai_provider: Any,
+            pdf_text: str,
+            query: Optional[str],
+            max_retries: int = 2,
     ) -> List[str]:
         """
         Extract keywords from PDF text and optional user query with retries.

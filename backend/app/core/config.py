@@ -32,6 +32,11 @@ class Settings(BaseSettings):
 
     # --- Safety Canary ---
     SAFETY_CANARY: str = Field(default="BNZe4fAKVj/DZ/atHZZaVZxpyZGDZt+TqH0sT5J6AMY=")
+    # --- Docling PDF Conversion ---
+    DOCLING_WORKERS: int = 2
+    DOCLING_TIMEOUT_SECONDS: int = 300
+    DOCLING_MAX_RETRIES: int = 3
+    DOCLING_RETRY_BASE_DELAY: int = 30  # seconds, doubles each attempt
 
     model_config = SettingsConfigDict(
         env_file=os.getenv("ENV_FILE", "dev.env"),

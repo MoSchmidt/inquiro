@@ -28,8 +28,8 @@ class ProjectRepository:
 
     @staticmethod
     async def get(
-        session: AsyncSession,
-        project_id: int,
+            session: AsyncSession,
+            project_id: int,
     ) -> Optional[Project]:
         """Return a single project by id."""
         stmt = select(Project).where(Project.project_id == project_id)
@@ -38,8 +38,8 @@ class ProjectRepository:
 
     @staticmethod
     async def get_with_papers(
-        session: AsyncSession,
-        project_id: int,
+            session: AsyncSession,
+            project_id: int,
     ) -> Optional[Project]:
         """Return a single project by id, with papers eagerly loaded."""
         stmt = (
@@ -55,9 +55,9 @@ class ProjectRepository:
     # ------------------------------------------------------------------
     @staticmethod
     async def create_for_user(
-        session: AsyncSession,
-        user_id: int,
-        project_name: str,
+            session: AsyncSession,
+            user_id: int,
+            project_name: str,
     ) -> Project:
         """Create a new project for the given user."""
         project = Project(created_by=user_id, project_name=project_name)
@@ -68,9 +68,9 @@ class ProjectRepository:
 
     @staticmethod
     async def update_name(
-        session: AsyncSession,
-        project: Project,
-        new_name: str,
+            session: AsyncSession,
+            project: Project,
+            new_name: str,
     ) -> Project:
         """Update the project's name."""
         project.project_name = new_name
@@ -81,8 +81,8 @@ class ProjectRepository:
 
     @staticmethod
     async def delete(
-        session: AsyncSession,
-        project_id: int,
+            session: AsyncSession,
+            project_id: int,
     ) -> None:
         """Delete a project by id."""
         project = await ProjectRepository.get(session, project_id)
@@ -97,9 +97,9 @@ class ProjectRepository:
     # ------------------------------------------------------------------
     @staticmethod
     async def add_paper(
-        session: AsyncSession,
-        project_id: int,
-        paper_id: int,
+            session: AsyncSession,
+            project_id: int,
+            paper_id: int,
     ) -> Project:
         """Add a paper to a project if not already linked."""
         project = await ProjectRepository.get_with_papers(session, project_id)
@@ -133,9 +133,9 @@ class ProjectRepository:
 
     @staticmethod
     async def remove_paper(
-        session: AsyncSession,
-        project_id: int,
-        paper_id: int,
+            session: AsyncSession,
+            project_id: int,
+            paper_id: int,
     ) -> Project:
         """Remove a paper from a project."""
         project = await ProjectRepository.get_with_papers(session, project_id)

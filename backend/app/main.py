@@ -20,6 +20,7 @@ from app.routes import (
     search_routes,
     user_routes,
 )
+from app.workers.queues.conversion_queue import ConversionQueue
 
 # ---------------------------------------------------------
 # Configure Logging
@@ -41,11 +42,20 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, Any]:
     logger.info("🚀 Starting Inquiro API in '%s' mode...", settings.ENVIRONMENT)
     if settings.ENVIRONMENT == "dev":
         await init_db()  # Auto-create tables only in dev
+
+    # Start PDF conversion workers
+    queue = ConversionQueue.get_instance()
+    await queue.start_workers()
+
     logger.info("✅ Startup complete.")
 
     yield
 
     logger.info("🛑 Shutting down Inquiro API...")
+
+    # Stop conversion workers
+    await queue.stop_workers()
+
     logger.info("👋 Shutdown complete.")
 
 
