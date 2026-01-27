@@ -91,7 +91,9 @@ class SearchRepository:
         return or_(*child_clauses)
 
     @staticmethod
-    def _build_node_clause(node: Union[TextCondition, ConditionGroup]) -> Optional[ColumnElement[bool]]:
+    def _build_node_clause(
+            node: Union[TextCondition, ConditionGroup]
+    ) -> Optional[ColumnElement[bool]]:
         """Build a clause for a single node (condition or nested group)."""
         if node.type == "group":
             return SearchRepository._build_group_clause(node)
