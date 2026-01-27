@@ -15,13 +15,11 @@
 
 // May contain unused imports in some cases
 // @ts-ignore
-import type { AdvancedSearchFilter } from './advanced-search-filter';
+import type { ConditionGroup } from './condition-group';
 
-/**
- * Request to search for specified query
- */
-export interface SearchRequest {
-    'query': string;
-    'filter'?: AdvancedSearchFilter | null;
+export interface AdvancedSearchFilter {
+    'year_from'?: number | null;
+    'year_to'?: number | null;
+    'root': ConditionGroup;
 }
 
