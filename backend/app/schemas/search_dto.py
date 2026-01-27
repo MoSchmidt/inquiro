@@ -35,6 +35,7 @@ class AdvancedSearchFilter(BaseModel):
 
     @model_validator(mode="after")
     def check_year_range(self) -> AdvancedSearchFilter:
+        """Validate year_from is larger or equal to year_to."""
         if self.year_from is not None and self.year_to is not None:
             if self.year_from > self.year_to:
                 raise ValueError("year_from must be <= year_to")

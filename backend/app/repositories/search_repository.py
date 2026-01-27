@@ -1,7 +1,7 @@
 from datetime import date
 from typing import List, Optional, Tuple, Union
 
-from sqlalchemy import and_, or_, select, ClauseElement
+from sqlalchemy import ColumnElement, and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.paper import Paper as PaperModel
@@ -72,7 +72,7 @@ class SearchRepository:
         return clauses
 
     @staticmethod
-    def _build_group_clause(group: ConditionGroup) -> Optional[ClauseElement]:
+    def _build_group_clause(group: ConditionGroup) -> Optional[ColumnElement[bool]]:
         """Recursively build an AND/OR clause from a ConditionGroup."""
         if not group.children:
             return None
@@ -91,7 +91,7 @@ class SearchRepository:
         return or_(*child_clauses)
 
     @staticmethod
-    def _build_node_clause(node: Union[TextCondition, ConditionGroup]) -> Optional[ClauseElement]:
+    def _build_node_clause(node: Union[TextCondition, ConditionGroup]) -> Optional[ColumnElement[bool]]:
         """Build a clause for a single node (condition or nested group)."""
         if node.type == "group":
             return SearchRepository._build_group_clause(node)
