@@ -753,7 +753,8 @@
         "required": [
           "root"
         ],
-        "title": "AdvancedSearchFilter"
+        "title": "AdvancedSearchFilter",
+        "description": "Structured filter with optional year range and boolean condition tree."
       },
       "Body_search_by_pdf_search_pdf_post": {
         "properties": {
@@ -775,7 +776,7 @@
             "title": "Query",
             "description": "Optional: query specifying what you want to find in relation to the paper"
           },
-          "filter": {
+          "advanced_filter": {
             "anyOf": [
               {
                 "type": "string"
@@ -784,7 +785,7 @@
                 "type": "null"
               }
             ],
-            "title": "Filter",
+            "title": "Advanced Filter",
             "description": "Optional: JSON-encoded advanced search filter"
           }
         },
@@ -856,7 +857,8 @@
           "operator",
           "children"
         ],
-        "title": "ConditionGroup"
+        "title": "ConditionGroup",
+        "description": "Logical group combining multiple conditions with AND / OR."
       },
       "HTTPValidationError": {
         "properties": {
@@ -1281,7 +1283,8 @@
           "operator",
           "value"
         ],
-        "title": "TextCondition"
+        "title": "TextCondition",
+        "description": "Single text-based filter condition on a paper field."
       },
       "UserCreate": {
         "properties": {

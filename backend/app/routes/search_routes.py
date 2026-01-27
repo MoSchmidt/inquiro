@@ -42,7 +42,7 @@ async def search_by_pdf(
         default=None,
         description="Optional: query specifying what you want to find in relation to the paper",
     ),
-    filter: str | None = Form(
+    advanced_filter: str | None = Form(
         default=None,
         description="Optional: JSON-encoded advanced search filter",
     ),
@@ -60,9 +60,9 @@ async def search_by_pdf(
         )
 
     search_filter = None
-    if filter:
+    if advanced_filter:
         try:
-            search_filter = AdvancedSearchFilter.model_validate(json.loads(filter))
+            search_filter = AdvancedSearchFilter.model_validate(json.loads(advanced_filter))
         except (json.JSONDecodeError, ValueError) as exc:
             raise HTTPException(
                 status_code=400,

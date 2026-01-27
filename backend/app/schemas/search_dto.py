@@ -8,6 +8,8 @@ from app.schemas.paper_dto import PaperDto
 
 
 class TextCondition(BaseModel):
+    """Single text-based filter condition on a paper field."""
+
     type: Literal["condition"]
     field: Literal["title", "abstract"]
     operator: Literal["contains", "not_contains"]
@@ -15,6 +17,8 @@ class TextCondition(BaseModel):
 
 
 class ConditionGroup(BaseModel):
+    """Logical group combining multiple conditions with AND / OR."""
+
     type: Literal["group"]
     operator: Literal["AND", "OR"]
     children: List[
@@ -23,6 +27,8 @@ class ConditionGroup(BaseModel):
 
 
 class AdvancedSearchFilter(BaseModel):
+    """Structured filter with optional year range and boolean condition tree."""
+
     year_from: Optional[int] = None
     year_to: Optional[int] = None
     root: ConditionGroup

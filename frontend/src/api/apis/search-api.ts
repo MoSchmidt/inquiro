@@ -37,11 +37,11 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
          * @summary Search for papers using a PDF
          * @param {File} pdf Research paper PDF
          * @param {string | null} [query] 
-         * @param {string | null} [filter] 
+         * @param {string | null} [advancedFilter] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        searchByPdfSearchPdfPost: async (pdf: File, query?: string | null, filter?: string | null, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        searchByPdfSearchPdfPost: async (pdf: File, query?: string | null, advancedFilter?: string | null, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'pdf' is not null or undefined
             assertParamExists('searchByPdfSearchPdfPost', 'pdf', pdf)
             const localVarPath = `/search/pdf`;
@@ -66,8 +66,8 @@ export const SearchApiAxiosParamCreator = function (configuration?: Configuratio
                 localVarFormParams.append('query', query as any);
             }
 
-            if (filter !== undefined) { 
-                localVarFormParams.append('filter', filter as any);
+            if (advancedFilter !== undefined) { 
+                localVarFormParams.append('advanced_filter', advancedFilter as any);
             }
             localVarHeaderParameter['Content-Type'] = 'multipart/form-data';
             localVarHeaderParameter['Accept'] = 'application/json';
@@ -131,12 +131,12 @@ export const SearchApiFp = function(configuration?: Configuration) {
          * @summary Search for papers using a PDF
          * @param {File} pdf Research paper PDF
          * @param {string | null} [query] 
-         * @param {string | null} [filter] 
+         * @param {string | null} [advancedFilter] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async searchByPdfSearchPdfPost(pdf: File, query?: string | null, filter?: string | null, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchResponse>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.searchByPdfSearchPdfPost(pdf, query, filter, options);
+        async searchByPdfSearchPdfPost(pdf: File, query?: string | null, advancedFilter?: string | null, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<SearchResponse>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.searchByPdfSearchPdfPost(pdf, query, advancedFilter, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['SearchApi.searchByPdfSearchPdfPost']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -168,12 +168,12 @@ export const SearchApiFactory = function (configuration?: Configuration, basePat
          * @summary Search for papers using a PDF
          * @param {File} pdf Research paper PDF
          * @param {string | null} [query] 
-         * @param {string | null} [filter] 
+         * @param {string | null} [advancedFilter] 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        searchByPdfSearchPdfPost(pdf: File, query?: string | null, filter?: string | null, options?: RawAxiosRequestConfig): AxiosPromise<SearchResponse> {
-            return localVarFp.searchByPdfSearchPdfPost(pdf, query, filter, options).then((request) => request(axios, basePath));
+        searchByPdfSearchPdfPost(pdf: File, query?: string | null, advancedFilter?: string | null, options?: RawAxiosRequestConfig): AxiosPromise<SearchResponse> {
+            return localVarFp.searchByPdfSearchPdfPost(pdf, query, advancedFilter, options).then((request) => request(axios, basePath));
         },
         /**
          * Returns a list of papers that match the search query. Optionally accepts an advanced filter with year range and text conditions.
@@ -197,12 +197,12 @@ export class SearchApi extends BaseAPI {
      * @summary Search for papers using a PDF
      * @param {File} pdf Research paper PDF
      * @param {string | null} [query] 
-     * @param {string | null} [filter] 
+     * @param {string | null} [advancedFilter] 
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public searchByPdfSearchPdfPost(pdf: File, query?: string | null, filter?: string | null, options?: RawAxiosRequestConfig) {
-        return SearchApiFp(this.configuration).searchByPdfSearchPdfPost(pdf, query, filter, options).then((request) => request(this.axios, this.basePath));
+    public searchByPdfSearchPdfPost(pdf: File, query?: string | null, advancedFilter?: string | null, options?: RawAxiosRequestConfig) {
+        return SearchApiFp(this.configuration).searchByPdfSearchPdfPost(pdf, query, advancedFilter, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

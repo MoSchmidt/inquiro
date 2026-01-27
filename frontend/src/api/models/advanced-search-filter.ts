@@ -17,6 +17,9 @@
 // @ts-ignore
 import type { ConditionGroup } from './condition-group';
 
+/**
+ * Structured filter with optional year range and boolean condition tree.
+ */
 export interface AdvancedSearchFilter {
     'year_from'?: number | null;
     'year_to'?: number | null;

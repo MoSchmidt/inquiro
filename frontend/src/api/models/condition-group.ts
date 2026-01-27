@@ -17,6 +17,9 @@
 // @ts-ignore
 import type { ConditionGroupChildrenInner } from './condition-group-children-inner';
 
+/**
+ * Logical group combining multiple conditions with AND / OR.
+ */
 export interface ConditionGroup {
     'type': ConditionGroupTypeEnum;
     'operator': ConditionGroupOperatorEnum;

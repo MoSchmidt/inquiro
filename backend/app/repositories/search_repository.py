@@ -1,7 +1,7 @@
 from datetime import date
 from typing import List, Optional, Tuple, Union
 
-from sqlalchemy import and_, or_, select
+from sqlalchemy import and_, or_, select, ClauseElement
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.paper import Paper as PaperModel
@@ -23,10 +23,10 @@ class SearchRepository:
 
     @staticmethod
     async def search_papers_by_embeddings(
-        db: AsyncSession,
-        embeddings: List[List[float]],
-        limit: int = 5,
-        search_filter: Optional[AdvancedSearchFilter] = None,
+            db: AsyncSession,
+            embeddings: List[List[float]],
+            limit: int = 5,
+            search_filter: Optional[AdvancedSearchFilter] = None,
     ) -> List[Tuple[PaperModel, float]]:
         """
         Perform a vector search for papers based on a list of embeddings.
@@ -72,7 +72,7 @@ class SearchRepository:
         return clauses
 
     @staticmethod
-    def _build_group_clause(group: ConditionGroup):
+    def _build_group_clause(group: ConditionGroup) -> Optional[ClauseElement]:
         """Recursively build an AND/OR clause from a ConditionGroup."""
         if not group.children:
             return None
@@ -91,7 +91,7 @@ class SearchRepository:
         return or_(*child_clauses)
 
     @staticmethod
-    def _build_node_clause(node: Union[TextCondition, ConditionGroup]):
+    def _build_node_clause(node: Union[TextCondition, ConditionGroup]) -> Optional[ClauseElement]:
         """Build a clause for a single node (condition or nested group)."""
         if node.type == "group":
             return SearchRepository._build_group_clause(node)

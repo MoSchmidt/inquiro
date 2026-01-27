@@ -14,6 +14,9 @@
 
 
 
+/**
+ * Single text-based filter condition on a paper field.
+ */
 export interface TextCondition {
     'type': TextConditionTypeEnum;
     'field': TextConditionFieldEnum;
