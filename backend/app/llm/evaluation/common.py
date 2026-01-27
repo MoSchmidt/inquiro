@@ -54,10 +54,10 @@ def validate_openai_api_key() -> bool:
 
 
 async def call_openai_api(
-    provider: OpenAIProvider,
-    developer_prompt: str,
-    user_content: Optional[str] = None,
-    reasoning_effort: str = "low",
+        provider: OpenAIProvider,
+        developer_prompt: str,
+        user_content: Optional[str] = None,
+        reasoning_effort: str = "low",
 ) -> str:
     """
     Make a standardized OpenAI API call for evaluation scripts.

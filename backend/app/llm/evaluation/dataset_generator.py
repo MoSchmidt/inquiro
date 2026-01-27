@@ -54,10 +54,10 @@ async def generate_user_input(provider: OpenAIProvider, keywords: List[str]) -> 
 
 
 async def generate_dataset(
-    provider: OpenAIProvider,
-    seed_keywords: List[List[str]],
-    output_path: Path,
-    delay_seconds: float = 20.0,
+        provider: OpenAIProvider,
+        seed_keywords: List[List[str]],
+        output_path: Path,
+        delay_seconds: float = 20.0,
 ) -> None:
     """
     Generate evaluation dataset from seed keywords.
@@ -184,7 +184,7 @@ async def main() -> None:
         type=str,
         default="evaluation_data/dataset.json",
         help="Output path for generated dataset JSON file "
-        "(default: evaluation_data/dataset.json)",
+             "(default: evaluation_data/dataset.json)",
     )
     add_delay_argument(parser)
 

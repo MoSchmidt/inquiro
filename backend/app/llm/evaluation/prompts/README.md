@@ -1,6 +1,7 @@
 # Alternative Keyword Extraction Prompts
 
-This directory contains various prompt variations for testing keyword extraction performance. The prompts are organized to systematically test prompt engineering best practices.
+This directory contains various prompt variations for testing keyword extraction performance. The prompts are organized
+to systematically test prompt engineering best practices.
 
 ## Original Prompts (v1-v6)
 
@@ -29,7 +30,8 @@ These prompts systematically test individual and combined prompt engineering bes
 - **prompt_v13_persona_examples.txt**: Persona + Examples
 - **prompt_v14_steps_delimiters.txt**: Explicit Steps + Delimiters
 - **prompt_v15_persona_steps_examples.txt**: Persona + Steps + Examples
-- **prompt_v16_all_best_practices.txt**: All best practices combined (Persona + Steps + Examples + Delimiters + Detailed Instructions + Format Specification)
+- **prompt_v16_all_best_practices.txt**: All best practices combined (Persona + Steps + Examples + Delimiters + Detailed
+  Instructions + Format Specification)
 
 ## Evaluation
 
@@ -55,7 +57,8 @@ done
 
 ## Comparing Results
 
-After evaluation, compare the metrics (Jaccard, Precision, Recall, F1) to identify the best-performing prompt. The evaluation system now calculates all metrics automatically.
+After evaluation, compare the metrics (Jaccard, Precision, Recall, F1) to identify the best-performing prompt. The
+evaluation system now calculates all metrics automatically.
 
 ## Best Practices Tested
 
@@ -72,6 +75,7 @@ The prompts systematically test the following prompt engineering best practices:
 ## Evaluation Metrics
 
 The evaluation system calculates:
+
 - **Jaccard Similarity**: Overlap between extracted and ground truth keywords
 - **Precision**: Proportion of extracted keywords that are correct
 - **Recall**: Proportion of ground truth keywords that were extracted

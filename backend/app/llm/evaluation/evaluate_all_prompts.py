@@ -23,10 +23,10 @@ logging.basicConfig(
 
 
 async def evaluate_all_prompts(  # pylint: disable=too-many-locals
-    prompt_files: List[Path],
-    dataset_path: Path,
-    output_dir: Path,
-    delay_seconds: float = 20.0,
+        prompt_files: List[Path],
+        dataset_path: Path,
+        output_dir: Path,
+        delay_seconds: float = 20.0,
 ) -> None:
     """
     Evaluate multiple prompts and generate a comparison report.
@@ -130,10 +130,10 @@ async def evaluate_all_prompts(  # pylint: disable=too-many-locals
         best_metrics = all_results[0]["metrics"]
         logger.info("Best performing prompt: %s", best_name)
         logger.info("  Jaccard: %.4f | Precision: %.4f | Recall: %.4f | F1: %.4f",
-                     best_metrics["jaccard"]["mean"],
-                     best_metrics["precision"]["mean"],
-                     best_metrics["recall"]["mean"],
-                     best_metrics["f1"]["mean"])
+                    best_metrics["jaccard"]["mean"],
+                    best_metrics["precision"]["mean"],
+                    best_metrics["recall"]["mean"],
+                    best_metrics["f1"]["mean"])
         logger.info("✓ Comparison report saved to %s", comparison_file)
 
 
@@ -160,7 +160,7 @@ async def main() -> None:
         type=str,
         default="evaluation_results",
         help="Directory to save results and comparison report "
-        "(default: evaluation_results/)",
+             "(default: evaluation_results/)",
     )
     add_delay_argument(parser)
     parser.add_argument(

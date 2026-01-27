@@ -26,9 +26,9 @@ logging.basicConfig(
 
 
 async def extract_keywords_with_prompt(
-    provider: OpenAIProvider,
-    user_input: str,
-    prompt: str,
+        provider: OpenAIProvider,
+        user_input: str,
+        prompt: str,
 ) -> List[str]:
     """
     Extract keywords from user input using a custom prompt.
@@ -60,10 +60,10 @@ async def extract_keywords_with_prompt(
 
 
 async def evaluate_prompt(  # pylint: disable=too-many-locals
-    provider: OpenAIProvider,
-    prompt: str,
-    dataset: List[Dict],
-    delay_seconds: float = 20.0,
+        provider: OpenAIProvider,
+        prompt: str,
+        dataset: List[Dict],
+        delay_seconds: float = 20.0,
 ) -> Dict:
     """
     Evaluate a prompt against a dataset.
@@ -254,7 +254,7 @@ async def main() -> None:
         type=str,
         default="evaluation_results/results.json",
         help="Output path for evaluation results JSON file "
-        "(default: evaluation_results/results.json)",
+             "(default: evaluation_results/results.json)",
     )
     add_delay_argument(parser)
 
