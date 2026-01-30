@@ -1,9 +1,10 @@
 import json
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.core.limiter import limiter
 from app.schemas.search_dto import AdvancedSearchFilter, SearchRequest, SearchResponse
 from app.services.search_service import SearchService
 
@@ -16,16 +17,21 @@ router = APIRouter(prefix="/search", tags=["Search"])
     status_code=status.HTTP_200_OK,
     summary="Search for papers",
 )
-async def search(request: SearchRequest, db: AsyncSession = Depends(get_db)) -> SearchResponse:
+@limiter.limit("5/minute")
+async def search(
+    request: Request,  # pylint: disable=unused-argument
+    payload: SearchRequest,
+    db: AsyncSession = Depends(get_db),
+) -> SearchResponse:
     """
     Returns a list of papers that match the search query.
     Optionally accepts an advanced filter with year range and text conditions.
     """
 
     papers = await SearchService.search_papers(
-        query=request.query,
+        query=payload.query,
         db=db,
-        search_filter=request.filter,
+        search_filter=payload.filter,
     )
     return SearchResponse.model_validate(papers)
 
@@ -36,10 +42,14 @@ async def search(request: SearchRequest, db: AsyncSession = Depends(get_db)) -> 
     status_code=status.HTTP_200_OK,
     summary="Search for papers using a PDF",
 )
+@limiter.limit("3/minute")
 async def search_by_pdf(
-    pdf: UploadFile = File(..., description="Research paper PDF"),
+    request: Request,  # pylint: disable=unused-argument
+    pdf: UploadFile = File(..., description="Research paper PDF", max_size=10 * 1024 * 1024),
+    # Optional: user can also input a query
     query: str | None = Form(
         default=None,
+        max_length=5000,
         description="Optional: query specifying what you want to find in relation to the paper",
     ),
     advanced_filter: str | None = Form(
