@@ -163,9 +163,9 @@ class SearchService:
 
     @staticmethod
     async def _extract_keywords_with_retry(
-        openai_provider: Any,
-        query: str,
-        max_retries: int = 2,
+            openai_provider: Any,
+            query: str,
+            max_retries: int = 2,
     ) -> List[str]:
         """
         Extract keywords from the provider with retries and format normalization
@@ -209,10 +209,10 @@ class SearchService:
 
     @staticmethod
     async def _extract_pdf_keywords_with_retry(
-        openai_provider: Any,
-        pdf_text: str,
-        query: Optional[str],
-        max_retries: int = 2,
+            openai_provider: Any,
+            pdf_text: str,
+            query: Optional[str],
+            max_retries: int = 2,
     ) -> List[str]:
         """
         Extract keywords from PDF text and optional user query with retries.

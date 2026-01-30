@@ -4,6 +4,7 @@ from datetime import date, datetime
 from typing import TYPE_CHECKING, List, Optional
 
 from pgvector.sqlalchemy import Vector
+from sqlalchemy import Enum as SqlEnum
 from sqlalchemy import (
     JSON,
     BigInteger,
@@ -13,12 +14,12 @@ from sqlalchemy import (
     String,
     Text,
 )
-from sqlalchemy import Enum as SqlEnum
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
 from app.constants.database_constants import PaperSource, PaperType
 from app.core.database import Base
+from .paper_content import PaperContent
 
 
 class Paper(Base):
@@ -59,7 +60,15 @@ class Paper(Base):
     )
 
     projects: Mapped[List["Project"]] = relationship(
-        "Project", secondary="project_paper", back_populates="papers"
+        "Project", secondary="project_paper", back_populates="papers", viewonly=True
+    )
+
+    content: Mapped[Optional["PaperContent"]] = relationship(
+        "PaperContent",
+        back_populates="paper",
+        uselist=False,
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 
     # Indexes (HNSW)
