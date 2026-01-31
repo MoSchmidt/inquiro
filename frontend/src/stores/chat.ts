@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import { paperService } from '@/services/paperService';
+import { chatWithPaper } from '@/services/papers';
 import type { ChatMessageDto } from '@/api/models';
 
 export const useChatStore = defineStore('chat', () => {
@@ -47,7 +47,7 @@ export const useChatStore = defineStore('chat', () => {
              * 4. Call Consolidated Backend Service.
              * We pass the new message separately from the historical context.
              */
-            const response = await paperService.chatWithPaper(paperId, {
+            const response = await chatWithPaper(paperId, {
                 message: userMessage,
                 history: historyContext
             });
