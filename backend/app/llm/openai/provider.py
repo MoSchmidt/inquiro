@@ -24,7 +24,7 @@ class OpenAIProvider:
             )
 
         self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
-        self._model = "gpt-5-nano-2025-08-07"
+        self._model = "gpt-4o-mini"
 
     async def extract_keywords(self, user_text: str) -> List[str]:
         """
@@ -32,12 +32,11 @@ class OpenAIProvider:
         Returns a list of strings. If parsing fails, returns an empty list.
         """
 
-        response = await self.client.responses.create(
+        response = await self.client.chat.completions.create(
             model=self._model,
-            reasoning={"effort": "low"},
-            input=[
+            messages=[
                 {
-                    "role": "developer",
+                    "role": "system",
                     "content": KEYWORD_PROMPT,
                 },
                 {
@@ -48,7 +47,7 @@ class OpenAIProvider:
         )
 
         try:
-            keyword_list = json.loads(response.output_text)
+            keyword_list = json.loads(response.choices[0].message.content or "[]")
         except json.decoder.JSONDecodeError:
             keyword_list = []
 
@@ -67,12 +66,11 @@ class OpenAIProvider:
 
         user_content = f"User focus (optional): {user_focus}\n\n" f"Paper text: \n{pdf_text}"
 
-        response = await self.client.responses.create(
+        response = await self.client.chat.completions.create(
             model=self._model,
-            reasoning={"effort": "medium"},
-            input=[
+            messages=[
                 {
-                    "role": "developer",
+                    "role": "system",
                     "content": PDF_KEYWORD_PROMPT,
                 },
                 {
@@ -83,7 +81,7 @@ class OpenAIProvider:
         )
 
         try:
-            keyword_list = json.loads(response.output_text)
+            keyword_list = json.loads(response.choices[0].message.content or "[]")
         except json.decoder.JSONDecodeError:
             keyword_list = []
 
@@ -126,12 +124,11 @@ class OpenAIProvider:
         if has_query:
             prompt_content += f"\n\nUser query: {query}"
 
-        response = await self.client.responses.create(
+        response = await self.client.chat.completions.create(
             model=self._model,
-            reasoning={"effort": "medium"},
-            input=[
+            messages=[
                 {
-                    "role": "developer",
+                    "role": "system",
                     "content": prompt_content,
                 },
                 {
@@ -139,22 +136,15 @@ class OpenAIProvider:
                     "content": paper_text,
                 },
             ],
-            text={
-                "format": {
-                    "type": "json_schema",
-                    "name": "paper_summary",
-                    "schema": schema,
-                    "strict": False,
-                }
-            },
+            response_format={"type": "json_object"},
         )
 
         try:
-            data = json.loads(response.output_text)
+            data = json.loads(response.choices[0].message.content or "{}")
         except (json.decoder.JSONDecodeError, KeyError):
             data = {
                 "title": "Summary (Parsing Fallback)",
-                "executive_summary": response.output_text.strip(),
+                "executive_summary": (response.choices[0].message.content or "").strip(),
                 "methodology_points": [],
                 "results_points": [],
                 "limitations": "Parsing failed.",
@@ -171,18 +161,18 @@ class OpenAIProvider:
         Handles a chat turn using the full paper text as context.
         """
 
-        input_messages: List[Dict[str, str]] = [
-            {"role": "developer", "content": CHAT_PROMPT},
-            {"role": "developer", "content": f"RESEARCH PAPER TEXT:\n\n{paper_text}"},
+        messages: List[Dict[str, str]] = [
+            {"role": "system", "content": CHAT_PROMPT},
+            {"role": "system", "content": f"RESEARCH PAPER TEXT:\n\n{paper_text}"},
         ]
 
         if chat_history:
-            input_messages.extend(chat_history)
+            messages.extend(chat_history)
 
-        input_messages.append({"role": "user", "content": user_query})
+        messages.append({"role": "user", "content": user_query})
 
-        response = await self.client.responses.create(
-            model=self._model, reasoning={"effort": "medium"}, input=cast(Any, input_messages)
+        response = await self.client.chat.completions.create(
+            model=self._model, messages=cast(Any, messages)
         )
 
-        return response.output_text.strip()
+        return (response.choices[0].message.content or "").strip()
