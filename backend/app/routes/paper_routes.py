@@ -9,8 +9,9 @@ from app.core.database import get_db
 from app.schemas.paper_dto import (
     PaperChatRequest,
     PaperChatResponse,
+    PaperSummaryRequest,
+    PaperSummaryResponse,
 )
-from app.schemas.paper_dto import PaperSummaryRequest, PaperSummaryResponse
 from app.services.paper_service import PaperService
 
 logger = logging.getLogger("inquiro")
@@ -42,7 +43,7 @@ async def summary(
     summary="Chat with the specified paper",
 )
 async def chat_with_paper(
-        paper_id: int, request: PaperChatRequest, db: AsyncSession = Depends(get_db)
+    paper_id: int, request: PaperChatRequest, db: AsyncSession = Depends(get_db)
 ) -> PaperChatResponse:
     """
     Allows the user to ask questions about the paper currently being viewed.

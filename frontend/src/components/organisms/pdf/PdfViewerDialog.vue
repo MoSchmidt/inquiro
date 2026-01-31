@@ -1,10 +1,12 @@
 <script lang="ts" setup>
 import { onUnmounted, ref, watch, nextTick } from 'vue';
-import { VAlert, VBtn, VCard, VCardText, VDialog, VIcon, VProgressCircular, VSpacer, VDivider } from 'vuetify/components';
-import { Download, X, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, RotateCw } from 'lucide-vue-next';
+import { VAlert, VBtn, VCard, VCardText, VDialog, VIcon, VProgressCircular, VSpacer, VDivider, VTooltip } from 'vuetify/components';
+import { Download, X, ZoomIn, ZoomOut, ChevronLeft, ChevronRight, RotateCw, MessageSquare, Sun, Moon } from 'lucide-vue-next';
 import VuePdfEmbed from 'vue-pdf-embed';
 import { usePaperStore } from '@/stores/papers';
 import type { PDFDocumentProxy } from 'pdfjs-dist';
+import ChatPanel from './ChatPanel.vue';
+import { useTheme } from '@/composables/useTheme';
 
 import 'vue-pdf-embed/dist/styles/textLayer.css';
 import 'vue-pdf-embed/dist/styles/annotationLayer.css';
@@ -33,6 +35,11 @@ const userInputPage = ref(1);
 
 // Flag to prevent flickering during auto-scroll
 const isAutoScrolling = ref(false);
+
+// Chat panel visibility
+const isChatOpen = ref(false);
+
+const { isDark, toggleTheme } = useTheme();
 
 const paperStore = usePaperStore();
 let observer: IntersectionObserver | null = null;
@@ -155,6 +162,16 @@ const rotateDoc = () => {
   rotation.value = (rotation.value + 90) % 360;
 };
 
+const toggleChat = () => {
+  isChatOpen.value = !isChatOpen.value;
+};
+
+const handleThemeToggle = () => {
+  console.log('Theme toggle clicked, current isDark:', isDark.value);
+  toggleTheme();
+  console.log('After toggle, isDark:', isDark.value);
+};
+
 const handleLinkClick = (pageNumber: number) => scrollToPage(pageNumber);
 
 const handleDownload = () => {
@@ -264,36 +281,76 @@ onUnmounted(() => {
           Download
         </v-btn>
 
+        <v-btn
+            icon
+            variant="text"
+            size="small"
+            class="me-2"
+            @click="handleThemeToggle"
+        >
+          <v-icon :icon="isDark ? Sun : Moon" size="18" />
+          <v-tooltip activator="parent" location="bottom">
+            {{ isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode' }}
+          </v-tooltip>
+        </v-btn>
+
+        <v-btn
+            :color="isChatOpen ? 'primary' : 'default'"
+            :variant="isChatOpen ? 'flat' : 'outlined'"
+            class="me-2 text-none"
+            size="small"
+            @click="toggleChat"
+        >
+          <v-icon :icon="MessageSquare" size="18" start />
+          Chat
+          <v-tooltip activator="parent" location="bottom">Chat with this paper</v-tooltip>
+        </v-btn>
+
         <v-btn icon variant="text" @click="emit('close')">
           <v-icon :icon="X" />
         </v-btn>
       </div>
 
       <v-card-text class="pdf-content pa-0 bg-background position-relative">
-        <div
-            v-if="loading"
-            class="d-flex flex-column align-center justify-center position-absolute w-100 h-100 bg-surface"
-            style="z-index: 10; opacity: 0.9"
-        >
-          <v-progress-circular color="primary" indeterminate size="64" />
-          <p class="mt-4 text-medium-emphasis">Loading PDF...</p>
-        </div>
+        <div class="content-wrapper d-flex h-100">
+          <!-- PDF Viewer Section -->
+          <div class="pdf-section flex-grow-1 position-relative">
+            <div
+                v-if="loading"
+                class="d-flex flex-column align-center justify-center position-absolute w-100 h-100 bg-surface"
+                style="z-index: 10; opacity: 0.9"
+            >
+              <v-progress-circular color="primary" indeterminate size="64" />
+              <p class="mt-4 text-medium-emphasis">Loading PDF...</p>
+            </div>
 
-        <div v-if="error" class="d-flex justify-center mt-12 w-100 px-4">
-          <v-alert :text="error" style="max-width: 600px" type="error" variant="tonal" />
-        </div>
+            <div v-if="error" class="d-flex justify-center mt-12 w-100 px-4">
+              <v-alert :text="error" style="max-width: 600px" type="error" variant="tonal" />
+            </div>
 
-        <div v-if="pdfSource" class="pdf-scroll-container">
-          <vue-pdf-embed
-              :annotation-layer="true"
-              :source="pdfSource"
-              :text-layer="true"
-              :width="pdfWidth"
-              :rotation="rotation"
-              class="pdf-document"
-              @loaded="handleDocumentLoaded"
-              @internal-link-clicked="handleLinkClick"
-          />
+            <div v-if="pdfSource" class="pdf-scroll-container">
+              <vue-pdf-embed
+                  :annotation-layer="true"
+                  :source="pdfSource"
+                  :text-layer="true"
+                  :width="pdfWidth"
+                  :rotation="rotation"
+                  class="pdf-document"
+                  @loaded="handleDocumentLoaded"
+                  @internal-link-clicked="handleLinkClick"
+              />
+            </div>
+          </div>
+
+          <!-- Chat Panel Section -->
+          <Transition name="slide-chat">
+            <ChatPanel
+                v-if="isChatOpen && paperId"
+                :paper-id="paperId"
+                :paper-title="paperTitle"
+                @close="isChatOpen = false"
+            />
+          </Transition>
         </div>
       </v-card-text>
     </v-card>
@@ -314,6 +371,19 @@ onUnmounted(() => {
   position: relative;
 }
 
+.content-wrapper {
+  height: 100%;
+  overflow: hidden;
+}
+
+.pdf-section {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
 .pdf-scroll-container {
   width: 100%;
   height: 100%;
@@ -322,11 +392,24 @@ onUnmounted(() => {
   display: flex;
   justify-content: center;
   padding: 32px 0;
+  background-color: rgb(var(--v-theme-background));
 }
 
 .pdf-document {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s ease; /* Smooth rotation */
+}
+
+/* Chat Panel Slide Animation */
+.slide-chat-enter-active,
+.slide-chat-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-chat-enter-from,
+.slide-chat-leave-to {
+  transform: translateX(100%);
+  opacity: 0;
 }
 
 /* Page Input Styling */
@@ -352,6 +435,8 @@ onUnmounted(() => {
   position: relative !important;
   margin-bottom: 24px;
   background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 :deep(.textLayer) {
