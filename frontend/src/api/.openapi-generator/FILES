@@ -14,6 +14,7 @@ models/condition-group-children-inner.ts
 models/condition-group.ts
 models/httpvalidation-error.ts
 models/index.ts
+models/location-inner.ts
 models/login-request.ts
 models/login-response.ts
 models/paper-chat-request.ts
@@ -32,5 +33,4 @@ models/search-response.ts
 models/text-condition.ts
 models/user-create.ts
 models/user-response.ts
-models/validation-error-loc-inner.ts
 models/validation-error.ts

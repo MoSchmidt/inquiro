@@ -41,7 +41,7 @@ class OpenAIProvider:
             reasoning={"effort": "low"},
             input=[
                 {
-                    "role": "developer",
+                    "role": "system",
                     "content": KEYWORD_PROMPT,
                 },
                 {
@@ -59,9 +59,9 @@ class OpenAIProvider:
         return keyword_list
 
     async def extract_keywords_from_pdf(
-            self,
-            pdf_text: str,
-            query: Optional[str] = None,
+        self,
+        pdf_text: str,
+        query: Optional[str] = None,
     ) -> List[str]:
         """
         Extracts a list of search queries from the full text of a paper and an optional query.
@@ -79,7 +79,7 @@ class OpenAIProvider:
             reasoning={"effort": "medium"},
             input=[
                 {
-                    "role": "developer",
+                    "role": "system",
                     "content": PDF_KEYWORD_PROMPT,
                 },
                 {
@@ -141,7 +141,7 @@ class OpenAIProvider:
             reasoning={"effort": "medium"},
             input=[
                 {
-                    "role": "developer",
+                    "role": "system",
                     "content": prompt_content,
                 },
                 {
@@ -175,7 +175,7 @@ class OpenAIProvider:
         return data
 
     async def chat_about_paper(
-            self, paper_text: str, user_query: str, chat_history: List[Dict[str, str]]
+        self, paper_text: str, user_query: str, chat_history: List[Dict[str, str]]
     ) -> str:
         """
         Handles a chat turn using the full paper text as context.
