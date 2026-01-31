@@ -1,4 +1,5 @@
 import io
+import logging
 
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import StreamingResponse
@@ -13,6 +14,8 @@ from app.schemas.paper_dto import (
 )
 from app.services.paper_service import PaperService
 
+logger = logging.getLogger("inquiro")
+
 router = APIRouter(prefix="/papers", tags=["Paper"])
 
 
@@ -24,7 +27,7 @@ router = APIRouter(prefix="/papers", tags=["Paper"])
     summary="Summarise the specified paper",
 )
 async def summary(
-    paper_id: int, request: PaperSummaryRequest, db: AsyncSession = Depends(get_db)
+        paper_id: int, request: PaperSummaryRequest, db: AsyncSession = Depends(get_db)
 ) -> PaperSummaryResponse:
     """
     Returns the summary of the specified paper.
@@ -61,8 +64,8 @@ async def chat_with_paper(
     summary="Get the PDF of the specified paper",
 )
 async def get_paper_pdf(
-    paper_id: int,
-    db: AsyncSession = Depends(get_db),
+        paper_id: int,
+        db: AsyncSession = Depends(get_db),
 ) -> StreamingResponse:
     """
     Stream the PDF file of the specified paper.

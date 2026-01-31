@@ -15,7 +15,7 @@ def get_specter2_proximity_embedder() -> Specter2Embedder:
 @lru_cache(maxsize=1)
 def get_specter2_query_embedder() -> Specter2Embedder:
     """Return a shared Specter2Embedder instance, initialized once."""
-    return Specter2Embedder(model="allenai/specter2_adhoc_query")
+    return Specter2Embedder(adapter="allenai/specter2_adhoc_query")
 
 
 @lru_cache(maxsize=1)

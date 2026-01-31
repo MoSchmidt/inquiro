@@ -54,9 +54,9 @@ class OpenAIProvider:
         return keyword_list
 
     async def extract_keywords_from_pdf(
-        self,
-        pdf_text: str,
-        query: Optional[str] = None,
+            self,
+            pdf_text: str,
+            query: Optional[str] = None,
     ) -> List[str]:
         """
         Extracts a list of search queries from the full text of a paper and an optional query.
@@ -155,24 +155,24 @@ class OpenAIProvider:
         return data
 
     async def chat_about_paper(
-        self, paper_text: str, user_query: str, chat_history: List[Dict[str, str]]
+            self, paper_text: str, user_query: str, chat_history: List[Dict[str, str]]
     ) -> str:
         """
         Handles a chat turn using the full paper text as context.
         """
 
-        messages: List[Dict[str, str]] = [
-            {"role": "system", "content": CHAT_PROMPT},
-            {"role": "system", "content": f"RESEARCH PAPER TEXT:\n\n{paper_text}"},
+        input_messages: List[Dict[str, str]] = [
+            {"role": "developer", "content": CHAT_PROMPT},
+            {"role": "developer", "content": f"RESEARCH PAPER TEXT:\n\n{paper_text}"},
         ]
 
         if chat_history:
-            messages.extend(chat_history)
+            input_messages.extend(chat_history)
 
-        messages.append({"role": "user", "content": user_query})
+        input_messages.append({"role": "user", "content": user_query})
 
-        response = await self.client.chat.completions.create(
-            model=self._model, messages=cast(Any, messages)
+        response = await self.client.responses.create(
+            model=self._model, reasoning={"effort": "medium"}, input=cast(Any, input_messages)
         )
 
-        return (response.choices[0].message.content or "").strip()
+        return response.output_text.strip()

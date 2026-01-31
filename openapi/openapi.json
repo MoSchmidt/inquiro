@@ -165,7 +165,7 @@
           "Search"
         ],
         "summary": "Search for papers",
-        "description": "Returns a list of papers that match the search query.\n\nCurrently, this returns the 5 most recently fetched papers, regardless\nof the query string.",
+        "description": "Returns a list of papers that match the search query.\nOptionally accepts an advanced filter with year range and text conditions.",
         "operationId": "search_search_post",
         "requestBody": {
           "content": {
@@ -207,7 +207,7 @@
           "Search"
         ],
         "summary": "Search for papers using a PDF",
-        "description": "Returns a list of papers that are relevant to the uploaded PDF\nThe PDF is analyzed, turned into semantic search queries, and used for vector search on our DB.",
+        "description": "Returns a list of papers that are relevant to the uploaded PDF.\nThe PDF is analyzed, turned into semantic search queries, and used for vector search on our DB.\nOptionally accepts a JSON-encoded advanced filter.",
         "operationId": "search_by_pdf_search_pdf_post",
         "requestBody": {
           "content": {
@@ -682,6 +682,59 @@
         }
       }
     },
+    "/papers/{paper_id}/chat": {
+      "post": {
+        "tags": [
+          "Paper"
+        ],
+        "summary": "Chat with the specified paper",
+        "description": "Allows the user to ask questions about the paper currently being viewed.",
+        "operationId": "chat_with_paper_papers__paper_id__chat_post",
+        "parameters": [
+          {
+            "name": "paper_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Paper Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaperChatRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaperChatResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/papers/{paper_id}/pdf": {
       "get": {
         "tags": [
@@ -721,6 +774,41 @@
   },
   "components": {
     "schemas": {
+      "AdvancedSearchFilter": {
+        "properties": {
+          "year_from": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Year From"
+          },
+          "year_to": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Year To"
+          },
+          "root": {
+            "$ref": "#/components/schemas/ConditionGroup"
+          }
+        },
+        "type": "object",
+        "required": [
+          "root"
+        ],
+        "title": "AdvancedSearchFilter",
+        "description": "Structured filter with optional year range and boolean condition tree."
+      },
       "Body_search_by_pdf_search_pdf_post": {
         "properties": {
           "pdf": {
@@ -740,6 +828,18 @@
             ],
             "title": "Query",
             "description": "Optional: query specifying what you want to find in relation to the paper"
+          },
+          "advanced_filter": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Advanced Filter",
+            "description": "Optional: JSON-encoded advanced search filter"
           }
         },
         "type": "object",
@@ -821,6 +921,42 @@
         ],
         "title": "LoginResponse",
         "description": "Response returned after a successful login."
+      },
+      "PaperChatRequest": {
+        "properties": {
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "history": {
+            "items": {
+              "$ref": "#/components/schemas/ChatMessageDto"
+            },
+            "type": "array",
+            "title": "History"
+          }
+        },
+        "type": "object",
+        "required": [
+          "message"
+        ],
+        "title": "PaperChatRequest",
+        "description": "Request to chat about a specific paper."
+      },
+      "PaperChatResponse": {
+        "properties": {
+          "answer": {
+            "type": "string",
+            "title": "Answer",
+            "description": "The AI's response to the user's question."
+          }
+        },
+        "type": "object",
+        "required": [
+          "answer"
+        ],
+        "title": "PaperChatResponse",
+        "description": "The AI generated response for the chat.\nSupports Markdown and LaTeX."
       },
       "PaperChatRequest": {
         "properties": {
@@ -967,7 +1103,16 @@
                 "type": "null"
               }
             ],
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Relevance To Query",
+            "description": "Direct answer to how this paper relates to the user's specific query."
             "description": "Direct answer to how this paper relates to the user's specific query."
           },
           "methodology_points": {
@@ -1119,6 +1264,16 @@
           "query": {
             "type": "string",
             "title": "Query"
+          },
+          "filter": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AdvancedSearchFilter"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
@@ -1144,6 +1299,44 @@
         ],
         "title": "SearchResponse",
         "description": "Response to search for specified query"
+      },
+      "TextCondition": {
+        "properties": {
+          "type": {
+            "type": "string",
+            "const": "condition",
+            "title": "Type"
+          },
+          "field": {
+            "type": "string",
+            "enum": [
+              "title",
+              "abstract"
+            ],
+            "title": "Field"
+          },
+          "operator": {
+            "type": "string",
+            "enum": [
+              "contains",
+              "not_contains"
+            ],
+            "title": "Operator"
+          },
+          "value": {
+            "type": "string",
+            "title": "Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "type",
+          "field",
+          "operator",
+          "value"
+        ],
+        "title": "TextCondition",
+        "description": "Single text-based filter condition on a paper field."
       },
       "UserCreate": {
         "properties": {

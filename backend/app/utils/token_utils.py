@@ -5,11 +5,11 @@ ENCODING = tiktoken.get_encoding("o200k_base")
 
 
 def ensure_fits_token_limit(
-    text: str,
-    max_tokens: int,
-    *,
-    error_status: int = 413,
-    error_detail: str | None = None,
+        text: str,
+        max_tokens: int,
+        *,
+        error_status: int = 413,
+        error_detail: str | None = None,
 ) -> None:
     """
     Checks if the given text fits within the token limit using o200k_base encoding.
