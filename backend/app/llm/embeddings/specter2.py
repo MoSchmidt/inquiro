@@ -2,7 +2,8 @@ import logging
 from typing import List, Optional
 
 import torch
-from transformers import AutoAdapterModel, AutoTokenizer
+from adapters import AutoAdapterModel
+from transformers import AutoTokenizer
 
 logger = logging.getLogger(__name__)
 
@@ -20,31 +21,46 @@ def build_specter2_text(title: str, abstract: str, tokenizer: AutoTokenizer) -> 
 class Specter2Embedder:
     """Wrapper around the SPECTER2 retrieval (proximity) model."""
 
-    def __init__(self, model: str = "allenai/specter2", device: Optional[str] = None) -> None:
+    def __init__(
+        self, adapter: str = "allenai/specter2_base", device: Optional[str] = None
+    ) -> None:
         """Load SPECTER2 tokenizer, base model, and proximity adapter."""
+
         if device is None:
             device = "cuda" if torch.cuda.is_available() else "cpu"
 
         self.device = torch.device(device)
-        logger.info("Loading SPECTER2 base + proximity adapter on %s...", self.device)
+        self.adapter = adapter
 
-        # Load tokenizer + base model
-        self.tokenizer = AutoTokenizer.from_pretrained("allenai/specter2_base")
+        # Tokenizer (shared across all variants)
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            "allenai/specter2_base",
+            local_files_only=False,
+            trust_remote_code=False,
+        )
 
-        self.model = AutoAdapterModel.from_pretrained("allenai/specter2_base")
+        # Adapter-aware model
+        self.model = AutoAdapterModel.from_pretrained(
+            "allenai/specter2_base",
+            local_files_only=False,
+            trust_remote_code=False,
+        )
 
-        # Load retrieval adapter (proximity)
+        # Load and activate adapter
         self.model.load_adapter(
-            model,
-            load_as="specter2",
-            set_active=True,
+            adapter,
             source="hf",
+            set_active=True,
         )
 
         self.model.to(self.device)
         self.model.eval()
 
-        logger.info("SPECTER2 model + adapter loaded successfully.")
+        logger.info(
+            "Loaded SPECTER2 model with adapter '%s' on device '%s'",
+            adapter,
+            self.device,
+        )
 
     def embed_batch(self, texts: List[str]) -> List[Optional[List[float]]]:
         """

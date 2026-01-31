@@ -1,4 +1,7 @@
+export * from './advanced-search-filter';
 export * from './chat-message-dto';
+export * from './condition-group';
+export * from './condition-group-children-inner';
 export * from './httpvalidation-error';
 export * from './location-inner';
 export * from './login-request';
@@ -16,6 +19,7 @@ export * from './refresh-request';
 export * from './refresh-response';
 export * from './search-request';
 export * from './search-response';
+export * from './text-condition';
 export * from './user-create';
 export * from './user-response';
 export * from './validation-error';

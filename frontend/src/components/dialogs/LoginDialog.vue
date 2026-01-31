@@ -56,45 +56,31 @@ const handleSubmit = async () => {
 </script>
 
 <template>
-  <v-dialog
-      :model-value="modelValue"
-      @update:model-value="emit('update:modelValue', $event)"
-      max-width="500"
-  >
+  <v-dialog :model-value="modelValue" @update:model-value="close" max-width="500">
     <v-card>
-      <v-card-title class="text-h5">Login to your account</v-card-title>
-      <v-card-text>
-        <p class="mb-4 text-medium-emphasis">
-          Enter your username to access your projects.
+      <v-card-title class="text-h6 pa-4 pb-0">Login to your account</v-card-title>
+      <v-card-text class="pa-4">
+        <p class="mb-4 text-medium-emphasis text-body-2">
+          Enter your username and password to access your projects.
         </p>
         <v-form @submit.prevent="handleSubmit">
-          <v-text-field
-              v-model="username"
-              label="Username"
-              variant="outlined"
-              required
-              class="mb-4"
-          />
-          <v-text-field
-              v-model="password"
-              label="Password"
-              type="password"
-              variant="outlined"
-              required
-              class="mb-4"
-          />
-          <v-btn type="submit" color="primary" block :loading="loading">
-            Login
-          </v-btn>
-          <div v-if="error" class="mt-2 text-error">
-            {{ error }}
-          </div>
+          <v-text-field v-model="username" label="Username" variant="outlined" required class="mb-2" />
+          <v-text-field v-model="password" label="Password" type="password" variant="outlined" required />
+          <div v-if="error" class="mt-2 text-caption text-error">{{ error }}</div>
         </v-form>
       </v-card-text>
-      <v-card-actions>
+
+      <v-card-actions class="pa-4 pt-0">
         <v-spacer />
-        <v-btn color="secondary" variant="text" @click="close">
-          Close
+        <v-btn variant="text" class="text-medium-emphasis text-none" @click="close">Cancel</v-btn>
+        <v-btn
+            color="secondary"
+            variant="text"
+            class="text-none"
+            :loading="loading"
+            @click="handleSubmit"
+        >
+          Login
         </v-btn>
       </v-card-actions>
     </v-card>

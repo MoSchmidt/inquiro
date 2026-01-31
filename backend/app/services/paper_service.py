@@ -9,67 +9,55 @@ from app.constants.database_constants import PaperSource
 from app.core.deps import get_openai_provider
 from app.repositories.paper_repository import PaperRepository
 from app.schemas.paper_dto import PaperSummaryResponse
-from app.utils.pdf_utils import pdf_bytes_to_text
+from app.services import PaperContentService
 from app.utils.token_utils import ensure_fits_token_limit
 
 logger = logging.getLogger("inquiro")
 
 
 class PaperService:
-    """
-    Service for interacting with research papers (Summarization, Chat, and PDF retrieval)
-    """
-
+    """Service for interacting with research papers (Summarization, Chat, and PDF retrieval)"""
     # GPT 5 nano has a max. content size of 400k tokens, combining input and output.
     # This represents a conservative estimate, leaving enough space for the prompt and output.
     MAX_INPUT_TOKENS = 280_000
 
     @staticmethod
     async def summarise_paper(
-        paper_id: int, query: str, session: AsyncSession
+            paper_id: int, query: str, session: AsyncSession
     ) -> PaperSummaryResponse:
         """
-        Retrieves paper specified by id, retrieves its pdf version, and summarises it.
-        Returns a summary of the specified paper
-        """
-        external_id = "unknown"
+        Retrieves paper specified by id, gets its markdown content, and summarises it.
+        Returns a summary of the specified paper.
 
+        Uses pre-converted markdown from PaperContent (via Docling), waiting for
+        conversion if it's still in progress.
+        """
         try:
-            pdf_text, external_id = await PaperService._prepare_paper_text(paper_id, session)
+            # Get markdown content (waits for conversion if needed)
+            pdf_text = await PaperService._get_paper_text(paper_id, session)
 
             openai_provider = get_openai_provider()
             summary_payload = await openai_provider.summarise_paper(pdf_text, query)
             return PaperSummaryResponse.model_validate(summary_payload)
-        except httpx.HTTPStatusError as exc:
-            # arXiv returned 404 or similar error
-            logger.warning("Failed to fetch arXiv paper %s: %s", external_id, exc, exc_info=True)
-            raise HTTPException(status_code=404, detail="Paper not found") from exc
-        except httpx.RequestError as exc:
-            logger.warning(
-                "Network error while fetching arXiv paper %s: %s", external_id, exc, exc_info=True
-            )
-            raise HTTPException(
-                status_code=503,
-                detail="Upstream arXiv service unavailable, please try again later.",
-            ) from exc
+        except HTTPException:
+            # Re-raise HTTP exceptions (from get_or_wait_for_markdown)
+            raise
         except Exception as exc:
-            # Catch-all for unexpected issues (PDF parsing, LLM errors, ...)
-            logger.exception("Error summarising arxiv paper %s", external_id)
+            # Catch-all for unexpected issues (LLM errors, ...)
+            logger.exception("Error summarising paper %s", paper_id)
             raise HTTPException(
                 status_code=500, detail="An unexpected error occurred while summarising the paper."
             ) from exc
 
     @staticmethod
     async def get_chat_answer(
-        paper_id: int, user_query: str, history: List[Dict[str, str]], session: AsyncSession
+            paper_id: int, user_query: str, history: List[Dict[str, str]], session: AsyncSession
     ) -> str:
         """
         Generates an AI response based on paper content and chat history.
         """
-        external_id = "unknown"
-
         try:
-            pdf_text, external_id = await PaperService._prepare_paper_text(paper_id, session)
+            pdf_text = await PaperService._get_paper_text(paper_id, session)
 
             openai_provider = get_openai_provider()
             answer = await openai_provider.chat_about_paper(
@@ -77,7 +65,7 @@ class PaperService:
             )
             return answer
         except Exception as exc:
-            logger.exception("Chat error for paper %s", external_id)
+            logger.exception("Chat error for paper %s", paper_id)
             raise HTTPException(status_code=500, detail="Failed to generate AI response.") from exc
 
     @staticmethod
@@ -98,6 +86,9 @@ class PaperService:
                 status_code=422,
                 detail=f"Unsupported paper source '{paper.source}'. Only ARXIV is supported.",
             )
+
+        # Trigger conversion in background (fire-and-forget, returns quickly)
+        await PaperContentService.trigger_conversion(paper_id, session)
 
         try:
             return await PaperService._fetch_arxiv_pdf(arxiv_id=paper.paper_id_external)
@@ -122,30 +113,9 @@ class PaperService:
             ) from exc
 
     @staticmethod
-    async def _prepare_paper_text(paper_id: int, session: AsyncSession) -> tuple[str, str]:
-        """
-        Shared internal logic to fetch paper and prepare text for LLM consumption.
-        Returns a tuple of (extracted_text, external_id).
-        """
-        paper = await PaperRepository.get_paper_by_id(session, paper_id)
-
-        if not paper:
-            logger.warning("Failed to find specified paper in DB: %s", paper_id)
-            raise HTTPException(status_code=404, detail=f"Paper {paper_id} not found")
-
-        # At the moment we only support arXiv as source; if we intend to add papers from different
-        # sources, the necessary functions need to be implemented. Until then just return an
-        # exception for unsupported sources.
-        if paper.source != PaperSource.ARXIV:
-            logger.warning("Unsupported paper source for summarization: %s", paper.source)
-            raise HTTPException(
-                status_code=422,
-                detail=f"Unsupported paper source '{paper.source}'. Only ARXIV is supported.",
-            )
-
-        pdf_bytes = await PaperService._fetch_arxiv_pdf(arxiv_id=paper.paper_id_external)
-
-        pdf_text = pdf_bytes_to_text(pdf_bytes)
+    async def _get_paper_text(paper_id: int, session: AsyncSession) -> str:
+        """Shared internal logic to convert paper to markdown."""
+        pdf_text = await PaperContentService.get_or_wait_for_markdown(paper_id, session)
 
         # If the pdf is of excessive length (> few hundred pages) it is too big for a single
         # request. We could process the paper in multiple parts but that would be a lot of
@@ -157,15 +127,18 @@ class PaperService:
             error_detail="Paper content exceeds context limits.",
         )
 
-        return pdf_text, paper.paper_id_external
+        return pdf_text
+
+    @staticmethod
+    def arxiv_pdf_url(arxiv_id: str) -> str:
+        """Get the Arxiv-PDF URL."""
+        return f"https://arxiv.org/pdf/{arxiv_id}.pdf"
 
     @staticmethod
     async def _fetch_arxiv_pdf(arxiv_id: str) -> bytes:
-        """
-        Fetch arXiv PDF and return its raw bytes.
-        """
+        """Fetch arXiv PDF and return its raw bytes."""
 
-        url = f"https://arxiv.org/pdf/{arxiv_id}.pdf"
+        url = PaperService.arxiv_pdf_url(arxiv_id)
         async with httpx.AsyncClient(timeout=30, follow_redirects=True) as client:
             resp = await client.get(url)
             resp.raise_for_status()
