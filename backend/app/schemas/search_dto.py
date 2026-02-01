@@ -21,9 +21,7 @@ class ConditionGroup(BaseModel):
 
     type: Literal["group"]
     operator: Literal["AND", "OR"]
-    children: List[
-        Annotated[Union[TextCondition, ConditionGroup], Field(discriminator="type")]
-    ]
+    children: List[Annotated[Union[TextCondition, ConditionGroup], Field(discriminator="type")]]
 
 
 class AdvancedSearchFilter(BaseModel):
@@ -47,7 +45,7 @@ class SearchRequest(BaseModel):
     Request to search for specified query
     """
 
-    query: str
+    query: str = Field(..., max_length=5000)
     filter: Optional[AdvancedSearchFilter] = None
 
 

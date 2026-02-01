@@ -1,11 +1,12 @@
 import io
 import logging
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.core.limiter import limiter
 from app.schemas.paper_dto import (
     PaperChatRequest,
     PaperChatResponse,
@@ -26,13 +27,17 @@ router = APIRouter(prefix="/papers", tags=["Paper"])
     status_code=status.HTTP_200_OK,
     summary="Summarise the specified paper",
 )
+@limiter.shared_limit("5/minute", scope="paper_summary")
 async def summary(
-        paper_id: int, request: PaperSummaryRequest, db: AsyncSession = Depends(get_db)
+    request: Request,  # pylint: disable=unused-argument
+    paper_id: int,
+    payload: PaperSummaryRequest,
+    db: AsyncSession = Depends(get_db),
 ) -> PaperSummaryResponse:
     """
     Returns the summary of the specified paper.
     """
-    result = await PaperService.summarise_paper(paper_id=paper_id, query=request.query, session=db)
+    result = await PaperService.summarise_paper(paper_id=paper_id, query=payload.query, session=db)
     return result
 
 
@@ -42,16 +47,20 @@ async def summary(
     status_code=status.HTTP_200_OK,
     summary="Chat with the specified paper",
 )
+@limiter.shared_limit("10/minute", scope="paper_chat")
 async def chat_with_paper(
-    paper_id: int, request: PaperChatRequest, db: AsyncSession = Depends(get_db)
+    request: Request,  # pylint: disable=unused-argument
+    paper_id: int,
+    payload: PaperChatRequest,
+    db: AsyncSession = Depends(get_db),
 ) -> PaperChatResponse:
     """
     Allows the user to ask questions about the paper currently being viewed.
     """
-    history_dicts = [m.model_dump() for m in request.history]
+    history_dicts = [m.model_dump() for m in payload.history]
 
     ai_answer = await PaperService.get_chat_answer(
-        paper_id=paper_id, user_query=request.message, history=history_dicts, session=db
+        paper_id=paper_id, user_query=payload.message, history=history_dicts, session=db
     )
 
     return PaperChatResponse(answer=ai_answer)
@@ -64,8 +73,8 @@ async def chat_with_paper(
     summary="Get the PDF of the specified paper",
 )
 async def get_paper_pdf(
-        paper_id: int,
-        db: AsyncSession = Depends(get_db),
+    paper_id: int,
+    db: AsyncSession = Depends(get_db),
 ) -> StreamingResponse:
     """
     Stream the PDF file of the specified paper.

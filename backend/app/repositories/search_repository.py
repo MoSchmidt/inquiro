@@ -23,10 +23,11 @@ class SearchRepository:
 
     @staticmethod
     async def search_papers_by_embeddings(
-            db: AsyncSession,
-            embeddings: List[List[float]],
-            limit: int = 5,
-            search_filter: Optional[AdvancedSearchFilter] = None,
+        db: AsyncSession,
+        embeddings: List[List[float]],
+        limit: int = 5,
+        threshold: float = 0.4,
+        search_filter: Optional[AdvancedSearchFilter] = None,
     ) -> List[Tuple[PaperModel, float]]:
         """
         Perform a vector search for papers based on a list of embeddings.
@@ -41,6 +42,7 @@ class SearchRepository:
 
         stmt = (
             select(PaperModel, avg_distance.label("avg_distance"))
+            .where(avg_distance < threshold)
             .order_by(avg_distance.asc())
             .limit(limit)
         )
@@ -92,7 +94,7 @@ class SearchRepository:
 
     @staticmethod
     def _build_node_clause(
-            node: Union[TextCondition, ConditionGroup]
+        node: Union[TextCondition, ConditionGroup],
     ) -> Optional[ColumnElement[bool]]:
         """Build a clause for a single node (condition or nested group)."""
         if node.type == "group":

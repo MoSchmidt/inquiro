@@ -3,6 +3,7 @@
 import os
 from typing import Optional
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -29,6 +30,8 @@ class Settings(BaseSettings):
     # --- OpenAI ---
     OPENAI_API_KEY: Optional[str] = None
 
+    # --- Safety Canary ---
+    SAFETY_CANARY: str = Field(default="BNZe4fAKVj/DZ/atHZZaVZxpyZGDZt+TqH0sT5J6AMY=")
     # --- Docling PDF Conversion ---
     DOCLING_WORKERS: int = 2
     DOCLING_TIMEOUT_SECONDS: int = 300
