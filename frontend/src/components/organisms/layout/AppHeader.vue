@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { VAppBar, VBtn, VIcon, VToolbarTitle, VSpacer, VTooltip } from 'vuetify/components';
+import { VAppBar, VBtn, VIcon, VSpacer, VTooltip } from 'vuetify/components';
 import { Menu as MenuIcon, Sun, Moon } from 'lucide-vue-next';
 import { useTheme } from '@/composables/useTheme';
+import inquiroLogo from '@/assets/images/inquiro_logo.svg';
+import inquiroLogoDark from '@/assets/images/inquiro_logo_dark_mode.svg';
 
 defineProps<{
   isAuthenticated: boolean;
@@ -21,7 +23,7 @@ const emit = defineEmits<{
     <v-btn icon variant="text" @click="emit('toggleSidebar')">
       <v-icon :icon="MenuIcon" />
     </v-btn>
-    <v-toolbar-title class="text-h6">Inquiro</v-toolbar-title>
+    <img :src="isDark ? inquiroLogoDark : inquiroLogo" alt="Inquiro" class="header-logo" />
     <v-spacer></v-spacer>
 
     <v-btn icon variant="text" @click="toggleTheme()">
@@ -52,4 +54,10 @@ const emit = defineEmits<{
   </v-app-bar>
 </template>
 
-<style scoped></style>
+<style scoped>
+.header-logo {
+  margin-left: 32px;
+  height: 32px;
+  width: auto;
+}
+</style>
