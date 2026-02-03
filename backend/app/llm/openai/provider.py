@@ -18,7 +18,8 @@ logger = logging.getLogger("inquiro")
 class OpenAIProvider:
     """Wrapper around the OpenAI client."""
 
-    _model: str
+    _default_model: str
+    _summary_model: str
 
     def __init__(self) -> None:
         if settings.OPENAI_API_KEY is None:
@@ -27,7 +28,10 @@ class OpenAIProvider:
             )
 
         self.client = AsyncOpenAI(api_key=settings.OPENAI_API_KEY)
-        self._model = "gpt-5-nano-2025-08-07"
+        # Use gpt-5-nano for general tasks (keywords, chat, etc.)
+        self._default_model = "gpt-5-nano-2025-08-07"
+        # Use gpt-4o-mini specifically for summarization (optimized for speed)
+        self._summary_model = "gpt-4o-mini"
 
     async def extract_keywords(self, user_text: str) -> List[str]:
         """
@@ -37,7 +41,7 @@ class OpenAIProvider:
         formatted_input = f"<user_query>\n{user_text}\n</user_query>"
 
         response = await self.client.responses.create(
-            model=self._model,
+            model=self._default_model,
             reasoning={"effort": "low"},
             input=[
                 {
@@ -75,7 +79,7 @@ class OpenAIProvider:
         )
 
         response = await self.client.responses.create(
-            model=self._model,
+            model=self._default_model,
             reasoning={"effort": "medium"},
             input=[
                 {
@@ -136,35 +140,41 @@ class OpenAIProvider:
         if has_query:
             user_message_content += f"\n\n<user_intent>\n{query}\n</user_intent>"
 
-        response = await self.client.responses.create(
-            model=self._model,
-            reasoning={"effort": "medium"},
-            input=[
+        response = await self.client.chat.completions.create(
+            model=self._summary_model,
+            messages=[
                 {
                     "role": "system",
                     "content": prompt_content,
                 },
                 {
                     "role": "user",
-                    "content": paper_text,
+                    "content": user_message_content,
                 },
             ],
-            text={
-                "format": {
-                    "type": "json_schema",
+            response_format={
+                "type": "json_schema",
+                "json_schema": {
                     "name": "paper_summary",
                     "schema": schema,
                     "strict": False,
-                }
+                },
             },
         )
 
         try:
-            data = json.loads(response.output_text)
-        except (json.decoder.JSONDecodeError, KeyError):
+            data = json.loads(response.choices[0].message.content)
+        except (json.decoder.JSONDecodeError, KeyError, IndexError):
+            # Fallback for parsing errors
+            content = ""
+            try:
+                content = response.choices[0].message.content.strip()
+            except (AttributeError, IndexError):
+                pass
+
             data = {
                 "title": "Summary (Parsing Fallback)",
-                "executive_summary": response.output_text.strip(),
+                "executive_summary": content,
                 "methodology_points": [],
                 "results_points": [],
                 "limitations": "Parsing failed.",
@@ -208,7 +218,9 @@ class OpenAIProvider:
         )
 
         response = await self.client.responses.create(
-            model=self._model, reasoning={"effort": "medium"}, input=cast(Any, input_messages)
+            model=self._default_model,
+            reasoning={"effort": "medium"},
+            input=cast(Any, input_messages),
         )
 
         return response.output_text.strip()
