@@ -2,8 +2,8 @@
 import { VAppBar, VBtn, VIcon, VSpacer, VTooltip } from 'vuetify/components';
 import { Menu as MenuIcon, Sun, Moon } from 'lucide-vue-next';
 import { useTheme } from '@/composables/useTheme';
-import inquiroLogo from '@/assets/inquiro_logo.svg';
-import inquiroLogoDark from '@/assets/inquiro_logo_dark_mode.svg';
+import inquiroLogo from '@/assets/images/inquiro_logo.svg';
+import inquiroLogoDark from '@/assets/images/inquiro_logo_dark_mode.svg';
 
 defineProps<{
   isAuthenticated: boolean;
