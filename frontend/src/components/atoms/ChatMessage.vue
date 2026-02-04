@@ -2,8 +2,8 @@
 import { computed } from 'vue';
 import { VAvatar, VIcon } from 'vuetify/components';
 import { User, Sparkles } from 'lucide-vue-next';
-import FormattedMarkdown from './FormattedMarkdown.vue';
 import type { ChatMessageDto } from '@/api/models';
+import ChatMarkdown from '@/components/atoms/ChatMarkdown.vue';
 
 const props = defineProps<{
   message: ChatMessageDto;
@@ -25,16 +25,18 @@ const isUser = computed(() => props.message.role === 'user');
       <v-icon :icon="isUser ? User : Sparkles" size="18" color="white" />
     </v-avatar>
 
-    <div class="message-content flex-grow-1">
+    <div class="message-content flex-grow-1" style="min-width: 0;">
       <div class="message-role text-caption font-weight-medium mb-1">
         {{ isUser ? 'You' : 'AI Assistant' }}
       </div>
+
       <div class="message-body pa-3 rounded-lg">
         <template v-if="isUser">
-          <p class="text-body-2 mb-0" style="white-space: pre-wrap;">{{ message.content }}</p>
+          <div class="text-body-2 mb-0" style="white-space: pre-wrap;">{{ message.content }}</div>
         </template>
+
         <template v-else>
-          <FormattedMarkdown :markdown="message.content" />
+          <ChatMarkdown :content="message.content" />
         </template>
       </div>
     </div>
