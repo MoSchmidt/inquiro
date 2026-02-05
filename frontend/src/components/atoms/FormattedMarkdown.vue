@@ -43,14 +43,19 @@ const rendered = computed(() => {
 
 /* Paragraphs */
 .md :deep(p) {
-  margin: 0 0 6px;
+  margin: 0 0 1em;
 }
 
-/* Lists */
-.md :deep(ul),
+.md :deep(ul) {
+  list-style-type: disc !important;
+  padding-left: 1.5rem;
+  margin: 1em 0;
+}
+
 .md :deep(ol) {
-  margin: 4px 0 6px;
-  padding-left: 1.2rem;
+  list-style-type: decimal !important;
+  padding-left: 1.5rem;
+  margin: 1em 0;
 }
 
 .md :deep(li) {
