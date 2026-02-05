@@ -9,9 +9,9 @@ const props = defineProps<{
 }>();
 
 const md = new MarkdownIt({
-  html: false,
-  linkify: true,
-  breaks: true,
+  html: false,       // Security: Disable HTML tags in source
+  linkify: true,     // Auto-link URLs
+  breaks: true,      // Convert \n to <br>
 });
 md.use(markdownItKatex);
 
@@ -54,7 +54,16 @@ const rendered = computed(() => {
 }
 
 .md :deep(li) {
-  margin: 2px 0;
+  display: list-item;
+  margin-bottom: 0.5em;
+}
+
+/* Nested lists */
+.md :deep(ul ul),
+.md :deep(ol ul),
+.md :deep(ul ol) {
+  list-style-type: circle !important;
+  margin-top: 0.2em;
 }
 
 /* Avoid massive gaps between sections */

@@ -4,7 +4,6 @@ import { VAvatar, VIcon, VBtn } from 'vuetify/components';
 import { User, Sparkles, Code } from 'lucide-vue-next';
 import type { ChatMessageDto } from '@/api/models';
 import FormattedMarkdown from '@/components/atoms/FormattedMarkdown.vue';
-import ChatMarkdown from "@/components/atoms/ChatMarkdown.vue";
 
 const props = defineProps<{
   message: ChatMessageDto;
@@ -60,7 +59,6 @@ const showRaw = ref(false); // Toggle state for debug view
           >
             {{ message.content }}
           </div>
-          <!--<ChatMarkdown v-else :content="message.content" /> -->
           <FormattedMarkdown v-else :markdown="message.content" />
         </template>
       </div>
