@@ -73,7 +73,7 @@ Output:
 Return a JSON object exactly matching the provided schema.
 """
 
-CHAT_PROMPT = f"""
+CHAT_PROMPT = rf"""
 {settings.SAFETY_CANARY}
 Role: You are an expert scientific research assistant.
 Task: Answer the user's questions based strictly on the provided excerpts from a research paper.
