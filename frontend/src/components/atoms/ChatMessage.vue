@@ -16,7 +16,7 @@ const showRaw = ref(false); // Toggle state for debug view
 <template>
   <div
       class="chat-message d-flex ga-3"
-      :class="{ 'user-message': isUser, 'assistant-message': !isUser }"
+      :class="{ 'user-message': isUser, 'assistant-message': !isUser, 'flex-row-reverse': !isUser }"
   >
     <v-avatar
         :color="isUser ? '#1976D2' : '#FF6B35'"
@@ -27,23 +27,29 @@ const showRaw = ref(false); // Toggle state for debug view
     </v-avatar>
 
     <div class="message-content flex-grow-1" style="min-width: 0;">
-      <div class="d-flex justify-space-between align-center mb-1">
-        <div class="message-role text-caption font-weight-medium">
-          {{ isUser ? 'You' : 'AI Assistant' }}
-        </div>
 
+      <div
+          class="d-flex align-center mb-1"
+          :class="isUser ? 'justify-start' : 'justify-end'"
+      >
         <v-btn
             v-if="!isUser"
             icon
-            variant="text"
-            density="compact"
-            size="x-small"
+            variant="plain"
+            :ripple="false"
+            height="24"
+            width="24"
+            class="mr-1 opacity-70"
             :color="showRaw ? 'primary' : 'medium-emphasis'"
             @click="showRaw = !showRaw"
             title="Toggle Raw Content"
         >
           <v-icon :icon="Code" size="14" />
         </v-btn>
+
+        <div class="message-role text-caption font-weight-medium">
+          {{ isUser ? 'You' : 'Inquiro' }}
+        </div>
       </div>
 
       <div class="message-body pa-3 rounded-lg">
@@ -62,6 +68,7 @@ const showRaw = ref(false); // Toggle state for debug view
           <FormattedMarkdown v-else :markdown="message.content" />
         </template>
       </div>
+
     </div>
   </div>
 </template>
@@ -77,8 +84,8 @@ const showRaw = ref(false); // Toggle state for debug view
 }
 
 .assistant-message .message-body {
-  background-color: rgb(var(--v-theme-surface));
-  border: 1px solid rgb(var(--v-theme-outline-variant), 0.2);
+  background-color: rgb(var(--v-theme-secondary), 0.08);
+  border: 1px solid rgb(var(--v-theme-secondary), 0.15);
 }
 
 .message-role {
