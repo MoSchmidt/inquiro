@@ -14,7 +14,7 @@ Make sure the following tools are installed on your system:
 | ----------------------- |---------------------|-----------------------------------------------------------------------------------------------------|
 | **Docker**              | Latest              | [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/)               |
 | **Python**              | 3.11.14             | [python.org/downloads/release/python-31114](https://www.python.org/downloads/release/python-31114/) |
-| **Node.js**             | TBD                 | [nodejs.org](https://nodejs.org/)                                                                   |
+| **Node.js**             | 22.12.0+              | [nodejs.org](https://nodejs.org/)                                                                   |
 
 💡 **Note:** Docker is only required to run the PostgreSQL database locally.
 The backend and frontend are started manually.
@@ -56,12 +56,6 @@ The backend and frontend are started manually.
    cd backend
    ```
 
-Here is a clean, professional, and minimal update for that section — giving users **two clear options**:
-(1) standard `venv` with the correct Python version, or
-(2) Anaconda environment with the correct version.
-
-You can paste this directly into your README.
-
 ---
 
 ## (Optional but recommended) Create and activate a Python environment
@@ -92,7 +86,6 @@ py -3.11 -m venv inquiro-env
 inquiro-env\Scripts\activate
 ```
 
----
 
 ### ✅ Option B — Create an environment using Anaconda (Python 3.11.14)
 
@@ -105,15 +98,16 @@ conda activate inquiro-env
 
 This ensures all dependencies install cleanly—especially libraries like `torch`, `transformers`, and scientific packages.
 
+---
 
-4. **Install dependencies**:
+3. **Install dependencies**:
 
    ```bash
    pip install -r requirements.txt
    pip install -r requirements-dev.txt
    ```
    
-5. **Create a local environment file**:
+4. **Create a local environment file**:
 
     Copy the example file and rename it to dev.env:
 
@@ -131,7 +125,7 @@ This ensures all dependencies install cleanly—especially libraries like `torch
     
    Then adjust the values if needed (e.g., database port, credentials).
 
-6. **Install Git hooks**:
+5. **Install Git hooks**:
 
    ```bash
    pre-commit install
@@ -139,7 +133,7 @@ This ensures all dependencies install cleanly—especially libraries like `torch
 
    After this, the formatters and linters will run automatically every time you commit.
 
-7. **Start the FastAPI server**:
+6. **Start the FastAPI server**:
 
    ```bash
    uvicorn app.main:app --reload
@@ -169,11 +163,3 @@ Bruno is a lightweight, file-based API client that stores requests in plain text
 3. **Select or configure an environment**
 
    The `/bruno/Inquiro Bruno/environments` directory contains predefined environment files. For local development select the **_Development_** environment.
-
-
-### 🚀 Basic Usage
-
-Before authenticating, a user must be created:
-
-1. Run the **Users → Create User** request and provide only a `username` in the request body.
-2. Next, use the **Authentication → Login** request with the same `username` to obtain an access and refresh token.
