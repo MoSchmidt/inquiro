@@ -163,3 +163,10 @@ Bruno is a lightweight, file-based API client that stores requests in plain text
 3. **Select or configure an environment**
 
    The `/bruno/Inquiro Bruno/environments` directory contains predefined environment files. For local development select the **_Development_** environment.
+
+
+---
+
+## 🤖 AI Acknowledgement
+
+AI-assisted tools, including ChatGPT, Claude (Code), and Cursor, were used during the development of this project for architectural planning, code generation, and debugging support. All AI-generated output was reviewed and adapted by the development team.
