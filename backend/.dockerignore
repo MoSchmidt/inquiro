@@ -1,0 +1,37 @@
+# Virtual environments
+.venv/
+venv/
+inquiro-env/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Git
+.git/
+.gitignore
+
+# Environment files
+.env*
+dev.env
+
+# Documentation
+*.md
+
+# IDE
+.idea/
+.vscode/
+
+# Data directories
+ingestion/data/
+evaluation_data/
+evaluation_results/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/

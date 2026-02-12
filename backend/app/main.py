@@ -40,8 +40,7 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, Any]:
     """Initialize and tear down application resources."""
 
     logger.info("🚀 Starting Inquiro API in '%s' mode...", settings.ENVIRONMENT)
-    if settings.ENVIRONMENT == "dev":
-        await init_db()  # Auto-create tables only in dev
+    await init_db()
 
     # Start PDF conversion workers
     queue = ConversionQueue.get_instance()
@@ -86,6 +85,8 @@ if settings.ENVIRONMENT == "dev":
         allow_origins=[
             "http://localhost:5173",
             "http://127.0.0.1:5173",
+            "http://localhost",
+            "http://127.0.0.1",
         ],
         allow_credentials=True,
         allow_methods=["*"],
