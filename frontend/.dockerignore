@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+*.md
+
+# IDE
+.idea/
+.vscode/
+
+# Environment files
+.env*
+
+# Testing
+coverage/
+.nyc_output/

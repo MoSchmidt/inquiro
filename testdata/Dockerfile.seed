@@ -1,0 +1,16 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install only required dependencies for seeding
+RUN pip install --no-cache-dir \
+    psycopg2-binary \
+    pandas \
+    pyarrow \
+    numpy
+
+# Copy the seed script and data
+COPY testdata/seed_test_data.py /app/seed_test_data.py
+COPY testdata/test-data.parquet /app/test-data.parquet
+
+CMD ["python", "/app/seed_test_data.py"]

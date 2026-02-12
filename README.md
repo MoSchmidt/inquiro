@@ -1,39 +1,89 @@
-# Inquiro
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="frontend/src/assets/images/inquiro_logo_dark_mode.svg">
+    <source media="(prefers-color-scheme: light)" srcset="frontend/src/assets/images/inquiro_logo.svg">
+    <img alt="Inquiro" src="frontend/src/assets/images/inquiro_logo.svg" width="350">
+  </picture>
+</p>
 
-*Inquiro* is an AI-powered research discovery platform designed to match user research interests with relevant scientific papers using intelligent semantic ranking.
-
----
-
-## ⚙️ Development Setup
-
-### 🧩 Prerequisites
-
-Make sure the following tools are installed on your system:
-
-| Tool                    | Recommended Version | Installation Link                                                                                   |
-| ----------------------- |---------------------|-----------------------------------------------------------------------------------------------------|
-| **Docker**              | Latest              | [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/)               |
-| **Python**              | 3.11.14             | [python.org/downloads/release/python-31114](https://www.python.org/downloads/release/python-31114/) |
-| **Node.js**             | 22.12.0+            | [nodejs.org](https://nodejs.org/)                                                                   |
-
-💡 **Note:** Docker is only required to run the PostgreSQL database locally.
-The backend and frontend are started manually.
+<p align="center">
+  <em>AI-powered research discovery platform that matches your research interests with relevant scientific papers using intelligent semantic ranking.</em>
+</p>
 
 ---
 
-## 🖥️ Frontend Setup
+## 📋 Prerequisites
 
-1. **Navigate to the frontend directory**:
+| Tool | Required For | Installation |
+| --- | --- | --- |
+| **Docker** | All setups | [docker.com](https://www.docker.com/products/docker-desktop/) |
+| **Python** | 3.11.14 — Development setup only | [python.org](https://www.python.org/downloads/release/python-31114/) |
+| **Node.js** | 22.12.0+ — Development setup only | [nodejs.org](https://nodejs.org/) |
+
+You also need an **OpenAI API key** for semantic ranking and paper analysis features.
+Get one at [platform.openai.com](https://platform.openai.com/).
+
+---
+
+## 🚀 Quick Start (Docker)
+
+Run the entire stack — database, backend, frontend, and test data seeding — in Docker with a few commands.
+
+1. **Create your environment file:**
+
+   ```bash
+   cp .env.example .env
+   ```
+
+2. **Add your OpenAI API key** by editing the `.env` file:
+
+   ```
+   OPENAI_API_KEY=sk-your-key-here
+   ```
+
+3. **Start all services:**
+
+   ```bash
+   docker compose --profile full up -d
+   ```
+
+   This will automatically:
+   - Start the PostgreSQL database (with pgvector)
+   - Launch the backend, which creates the database schema on startup
+   - Seed the database with test papers and a test user (`test` / `My Test Project`)
+   - Serve the frontend via nginx
+
+Once running, open [http://localhost](http://localhost) in your browser.
+
+| Service | URL |
+| --- | --- |
+| Frontend | [http://localhost](http://localhost) |
+| Backend API | [http://localhost:8000](http://localhost:8000) |
+| API Docs | [http://localhost:8000/docs](http://localhost:8000/docs) |
+
+> To stop all services: `docker compose --profile full down`
+
+---
+
+## 🛠️ Development Setup
+
+For active development, run only the database in Docker and start the frontend and backend manually. This gives you hot-reload and direct access to the code.
+
+### 🖥️ Frontend
+
+1. **Navigate to the frontend directory:**
 
    ```bash
    cd frontend
    ```
-2. **Install dependencies**:
+
+2. **Install dependencies:**
 
    ```bash
    npm install
    ```
-3. **Start the development server**:
+
+3. **Start the development server:**
 
    ```bash
    npm run dev
@@ -41,99 +91,91 @@ The backend and frontend are started manually.
 
    The frontend will be available at [http://localhost:5173](http://localhost:5173) (or the port shown in the console).
 
----
+### ⚙️ Backend
 
-## ⚙️ Backend Setup
-
-1. **From the project root, start the database**:
+1. **From the project root, start the database:**
 
    ```bash
    docker compose up -d
    ```
-2. **Navigate to the backend directory**:
+
+2. **Navigate to the backend directory:**
 
    ```bash
    cd backend
    ```
 
----
+3. **Set up a Python environment** *(optional but recommended)*
 
-## (Optional but recommended) Create and activate a Python environment
+   Choose **either** a standard `venv` **or** an Anaconda environment.
 
-You can choose **either** a standard `venv` (recommended if you already installed Python 3.11.14 manually) **or** an Anaconda environment.
+   <details>
+   <summary><strong>Option A — venv (Python 3.11.14)</strong></summary>
 
-### ✅ Option A — Create a virtual environment using `venv` (Python 3.11.14)
+   Ensure Python **3.11.14** is available on your system (`python --version` or `python3 --version`).
 
-Ensure Python **3.11.14** is available on your system (check with `python --version` or `python3 --version`).
+   **Linux / macOS:**
 
-🧠 **Linux / macOS**
+   ```bash
+   python3.11 -m venv inquiro-env
+   source inquiro-env/bin/activate
+   ```
 
-```bash
-# Create a virtual environment using the correct Python version
-python3.11 -m venv inquiro-env
+   **Windows (PowerShell):**
 
-# Activate it
-source inquiro-env/bin/activate
-```
+   ```bash
+   py -3.11 -m venv inquiro-env
+   inquiro-env\Scripts\activate
+   ```
 
-🪟 **Windows (PowerShell)**
+   </details>
 
-```bash
-# Create a virtual environment
-py -3.11 -m venv inquiro-env
+   <details>
+   <summary><strong>Option B — Anaconda</strong></summary>
 
-# Activate it
-inquiro-env\Scripts\activate
-```
+   ```bash
+   conda create -n inquiro-env python=3.11.14
+   conda activate inquiro-env
+   ```
 
+   This ensures all dependencies install cleanly — especially libraries like `torch`, `transformers`, and scientific packages.
 
-### ✅ Option B — Create an environment using Anaconda (Python 3.11.14)
+   </details>
 
-If you're using Conda, you can create a dedicated environment:
-
-```bash
-conda create -n inquiro-env python=3.11.14
-conda activate inquiro-env
-```
-
-This ensures all dependencies install cleanly—especially libraries like `torch`, `transformers`, and scientific packages.
-
----
-
-3. **Install dependencies**:
+4. **Install dependencies:**
 
    ```bash
    pip install -r requirements.txt
    pip install -r requirements-dev.txt
    ```
-   
-4. **Create a local environment file**:
 
-    Copy the example file and rename it to dev.env:
+5. **Create a local environment file:**
 
-   🧠 Linux / macOS
-    
-    ```bash
+   Copy the example file and rename it to `dev.env`:
+
+   **Linux / macOS:**
+
+   ```bash
    cp .env.example dev.env
    ```
-    
-   🪟 Windows (PowerShell)
+
+   **Windows (PowerShell):**
 
    ```bash
    copy .env.example dev.env
    ```
-    
-   Then adjust the values if needed (e.g., database port, credentials).
 
-5. **Install Git hooks**:
+   Then open `dev.env` and add your **OpenAI API key**. Adjust other values if needed (e.g., database port, credentials).
+
+6. **Install Git hooks:**
 
    ```bash
    pre-commit install
    ```
 
-   After this, the formatters and linters will run automatically every time you commit.
+   After this, formatters and linters will run automatically on every commit.
 
-6. **Start the FastAPI server**:
+7. **Start the FastAPI server:**
 
    ```bash
    uvicorn app.main:app --reload
@@ -146,24 +188,13 @@ This ensures all dependencies install cleanly—especially libraries like `torch
 
 ## 🧪 API Testing with Bruno
 
-The *Inquiro* project includes a [**Bruno**](https://www.usebruno.com) collection under `/bruno` for testing and exploring the backend API.
-Bruno is a lightweight, file-based API client that stores requests in plain text, making it well-suited for collaborative development and version control.
+The project includes a [**Bruno**](https://www.usebruno.com) collection under `/bruno` for testing and exploring the backend API. Bruno is a lightweight, file-based API client that stores requests in plain text, making it well-suited for collaborative development and version control.
 
-### ⚙️ Setup
+1. **Install Bruno** — Download from [usebruno.com/downloads](https://www.usebruno.com/downloads).
 
-1. **Install Bruno**
+2. **Open the collection** — Launch Bruno, click **"Open Collection"**, and select the `/bruno/Inquiro Bruno` folder from the project root.
 
-   Download and install Bruno from [usebruno.com/downloads](https://www.usebruno.com/downloads).
-
-2. **Open the collection**
-
-   * Launch Bruno.
-   * Click **“Open Collection”** and select the `/bruno/Inquiro Bruno` folder from the project root.
-
-3. **Select or configure an environment**
-
-   The `/bruno/Inquiro Bruno/environments` directory contains predefined environment files. For local development select the **_Development_** environment.
-
+3. **Select an environment** — The `/bruno/Inquiro Bruno/environments` directory contains predefined environment files. For local development, select the **_Development_** environment.
 
 ---
 

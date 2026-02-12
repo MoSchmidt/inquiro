@@ -11,6 +11,64 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql
       - ./docker/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U inquiro -d inquiro_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    container_name: inquiro_backend
+    profiles:
+      - full
+    ports:
+      - "8000:8000"
+    environment:
+      ENV_FILE: ""
+      ENVIRONMENT: dev
+      POSTGRES_USER: inquiro
+      POSTGRES_PASSWORD: inquiro
+      POSTGRES_DB: inquiro_db
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      DATABASE_URL: postgresql+asyncpg://inquiro:inquiro@db:5432/inquiro_db
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-3e3cc0b2f8b54b3d6aa597faccb2f9c41b19b1c24befe29661bafbd42e3afe3e}
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      SAFETY_CANARY: ${SAFETY_CANARY:-BNZe4fAKVj/DZ/atHZZaVZxpyZGDZt+TqH0sT5J6AMY=}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  seed:
+    build:
+      context: .
+      dockerfile: testdata/Dockerfile.seed
+    container_name: inquiro_seed
+    profiles:
+      - full
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: inquiro
+      DB_PASSWORD: inquiro
+      DB_NAME: inquiro_db
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: "no"
+
+  frontend:
+    build: ./frontend
+    container_name: inquiro_frontend
+    profiles:
+      - full
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
     restart: unless-stopped
 
 volumes:
