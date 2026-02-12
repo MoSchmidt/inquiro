@@ -14,7 +14,7 @@ Make sure the following tools are installed on your system:
 | ----------------------- |---------------------|-----------------------------------------------------------------------------------------------------|
 | **Docker**              | Latest              | [docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop/)               |
 | **Python**              | 3.11.14             | [python.org/downloads/release/python-31114](https://www.python.org/downloads/release/python-31114/) |
-| **Node.js**             | 22.12.0+              | [nodejs.org](https://nodejs.org/)                                                                   |
+| **Node.js**             | 22.12.0+            | [nodejs.org](https://nodejs.org/)                                                                   |
 
 💡 **Note:** Docker is only required to run the PostgreSQL database locally.
 The backend and frontend are started manually.
