@@ -181,7 +181,7 @@ watch(messages, () => {
               width="2"
               color="primary"
             />
-            <span class="text-caption text-medium-emphasis">AI is thinking...</span>
+            <span class="text-caption text-medium-emphasis">Inquiro is thinking...</span>
           </div>
         </template>
       </div>
